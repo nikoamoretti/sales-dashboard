@@ -8,6 +8,9 @@ on:
     - cron: '0 15,16,17,18,19,20,21,22,23 * * 1-5'  # 7am-3pm PT
     - cron: '0 0,1 * * 2-6'                           # 4pm-5pm PT (next UTC day)
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
