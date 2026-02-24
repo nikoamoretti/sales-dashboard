@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-24T14:52:14.284464-08:00",
+  "generated_at": "2026-02-24T14:58:14.776303-08:00",
   "calls": [
     {
       "id": "101907888950",
@@ -7,7 +7,7 @@
       "contact_name": "Call with Casey Angelo",
       "category": "No Answer",
       "duration_s": 0,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">No answer</p></div>",
+      "notes": "No answer",
       "week_num": 1,
       "hour_pt": 12
     },
@@ -57,7 +57,7 @@
       "contact_name": "Call with Eric Martin",
       "category": "Interested",
       "duration_s": 147,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Ben Grimm is the shipping manager.</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Eric said email him and he will move it along and see if its worth their interest. Tried to push through and connect directly, shutdown. Will check with Nico on next step. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">eric.martin@oildri.com</p></div>",
+      "notes": "Ben Grimm is the shipping manager. Eric said email him and he will move it along and see if its worth their interest. Tried to push through and connect directly, shutdown. Will check with Nico on next step. eric.martin@oildri.com",
       "week_num": 1,
       "hour_pt": 9
     },
@@ -77,7 +77,7 @@
       "contact_name": "Call with Susmita Timilsina",
       "category": "Interested",
       "duration_s": 96,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Has rail deliveries handled by Rome same company, owned by other company, guard might know Gill someone from Rome,</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">No idea what is going on with this one, will connect with Nico on it.</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Nico said try to find anyone at all that we can connect with.</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\"><strong><span data-mention-id=\"1420533524\" data-mention-name=\"Andrea Rios\" style=\"color: #425b76;font-weight: 600;\">@Andrea Rios</span></strong> can you create a deal for this one and for the title of the deal let's say: \"Allnex - Nurture\". Thank you</p></div>",
+      "notes": "Has rail deliveries handled by Rome same company, owned by other company, guard might know Gill someone from Rome, No idea what is going on with this one, will connect with Nico on it. Nico said try to find anyone at all that we can connect with. @Andrea Rios can you create a deal for this one and for the title of the deal let's say: \"Allnex - Nurture\". Thank you",
       "week_num": 1,
       "hour_pt": 9
     },
@@ -87,7 +87,7 @@
       "contact_name": "Call with Jacob Brown",
       "category": "No Answer",
       "duration_s": 0,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">No answer, no VM</p></div>",
+      "notes": "No answer, no VM",
       "week_num": 1,
       "hour_pt": 10
     },
@@ -137,7 +137,7 @@
       "contact_name": "Call with Kelly Magness",
       "category": "No Answer",
       "duration_s": 15,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Hung up. Nico needs to add \"hung up\" as a call outcome.</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Nico said we cant make hung up an outcome, we will filter out for next scrape. </p></div>",
+      "notes": "Hung up. Nico needs to add \"hung up\" as a call outcome. Nico said we cant make hung up an outcome, we will filter out for next scrape.",
       "week_num": 1,
       "hour_pt": 11
     },
@@ -147,7 +147,7 @@
       "contact_name": "Call with Daniel Peachey",
       "category": "Left Voicemail",
       "duration_s": 36,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Male</p></div>",
+      "notes": "Male",
       "week_num": 1,
       "hour_pt": 11
     },
@@ -177,7 +177,7 @@
       "contact_name": "Call with Jennifer Wright",
       "category": "No Rail",
       "duration_s": 92,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Jennifer called back, returning her call.</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">They rail in, not out. Check with Nico on what this means.</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Nico said he thinks they only receive, so they dont need to track the same way. Essentially a non customer. </p></div>",
+      "notes": "Jennifer called back, returning her call. They rail in, not out. Check with Nico on what this means. Nico said he thinks they only receive, so they dont need to track the same way. Essentially a non customer.",
       "week_num": 1,
       "hour_pt": 11
     },
@@ -197,7 +197,7 @@
       "contact_name": "Call with Scott Denson",
       "category": "Interested",
       "duration_s": 380,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">They deal with the shippers, not a huge deal for them.</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">RFP is going out Monday. Couple people are slotted to bid on it. Odd scenario. They are not the actual receiver, but they need to see the cars move.</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Its easy when you are the received, but they are they tag along.</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">scottdenson@enviroserve.com</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Need Nico guidance on this one.</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Request for proposal</p></div>",
+      "notes": "They deal with the shippers, not a huge deal for them. RFP is going out Monday. Couple people are slotted to bid on it. Odd scenario. They are not the actual receiver, but they need to see the cars move. Its easy when you are the received, but they are they tag along. scottdenson@enviroserve.com Need Nico guidance on this one. Request for proposal",
       "week_num": 1,
       "hour_pt": 11
     },
@@ -227,7 +227,7 @@
       "contact_name": "Call with Memsud Musabasic",
       "category": "No Answer",
       "duration_s": 21,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Rang, then dead air</p></div>",
+      "notes": "Rang, then dead air",
       "week_num": 1,
       "hour_pt": 12
     },
@@ -237,7 +237,7 @@
       "contact_name": "Call with Kevin W",
       "category": "Wrong Number",
       "duration_s": 45,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Wrong number. Nico will remove. </p></div>",
+      "notes": "Wrong number. Nico will remove.",
       "week_num": 1,
       "hour_pt": 12
     },
@@ -297,7 +297,7 @@
       "contact_name": "Call with Steve Cosper",
       "category": "No Answer",
       "duration_s": 0,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Busy tone. Will try again in a few min. </p></div>",
+      "notes": "Busy tone. Will try again in a few min.",
       "week_num": 2,
       "hour_pt": 8
     },
@@ -327,7 +327,7 @@
       "contact_name": "Call with Christine Edwards",
       "category": "Wrong Person",
       "duration_s": 94,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Call corporate directly, she doesnt handle that. Wilmington, thats where corporate offices are. She has no contact info for them. Check with Nico. </p></div>",
+      "notes": "Call corporate directly, she doesnt handle that. Wilmington, thats where corporate offices are. She has no contact info for them. Check with Nico.",
       "week_num": 2,
       "hour_pt": 9
     },
@@ -347,7 +347,7 @@
       "contact_name": "Call with Jessica Higdon",
       "category": "Meeting Booked",
       "duration_s": 491,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">2nd or 3rd week of feb to at least to do an intro, booked. She was hesitant at first bc they are happy with Intellitrance and want to meet us a conference in March if we were to talk, but I pushed through and she agreed to at least an intro meeting. I reduced to 15 min to try and hook, so be aware. I will check with Nico on what to do next if anything.</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">jhigdon@amsty.com</p></div>",
+      "notes": "2nd or 3rd week of feb to at least to do an intro, booked. She was hesitant at first bc they are happy with Intellitrance and want to meet us a conference in March if we were to talk, but I pushed through and she agreed to at least an intro meeting. I reduced to 15 min to try and hook, so be aware. I will check with Nico on what to do next if anything. jhigdon@amsty.com",
       "week_num": 2,
       "hour_pt": 9
     },
@@ -357,7 +357,7 @@
       "contact_name": "Call with Scott Denson",
       "category": "Interested",
       "duration_s": 29,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Just letting Scott know we sent him an email this morning and looking forward to meeting. </p></div>",
+      "notes": "Just letting Scott know we sent him an email this morning and looking forward to meeting.",
       "week_num": 2,
       "hour_pt": 9
     },
@@ -367,7 +367,7 @@
       "contact_name": "Call with Mary Lapuz",
       "category": "Wrong Number",
       "duration_s": 80,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">wrong number, Danny (F). Nico will udpate. </p></div>",
+      "notes": "wrong number, Danny (F). Nico will udpate.",
       "week_num": 2,
       "hour_pt": 9
     },
@@ -387,7 +387,7 @@
       "contact_name": "Call with Vincent Woolridge",
       "category": "Not Interested",
       "duration_s": 15,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Hung up</p></div>",
+      "notes": "Hung up",
       "week_num": 2,
       "hour_pt": 11
     },
@@ -397,7 +397,7 @@
       "contact_name": "Call with Harrison",
       "category": "No Answer",
       "duration_s": 7,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Redialed this.. Second task, same number? Not sure what happened here. </p></div>",
+      "notes": "Redialed this.. Second task, same number? Not sure what happened here.",
       "week_num": 2,
       "hour_pt": 11
     },
@@ -427,7 +427,7 @@
       "contact_name": "Call with Ryan Spexarth",
       "category": "Interested",
       "duration_s": 48,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Don, Ryan no longer works there. Said he cant hear me, trying to call him back. Update this contact info pls Nico.</p></div>",
+      "notes": "Don, Ryan no longer works there. Said he cant hear me, trying to call him back. Update this contact info pls Nico.",
       "week_num": 2,
       "hour_pt": 11
     },
@@ -437,7 +437,7 @@
       "contact_name": "Call with Ryan Spexarth",
       "category": "Referral Given",
       "duration_s": 251,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Call 2 for Don, operations usually handles everything, they dont typically deal with. Most of their stuff comes from local vendors. They have an internal system they are using, but its ran by operations. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Been in business for over 100 years, systems are set up specifically for them. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Not worth their time, &nbsp;IT takes care of the software, he cant make this decision. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Asked if he could direct me to someone in that department, he is looking up someone now. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Logan 816-918-8130 would be the best. Adding him to contacts and trying there. </p></div>",
+      "notes": "Call 2 for Don, operations usually handles everything, they dont typically deal with. Most of their stuff comes from local vendors. They have an internal system they are using, but its ran by operations. Been in business for over 100 years, systems are set up specifically for them. Not worth their time, \u00a0IT takes care of the software, he cant make this decision. Asked if he could direct me to someone in that department, he is looking up someone now. Logan 816-918-8130 would be the best. Adding him to contacts and trying there.",
       "week_num": 2,
       "hour_pt": 11
     },
@@ -487,7 +487,7 @@
       "contact_name": "Call with Larry Young",
       "category": "No Answer",
       "duration_s": 30,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Uses AI to screen and blocked me, no vm option. </p></div>",
+      "notes": "Uses AI to screen and blocked me, no vm option.",
       "week_num": 2,
       "hour_pt": 12
     },
@@ -497,7 +497,7 @@
       "contact_name": "Call with Benny Sarbeck",
       "category": "Wrong Person",
       "duration_s": 54,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Daniel Rivera, call the main office and ask for Daniel Rivera, he said he doesnt handle this. </p></div>",
+      "notes": "Daniel Rivera, call the main office and ask for Daniel Rivera, he said he doesnt handle this.",
       "week_num": 2,
       "hour_pt": 12
     },
@@ -517,7 +517,7 @@
       "contact_name": "Call with Holley Molina",
       "category": "No Answer",
       "duration_s": 68,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Chemical warehouse, NCH corporate in Irving. They dont make decisions. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">972-438-0511 is the direct line she could give me, but said its their generic number for the corporate office. </p></div>",
+      "notes": "Chemical warehouse, NCH corporate in Irving. They dont make decisions. 972-438-0511 is the direct line she could give me, but said its their generic number for the corporate office.",
       "week_num": 2,
       "hour_pt": 12
     },
@@ -547,7 +547,7 @@
       "contact_name": "Call with Melissa Brookman",
       "category": "No Rail",
       "duration_s": 36,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">LTL and truckload. Doenst use rail at all. Unqualified. Ask Nico to update.</p></div>",
+      "notes": "LTL and truckload. Doenst use rail at all. Unqualified. Ask Nico to update.",
       "week_num": 2,
       "hour_pt": 13
     },
@@ -587,7 +587,7 @@
       "contact_name": "Call with Casey Angelo",
       "category": "No Answer",
       "duration_s": 0,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Call DC'd. Busy signal I think</p></div>",
+      "notes": "Call DC'd. Busy signal I think",
       "week_num": 2,
       "hour_pt": 13
     },
@@ -607,7 +607,7 @@
       "contact_name": "Call with Rachel Beck",
       "category": "Wrong Number",
       "duration_s": 38,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Wrong number. Not with company at all. Ask Nico to update. </p></div>",
+      "notes": "Wrong number. Not with company at all. Ask Nico to update.",
       "week_num": 2,
       "hour_pt": 13
     },
@@ -637,7 +637,7 @@
       "contact_name": "Call with Louis Barnard",
       "category": "Gatekeeper",
       "duration_s": 140,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Connected to Jeff, he tried connecting me to someone else. Joe, VM</p></div>",
+      "notes": "Connected to Jeff, he tried connecting me to someone else. Joe, VM",
       "week_num": 2,
       "hour_pt": 9
     },
@@ -657,7 +657,7 @@
       "contact_name": "Call with Sumet Thabthimthong",
       "category": "Wrong Number",
       "duration_s": 142,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">847-749-6540 Sumet is the correct number, this number was for his wife.</p></div>",
+      "notes": "847-749-6540 Sumet is the correct number, this number was for his wife.",
       "week_num": 2,
       "hour_pt": 9
     },
@@ -677,7 +677,7 @@
       "contact_name": "Call with Lorna Ridderhof",
       "category": "Referral Given",
       "duration_s": 222,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Lorna, uses a 3rd party software, not intellitrance, but wouldnt tell me (I could have dug, but she isnt the DM). She said the other department handles all of these decisions, she just uses the software they tell her to. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">call main office or HR, Christian Beal, she didnt have anyones contact info</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Google pulled this number: <em><strong>1-844-890-8949</strong></em></p></div>",
+      "notes": "Lorna, uses a 3rd party software, not intellitrance, but wouldnt tell me (I could have dug, but she isnt the DM). She said the other department handles all of these decisions, she just uses the software they tell her to. call main office or HR, Christian Beal, she didnt have anyones contact info Google pulled this number: 1-844-890-8949",
       "week_num": 2,
       "hour_pt": 9
     },
@@ -687,7 +687,7 @@
       "contact_name": "Call with Lorna Ridderhof",
       "category": "Gatekeeper",
       "duration_s": 307,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Phone tree, 8 for all other inquiries</p><p style=\"margin:0;\">Tracy; Transferring me to Christian now</p><p style=\"margin:0;\">That line wouldnt connect, so Tracy is connecting me to Brian Barber, said he would be very helpful</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p></div>",
+      "notes": "Phone tree, 8 for all other inquiries Tracy; Transferring me to Christian now That line wouldnt connect, so Tracy is connecting me to Brian Barber, said he would be very helpful",
       "week_num": 2,
       "hour_pt": 9
     },
@@ -717,7 +717,7 @@
       "contact_name": "Call with Robert Koch",
       "category": "No Answer",
       "duration_s": 0,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Rang and DC'd. Will try again in a minute. </p></div>",
+      "notes": "Rang and DC'd. Will try again in a minute.",
       "week_num": 2,
       "hour_pt": 9
     },
@@ -727,7 +727,7 @@
       "contact_name": "Call with Robert Koch",
       "category": "No Answer",
       "duration_s": 0,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Same thing. </p></div>",
+      "notes": "Same thing.",
       "week_num": 2,
       "hour_pt": 9
     },
@@ -757,7 +757,7 @@
       "contact_name": "Call with Matthew Cantu",
       "category": "Wrong Person",
       "duration_s": 166,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">No longer with Ascend. Chapter 11 bankruptcy and bunch of restructures</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Has some leads hes looking at now</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Nice guy.</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Marking as connected so Nico can manage the lead removal. </p></div>",
+      "notes": "No longer with Ascend. Chapter 11 bankruptcy and bunch of restructures Has some leads hes looking at now Nice guy. Marking as connected so Nico can manage the lead removal.",
       "week_num": 2,
       "hour_pt": 9
     },
@@ -827,7 +827,7 @@
       "contact_name": "Call with Stepan",
       "category": "Gatekeeper",
       "duration_s": 374,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Connected to general info rep, I explained who I was trying to connect with, and she put me on hold to try and find the best person for me to speak to. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Transferring me to someone who might be able to help</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">VM</p></div>",
+      "notes": "Connected to general info rep, I explained who I was trying to connect with, and she put me on hold to try and find the best person for me to speak to. Transferring me to someone who might be able to help VM",
       "week_num": 2,
       "hour_pt": 10
     },
@@ -857,7 +857,7 @@
       "contact_name": "Call with Advansix",
       "category": "No Answer",
       "duration_s": 26,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">This is the main number. I called them earlier today and was transferred. No need to call the same person again. </p></div>",
+      "notes": "This is the main number. I called them earlier today and was transferred. No need to call the same person again.",
       "week_num": 2,
       "hour_pt": 10
     },
@@ -867,7 +867,7 @@
       "contact_name": "Call with Marc Hill",
       "category": "Left Voicemail",
       "duration_s": 36,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">This contact is for Ineos, but the number below is for Advansix . Mix up in data? Sending to Nico to investigate. </p></div>",
+      "notes": "This contact is for Ineos, but the number below is for Advansix . Mix up in data? Sending to Nico to investigate.",
       "week_num": 2,
       "hour_pt": 11
     },
@@ -907,7 +907,7 @@
       "contact_name": "Call with Chris Price",
       "category": "No Answer",
       "duration_s": 7,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">AI screening that asked for name and reason, but then just hung up before I could speak</p></div>",
+      "notes": "AI screening that asked for name and reason, but then just hung up before I could speak",
       "week_num": 2,
       "hour_pt": 11
     },
@@ -917,7 +917,7 @@
       "contact_name": "Call with Kim Wagoner",
       "category": "Wrong Person",
       "duration_s": 41,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Kim does not handle rail operations over there. Kim wouldnt know who to talk to that would handle that. I wont put wrong number since the info is correct. <strong><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></strong> to process lead. </p></div>",
+      "notes": "Kim does not handle rail operations over there. Kim wouldnt know who to talk to that would handle that. I wont put wrong number since the info is correct. @Nicolas Amoretti to process lead.",
       "week_num": 2,
       "hour_pt": 11
     },
@@ -937,7 +937,7 @@
       "contact_name": "Call with Bill Fisher",
       "category": "No Rail",
       "duration_s": 57,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Nothing to do with rail, all of their transporation is by truck. Unqualified. </p></div>",
+      "notes": "Nothing to do with rail, all of their transporation is by truck. Unqualified.",
       "week_num": 2,
       "hour_pt": 13
     },
@@ -997,7 +997,7 @@
       "contact_name": "Call with Denise Richey",
       "category": "No Answer",
       "duration_s": 0,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Immediate DC, will try again in a minute</p></div>",
+      "notes": "Immediate DC, will try again in a minute",
       "week_num": 2,
       "hour_pt": 13
     },
@@ -1007,7 +1007,7 @@
       "contact_name": "Call with Denise Richey",
       "category": "Left Voicemail",
       "duration_s": 40,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Did ring this time. Left VM</p></div>",
+      "notes": "Did ring this time. Left VM",
       "week_num": 2,
       "hour_pt": 13
     },
@@ -1027,7 +1027,7 @@
       "contact_name": "Call with Timothy Martin",
       "category": "No Answer",
       "duration_s": 13,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">He answered, but said he couldnt hear me. Tested mic, its working</p></div>",
+      "notes": "He answered, but said he couldnt hear me. Tested mic, its working",
       "week_num": 2,
       "hour_pt": 13
     },
@@ -1037,7 +1037,7 @@
       "contact_name": "Call with Timothy Martin",
       "category": "No Answer",
       "duration_s": 9,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Tried calling back, no answer. Checked recording and yes, mic was working</p></div>",
+      "notes": "Tried calling back, no answer. Checked recording and yes, mic was working",
       "week_num": 2,
       "hour_pt": 13
     },
@@ -1087,7 +1087,7 @@
       "contact_name": "Call with Stepan",
       "category": "Gatekeeper",
       "duration_s": 101,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Phone tree, 0 for all other questions. It connected me to the same lady from before that tried transferring me. If you get Stepan main line, you can try again tomorrow. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p></div>",
+      "notes": "Phone tree, 0 for all other questions. It connected me to the same lady from before that tried transferring me. If you get Stepan main line, you can try again tomorrow.",
       "week_num": 2,
       "hour_pt": 13
     },
@@ -1137,7 +1137,7 @@
       "contact_name": "Call with Terry Aeschleman",
       "category": "Interested",
       "duration_s": 54,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">wrong guy, tanker maintenance, not sure of who would be the main point of contact. He is in a small division of maintenance. </p></div>",
+      "notes": "wrong guy, tanker maintenance, not sure of who would be the main point of contact. He is in a small division of maintenance.",
       "week_num": 2,
       "hour_pt": 13
     },
@@ -1217,7 +1217,7 @@
       "contact_name": "Call with Atlas Copco",
       "category": "No Answer",
       "duration_s": 36,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">No one there she could transfer me to. </p></div>",
+      "notes": "No one there she could transfer me to.",
       "week_num": 2,
       "hour_pt": 7
     },
@@ -1247,7 +1247,7 @@
       "contact_name": "Call with Stephen Ehlers",
       "category": "Referral Given",
       "duration_s": 148,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Casey Angelo, 201-247-0651 is DM</p><p style=\"margin:0;\">Jose</p></div>",
+      "notes": "Casey Angelo, 201-247-0651 is DM Jose",
       "week_num": 2,
       "hour_pt": 7
     },
@@ -1257,7 +1257,7 @@
       "contact_name": "Call with Stephen Ehlers",
       "category": "Left Voicemail",
       "duration_s": 49,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Recognize the name, called him last week, or Monday. Hopefully can connect. </p></div>",
+      "notes": "Recognize the name, called him last week, or Monday. Hopefully can connect.",
       "week_num": 2,
       "hour_pt": 8
     },
@@ -1307,7 +1307,7 @@
       "contact_name": "Call with Stepan",
       "category": "No Answer",
       "duration_s": 30,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Stepan Corporate number, have called before. If there are multiple numbers directing to same line, nothing we can do. If same number, we can cleanup data. </p></div>",
+      "notes": "Stepan Corporate number, have called before. If there are multiple numbers directing to same line, nothing we can do. If same number, we can cleanup data.",
       "week_num": 2,
       "hour_pt": 8
     },
@@ -1317,7 +1317,7 @@
       "contact_name": "Call with Santosh Yerasuri",
       "category": "Interested",
       "duration_s": 75,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Santosh</p><p style=\"margin:0;\">Procurrent team would be responsible for this conversation, asked me to text him and he would shoot me their email. Texting from personal. No response as of 12:50 EST</p></div>",
+      "notes": "Santosh Procurrent team would be responsible for this conversation, asked me to text him and he would shoot me their email. Texting from personal. No response as of 12:50 EST",
       "week_num": 2,
       "hour_pt": 8
     },
@@ -1347,7 +1347,7 @@
       "contact_name": "Call with Amy Kennedy",
       "category": "Left Voicemail",
       "duration_s": 43,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">No number to call. </p></div>",
+      "notes": "No number to call.",
       "week_num": 2,
       "hour_pt": 8
     },
@@ -1387,7 +1387,7 @@
       "contact_name": "Call with Ernie Whittredge",
       "category": "No Rail",
       "duration_s": 26,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Doesnst use rail, just truck. <strong><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></strong> is this across the board for growmark? If so, we can remove them from leads? I will continue calling until noted otherwise. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Unqualified. </p></div>",
+      "notes": "Doesnst use rail, just truck. @Nicolas Amoretti is this across the board for growmark? If so, we can remove them from leads? I will continue calling until noted otherwise. Unqualified.",
       "week_num": 2,
       "hour_pt": 8
     },
@@ -1407,7 +1407,7 @@
       "contact_name": "Call with Francisco Baledon",
       "category": "No Answer",
       "duration_s": 0,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">No answer, but it dcd immediately. Will try again in just a minute.</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Noticed number was international, maybe why DC'd. Moving on</p></div>",
+      "notes": "No answer, but it dcd immediately. Will try again in just a minute. Noticed number was international, maybe why DC'd. Moving on",
       "week_num": 2,
       "hour_pt": 8
     },
@@ -1427,7 +1427,7 @@
       "contact_name": "Call with Ernie Whittredge",
       "category": "Interested",
       "duration_s": 23,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Duplicate, he said we just talked about 10 minutes ago. Looking into data now for duplicate number, or if two numbers go to same line.</p><p style=\"margin:0;\"><strong><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></strong></p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Confirmed second number in system connects to same lead. Need to look at data for duplicate names and manage from there. </p></div>",
+      "notes": "Duplicate, he said we just talked about 10 minutes ago. Looking into data now for duplicate number, or if two numbers go to same line. @Nicolas Amoretti Confirmed second number in system connects to same lead. Need to look at data for duplicate names and manage from there.",
       "week_num": 2,
       "hour_pt": 8
     },
@@ -1587,7 +1587,7 @@
       "contact_name": "Call with Mark Durant",
       "category": "No Answer",
       "duration_s": 4,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Duplicate number in sequence</p></div>",
+      "notes": "Duplicate number in sequence",
       "week_num": 2,
       "hour_pt": 9
     },
@@ -1597,7 +1597,7 @@
       "contact_name": "Call with Lynn Landesman",
       "category": "Left Voicemail",
       "duration_s": 48,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Already called in seuqence </p></div>",
+      "notes": "Already called in seuqence",
       "week_num": 2,
       "hour_pt": 9
     },
@@ -1617,7 +1617,7 @@
       "contact_name": "Call with Daniel Peachey",
       "category": "No Rail",
       "duration_s": 44,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Spoke with Daniel, he said all of Growmark only receives via rail, doesnt ship. Any need for us in that case? Checking with Nico. </p></div>",
+      "notes": "Spoke with Daniel, he said all of Growmark only receives via rail, doesnt ship. Any need for us in that case? Checking with Nico.",
       "week_num": 2,
       "hour_pt": 9
     },
@@ -1637,7 +1637,7 @@
       "contact_name": "Call with Marykara Mischo",
       "category": "No Answer",
       "duration_s": 28,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">AI Screen, declined call</p></div>",
+      "notes": "AI Screen, declined call",
       "week_num": 2,
       "hour_pt": 7
     },
@@ -1667,7 +1667,7 @@
       "contact_name": "Call with Eric Martin",
       "category": "Interested",
       "duration_s": 42,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Already called. Told him I was checking in and he said they have had zero time. </p></div>",
+      "notes": "Already called. Told him I was checking in and he said they have had zero time.",
       "week_num": 2,
       "hour_pt": 7
     },
@@ -1687,7 +1687,7 @@
       "contact_name": "Call with Joshua Meador",
       "category": "Wrong Number",
       "duration_s": 68,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Not with ChemTreat</p></div>",
+      "notes": "Not with ChemTreat",
       "week_num": 2,
       "hour_pt": 7
     },
@@ -1707,7 +1707,7 @@
       "contact_name": "Call with Tom Elliott",
       "category": "No Answer",
       "duration_s": 0,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Call DC'd on pick up, will try again</p></div>",
+      "notes": "Call DC'd on pick up, will try again",
       "week_num": 2,
       "hour_pt": 7
     },
@@ -1717,7 +1717,7 @@
       "contact_name": "Call with Tom Elliott",
       "category": "No Answer",
       "duration_s": 0,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Same outcome, 2 rings</p></div>",
+      "notes": "Same outcome, 2 rings",
       "week_num": 2,
       "hour_pt": 7
     },
@@ -1737,7 +1737,7 @@
       "contact_name": "Call with Mark Romero",
       "category": "No Answer",
       "duration_s": 13,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Mailbox is full</p></div>",
+      "notes": "Mailbox is full",
       "week_num": 2,
       "hour_pt": 7
     },
@@ -1797,7 +1797,7 @@
       "contact_name": "Call with Memsud Musabasic",
       "category": "No Answer",
       "duration_s": 20,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Same. Rings then dead air. </p></div>",
+      "notes": "Same. Rings then dead air.",
       "week_num": 2,
       "hour_pt": 7
     },
@@ -1807,7 +1807,7 @@
       "contact_name": "Call with William Gay",
       "category": "Left Voicemail",
       "duration_s": 39,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Rod according to VM, </p></div>",
+      "notes": "Rod according to VM,",
       "week_num": 2,
       "hour_pt": 7
     },
@@ -1827,7 +1827,7 @@
       "contact_name": "Call with Brian Grant",
       "category": "No Answer",
       "duration_s": 0,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Rang once and DC'd. Will try one more. </p></div>",
+      "notes": "Rang once and DC'd. Will try one more.",
       "week_num": 2,
       "hour_pt": 7
     },
@@ -1837,7 +1837,7 @@
       "contact_name": "Call with Brian Grant",
       "category": "No Answer",
       "duration_s": 0,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Same</p></div>",
+      "notes": "Same",
       "week_num": 2,
       "hour_pt": 8
     },
@@ -1887,7 +1887,7 @@
       "contact_name": "Call with Maureen Iuzzolino",
       "category": "No Answer",
       "duration_s": 0,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Rand once and DC</p></div>",
+      "notes": "Rand once and DC",
       "week_num": 2,
       "hour_pt": 8
     },
@@ -1897,7 +1897,7 @@
       "contact_name": "Call with Tanya White",
       "category": "Left Voicemail",
       "duration_s": 45,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Duplicate account, but different number. Will try this one and see. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p></div>",
+      "notes": "Duplicate account, but different number. Will try this one and see.",
       "week_num": 2,
       "hour_pt": 8
     },
@@ -2167,7 +2167,7 @@
       "contact_name": "Call with William Chesnutt",
       "category": "No Answer",
       "duration_s": 0,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Immediately DC'd, will try again in a few minutes. </p></div>",
+      "notes": "Immediately DC'd, will try again in a few minutes.",
       "week_num": 3,
       "hour_pt": 8
     },
@@ -2197,7 +2197,7 @@
       "contact_name": "Call with Brad Glasson",
       "category": "Referral Given",
       "duration_s": 65,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Brad doesnt handle this. </p><p style=\"margin:0;\">Susan Bidelvick maybe, try the general line 216-566-2997</p></div>",
+      "notes": "Brad doesnt handle this. Susan Bidelvick maybe, try the general line 216-566-2997",
       "week_num": 3,
       "hour_pt": 8
     },
@@ -2207,7 +2207,7 @@
       "contact_name": "Call with Brad Glasson",
       "category": "No Answer",
       "duration_s": 0,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Trying for Susan, call ended immediately. Redialing. </p></div>",
+      "notes": "Trying for Susan, call ended immediately. Redialing.",
       "week_num": 3,
       "hour_pt": 8
     },
@@ -2217,7 +2217,7 @@
       "contact_name": "Call with Brad Glasson",
       "category": "Gatekeeper",
       "duration_s": 984,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Worked this time, trying for Susan. This is IT support center according to phone tree. </p><p style=\"margin:0;\">Tried 2, 5 on phone tree. Need someone who could actually connect me to Susan from this department. Looking susan up on Linked in as well. Found Susan Novak, ask <strong><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></strong> if he wants to set up a linkedin or msg from their account. </p><p style=\"margin:0;\">IT sent me to generic customer service phone tree</p><p style=\"margin:0;\">1, 5</p><p style=\"margin:0;\">Benny, explained the situation, he was able to see Susan Novak, looking to transfer me to their transportation group. Benny was talking, but kept cutting out. Thinking problem on his end? If DC'd I can call back and ask for Benny. Googled Sherwin Williams customer service and the number that came back was 800-474-3794.</p><p style=\"margin:0;\">Benny did not return, timer on hubspot dialer still rolling, so were connected. Will wait one more min then end call and try for customer service again. </p></div>",
+      "notes": "Worked this time, trying for Susan. This is IT support center according to phone tree. Tried 2, 5 on phone tree. Need someone who could actually connect me to Susan from this department. Looking susan up on Linked in as well. Found Susan Novak, ask @Nicolas Amoretti if he wants to set up a linkedin or msg from their account. IT sent me to generic customer service phone tree 1, 5 Benny, explained the situation, he was able to see Susan Novak, looking to transfer me to their transportation group. Benny was talking, but kept cutting out. Thinking problem on his end? If DC'd I can call back and ask for Benny. Googled Sherwin Williams customer service and the number that came back was 800-474-3794. Benny did not return, timer on hubspot dialer still rolling, so were connected. Will wait one more min then end call and try for customer service again.",
       "week_num": 3,
       "hour_pt": 8
     },
@@ -2227,7 +2227,7 @@
       "contact_name": "Call with Brad Glasson",
       "category": "Gatekeeper",
       "duration_s": 769,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Trying customer service again, phone tree</p><p style=\"margin:0;\">1,5 </p><p style=\"margin:0;\">Supplier Portal would be the easiest (its like submitting a ticket). </p><p style=\"margin:0;\">He is transferring me to transportation though, lets see. </p><p style=\"margin:0;\">Phone tree 2 for vendor, 3 for company directory, trying 3 </p><p style=\"margin:0;\">Susan Ambelvodik is who it transfered me to ugh lol. </p><p style=\"margin:0;\">VM. Nothing else I can do with this one as of now. Moving on. </p></div>",
+      "notes": "Trying customer service again, phone tree 1,5 Supplier Portal would be the easiest (its like submitting a ticket). He is transferring me to transportation though, lets see. Phone tree 2 for vendor, 3 for company directory, trying 3 Susan Ambelvodik is who it transfered me to ugh lol. VM. Nothing else I can do with this one as of now. Moving on.",
       "week_num": 3,
       "hour_pt": 9
     },
@@ -2237,7 +2237,7 @@
       "contact_name": "Call with William Chesnutt",
       "category": "No Answer",
       "duration_s": 0,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Same, DC</p></div>",
+      "notes": "Same, DC",
       "week_num": 3,
       "hour_pt": 9
     },
@@ -2267,7 +2267,7 @@
       "contact_name": "Call with Zach Smith",
       "category": "No Answer",
       "duration_s": 18,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Mailbox is full</p></div>",
+      "notes": "Mailbox is full",
       "week_num": 3,
       "hour_pt": 9
     },
@@ -2277,7 +2277,7 @@
       "contact_name": "Call with David Palay",
       "category": "Left Voicemail",
       "duration_s": 18,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Tried leaving VM, it ended early (typically means he was watching the VM and ended it)</p></div>",
+      "notes": "Tried leaving VM, it ended early (typically means he was watching the VM and ended it)",
       "week_num": 3,
       "hour_pt": 9
     },
@@ -2357,7 +2357,7 @@
       "contact_name": "Call with Perry Faccenda",
       "category": "No Answer",
       "duration_s": 5,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Mailbox hasnt been set up yet</p></div>",
+      "notes": "Mailbox hasnt been set up yet",
       "week_num": 3,
       "hour_pt": 10
     },
@@ -2367,7 +2367,7 @@
       "contact_name": "Call with Chris Dugan",
       "category": "No Answer",
       "duration_s": 42,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Someone answered, but would just short phrases and beeps. Not sure if it was a weird VM or he was messing with me (pretty sure the latter). </p></div>",
+      "notes": "Someone answered, but would just short phrases and beeps. Not sure if it was a weird VM or he was messing with me (pretty sure the latter).",
       "week_num": 3,
       "hour_pt": 10
     },
@@ -2397,7 +2397,7 @@
       "contact_name": "Call with Harcros Chemicals",
       "category": "No Rail",
       "duration_s": 108,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">All handled individually, logistics group that handles their OTR stuff with trucks. If we want rail, you have to contact each branch individually. <strong><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></strong> to try and gather those leads? And <strong><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></strong> do you want these type of calls listed as connected or wrong number for data gathering?</p></div>",
+      "notes": "All handled individually, logistics group that handles their OTR stuff with trucks. If we want rail, you have to contact each branch individually. @Nicolas Amoretti to try and gather those leads? And @Nicolas Amoretti do you want these type of calls listed as connected or wrong number for data gathering?",
       "week_num": 3,
       "hour_pt": 10
     },
@@ -2477,7 +2477,7 @@
       "contact_name": "Call with Leo Mahon",
       "category": "Wrong Person",
       "duration_s": 68,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">No longer with company</p></div>",
+      "notes": "No longer with company",
       "week_num": 3,
       "hour_pt": 11
     },
@@ -2527,7 +2527,7 @@
       "contact_name": "Call with Ria Permatasari",
       "category": "No Rail",
       "duration_s": 61,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Doesnt do anything with rail. Answered all of the objection handles. <strong><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></strong> with leads like this, ask the questions weve discussed and move on? Or any additional questions you want me to ask?</p></div>",
+      "notes": "Doesnt do anything with rail. Answered all of the objection handles. @Nicolas Amoretti with leads like this, ask the questions weve discussed and move on? Or any additional questions you want me to ask?",
       "week_num": 3,
       "hour_pt": 11
     },
@@ -2587,7 +2587,7 @@
       "contact_name": "Call with Landon Sorapuru",
       "category": "Wrong Person",
       "duration_s": 47,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">No longer works for the company. Doesnt know who he would direct me to. </p></div>",
+      "notes": "No longer works for the company. Doesnt know who he would direct me to.",
       "week_num": 3,
       "hour_pt": 7
     },
@@ -2607,7 +2607,7 @@
       "contact_name": "Call with Allison Sharkey",
       "category": "Wrong Person",
       "duration_s": 55,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">AI Screening, she did take call. Does not handle operations, cant tell me who does, and then hung up. </p></div>",
+      "notes": "AI Screening, she did take call. Does not handle operations, cant tell me who does, and then hung up.",
       "week_num": 3,
       "hour_pt": 7
     },
@@ -2697,7 +2697,7 @@
       "contact_name": "Call with Matt Gentry",
       "category": "Meeting Booked",
       "duration_s": 284,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Not sure if there is anything here, but was able to book him. Very meh on phone, but was open to a \"15 min call\". Said everything is running smoothly, but at least open to jumping on a call means there could be something. I didnt want to dig into pain bc of reluctance, was more focused on getting him onto a call and going from there. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\"><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></p></div>",
+      "notes": "Not sure if there is anything here, but was able to book him. Very meh on phone, but was open to a \"15 min call\". Said everything is running smoothly, but at least open to jumping on a call means there could be something. I didnt want to dig into pain bc of reluctance, was more focused on getting him onto a call and going from there. @Nicolas Amoretti",
       "week_num": 3,
       "hour_pt": 7
     },
@@ -2737,7 +2737,7 @@
       "contact_name": "Call with Kerry Melius",
       "category": "Interested",
       "duration_s": 181,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">karsten.schumaker@adm.com</p><p style=\"margin:0;\">Not the key person, but could move it along, </p><p style=\"margin:0;\">tried objection handle on email, but \"the market is open and thats their focus right now\"</p><p style=\"margin:0;\"><strong><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></strong> Please send email to introduce. </p></div>",
+      "notes": "karsten.schumaker@adm.com Not the key person, but could move it along, tried objection handle on email, but \"the market is open and thats their focus right now\" @Nicolas Amoretti Please send email to introduce.",
       "week_num": 3,
       "hour_pt": 8
     },
@@ -2937,7 +2937,7 @@
       "contact_name": "Call with Rachel Spenny",
       "category": "Referral Given",
       "duration_s": 151,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Rachel is low person on totem pole according to her. Lea Wilson is DM, 317-439-3923</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p></div>",
+      "notes": "Rachel is low person on totem pole according to her. Lea Wilson is DM, 317-439-3923",
       "week_num": 3,
       "hour_pt": 12
     },
@@ -3017,7 +3017,7 @@
       "contact_name": "Call with Alexander Rennie",
       "category": "Not Interested",
       "duration_s": 107,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Alex is partial DM, not interested, happy with their current option. Wouldnt give detail, tried to overcome, no bite. </p></div>",
+      "notes": "Alex is partial DM, not interested, happy with their current option. Wouldnt give detail, tried to overcome, no bite.",
       "week_num": 3,
       "hour_pt": 7
     },
@@ -3027,7 +3027,7 @@
       "contact_name": "Call with Gary McWilliams",
       "category": "No Rail",
       "duration_s": 83,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Gary is in sales, in house with their own trucks, said there was no one else to push me towards. <strong><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></strong> is there anything you want me to do better on one like this?</p><p style=\"margin:0;\">Unqualified</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p></div>",
+      "notes": "Gary is in sales, in house with their own trucks, said there was no one else to push me towards. @Nicolas Amoretti is there anything you want me to do better on one like this? Unqualified",
       "week_num": 3,
       "hour_pt": 7
     },
@@ -3047,7 +3047,7 @@
       "contact_name": "Call with Erica Jones",
       "category": "Interested",
       "duration_s": 182,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Erica is partial DM, seems like there could be interest, but she asked to call me back. Couldnt give date and time, asked for my cell phone so that we can text. Will update here if she does, otherwise follow up set. </p></div>",
+      "notes": "Erica is partial DM, seems like there could be interest, but she asked to call me back. Couldnt give date and time, asked for my cell phone so that we can text. Will update here if she does, otherwise follow up set.",
       "week_num": 3,
       "hour_pt": 7
     },
@@ -3057,7 +3057,7 @@
       "contact_name": "Call with Lisa Cotton",
       "category": "Referral Given",
       "duration_s": 80,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Lee Door is the DM, director of operations, 604-754-8887</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Lisa is not DM</p></div>",
+      "notes": "Lee Door is the DM, director of operations, 604-754-8887 Lisa is not DM",
       "week_num": 3,
       "hour_pt": 7
     },
@@ -3067,7 +3067,7 @@
       "contact_name": "Call with Lisa Cotton",
       "category": "Not Interested",
       "duration_s": 230,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Calling for Lee</p><p style=\"margin:0;\">Multiple tools already that are paid for for maybe 10 years, invested heavily in SAP</p><p style=\"margin:0;\">Been doing this for 25 years, knows whats going on, admits rail can be complicated, but there system is designed and connected, and heavily invested.</p><p style=\"margin:0;\">Not interested</p></div>",
+      "notes": "Calling for Lee Multiple tools already that are paid for for maybe 10 years, invested heavily in SAP Been doing this for 25 years, knows whats going on, admits rail can be complicated, but there system is designed and connected, and heavily invested. Not interested",
       "week_num": 3,
       "hour_pt": 7
     },
@@ -3087,7 +3087,7 @@
       "contact_name": "Call with Ethan Knight",
       "category": "Gatekeeper",
       "duration_s": 292,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Main number, Phone Tree, 0, </p><p style=\"margin:0;\">Lisa is the receptionist, sending me to producer ag to handle the grain portion of the company. </p><p style=\"margin:0;\">Jenny is the new reception</p><p style=\"margin:0;\">Transferring me to logistics now</p><p style=\"margin:0;\">VM of this person, no name</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p></div>",
+      "notes": "Main number, Phone Tree, 0, Lisa is the receptionist, sending me to producer ag to handle the grain portion of the company. Jenny is the new reception Transferring me to logistics now VM of this person, no name",
       "week_num": 3,
       "hour_pt": 8
     },
@@ -3097,7 +3097,7 @@
       "contact_name": "Call with Marty Cielen",
       "category": "Meeting Booked",
       "duration_s": 357,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Marty DM</p><p style=\"margin:0;\">Use Bork to manage the system, they have tried other stuff over the years, but Bork incorporate the prciing side of it as well, bc it can convert all the different tarrifs into one comparative document. Work to set it up, but now its just maintenance and its really slick. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Power BI helps with visuals for all of his cars and the data behind it. Where stuff is dwelled and for how long, he can set senstitivities to find out exactly where his cars are, etc. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Utilizing software well. Went for hail mary, he said yes, next month for sure</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Booked for March</p><p style=\"margin:0;\"><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></p></div>",
+      "notes": "Marty DM Use Bork to manage the system, they have tried other stuff over the years, but Bork incorporate the prciing side of it as well, bc it can convert all the different tarrifs into one comparative document. Work to set it up, but now its just maintenance and its really slick. Power BI helps with visuals for all of his cars and the data behind it. Where stuff is dwelled and for how long, he can set senstitivities to find out exactly where his cars are, etc. Utilizing software well. Went for hail mary, he said yes, next month for sure Booked for March @Nicolas Amoretti",
       "week_num": 3,
       "hour_pt": 8
     },
@@ -3127,7 +3127,7 @@
       "contact_name": "Call with Haley McCrory",
       "category": "No Answer",
       "duration_s": 0,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Failed to connect. </p></div>",
+      "notes": "Failed to connect.",
       "week_num": 3,
       "hour_pt": 10
     },
@@ -3287,7 +3287,7 @@
       "contact_name": "Call with Brandi Cornish",
       "category": "Not Interested",
       "duration_s": 345,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Brandi rail, Monica Smith director for all of Wererhaeuser</p><p style=\"margin:0;\">206-539-4277</p><p style=\"margin:0;\">Longterm contracts with Raven working with Intellitrans</p><p style=\"margin:0;\">Raven (probably 5 years, but shes guessing)</p><p style=\"margin:0;\"><strong><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></strong> Should I call Monica? Brandi said theyre in contracts so I dont want to go above her if you dont advise</p><p style=\"margin:0;\">Unqualified due to contract unless Nico says otherwise. </p></div>",
+      "notes": "Brandi rail, Monica Smith director for all of Wererhaeuser 206-539-4277 Longterm contracts with Raven working with Intellitrans Raven (probably 5 years, but shes guessing) @Nicolas Amoretti Should I call Monica? Brandi said theyre in contracts so I dont want to go above her if you dont advise Unqualified due to contract unless Nico says otherwise.",
       "week_num": 3,
       "hour_pt": 10
     },
@@ -3297,7 +3297,7 @@
       "contact_name": "Call with Tania Murillo",
       "category": "Referral Given",
       "duration_s": 50,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Tania is not DM</p><p style=\"margin:0;\">Tangy (Tan-jee) Parks 262-461-8388 mobile</p></div>",
+      "notes": "Tania is not DM Tangy (Tan-jee) Parks 262-461-8388 mobile",
       "week_num": 3,
       "hour_pt": 10
     },
@@ -3307,7 +3307,7 @@
       "contact_name": "Call with Tania Murillo",
       "category": "Meeting Booked",
       "duration_s": 192,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Calling for Tangy (Tan-jee) Parks</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Call back around 3:30, but I just booked her for meeting instead. Next week 2/9, 3:00 CT time with Shachar</p><p style=\"margin:0;\"><strong><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></strong> She asked for an email to be sent over as well so that she can be better prepared for meeting. </p></div>",
+      "notes": "Calling for Tangy (Tan-jee) Parks Call back around 3:30, but I just booked her for meeting instead. Next week 2/9, 3:00 CT time with Shachar @Nicolas Amoretti She asked for an email to be sent over as well so that she can be better prepared for meeting.",
       "week_num": 3,
       "hour_pt": 10
     },
@@ -3327,7 +3327,7 @@
       "contact_name": "Call with David Davis",
       "category": "Wrong Number",
       "duration_s": 30,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Wrong number</p></div>",
+      "notes": "Wrong number",
       "week_num": 3,
       "hour_pt": 11
     },
@@ -3347,7 +3347,7 @@
       "contact_name": "Call with Stephanie Salmans",
       "category": "Not Interested",
       "duration_s": 78,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Stephanie, hung up</p></div>",
+      "notes": "Stephanie, hung up",
       "week_num": 3,
       "hour_pt": 11
     },
@@ -3357,7 +3357,7 @@
       "contact_name": "Call with Kim Duchene",
       "category": "Wrong Number",
       "duration_s": 66,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Kim 519-481-2801, I got her on her cell. Asked me to call back on work. </p></div>",
+      "notes": "Kim 519-481-2801, I got her on her cell. Asked me to call back on work.",
       "week_num": 3,
       "hour_pt": 11
     },
@@ -3367,7 +3367,7 @@
       "contact_name": "Call with Kim Duchene",
       "category": "Referral Given",
       "duration_s": 153,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Calling Kim on work line. Doesnt have a whole lot to do with the shipping, she counts cars for a different purpose. </p><p style=\"margin:0;\">Chris Fry is the actual DM, 412-490-4074 in PA</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Not the DM, Chris is. Trying again. </p></div>",
+      "notes": "Calling Kim on work line. Doesnt have a whole lot to do with the shipping, she counts cars for a different purpose. Chris Fry is the actual DM, 412-490-4074 in PA Not the DM, Chris is. Trying again.",
       "week_num": 3,
       "hour_pt": 11
     },
@@ -3377,7 +3377,7 @@
       "contact_name": "Call with Kim Duchene",
       "category": "No Answer",
       "duration_s": 9,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Calling for Chris, spoke with Kim. Call could not be completed. Checking with Kim again. </p></div>",
+      "notes": "Calling for Chris, spoke with Kim. Call could not be completed. Checking with Kim again.",
       "week_num": 3,
       "hour_pt": 11
     },
@@ -3387,7 +3387,7 @@
       "contact_name": "Call with Kim Duchene",
       "category": "Wrong Number",
       "duration_s": 114,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">She verified that number in another system. Its the correct number. I am setting a follow up to try again and see.</p></div>",
+      "notes": "She verified that number in another system. Its the correct number. I am setting a follow up to try again and see.",
       "week_num": 3,
       "hour_pt": 11
     },
@@ -3497,7 +3497,7 @@
       "contact_name": "Call with Ivan Rivera",
       "category": "Wrong Number",
       "duration_s": 11,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Habla espanol</p></div>",
+      "notes": "Habla espanol",
       "week_num": 3,
       "hour_pt": 11
     },
@@ -3527,7 +3527,7 @@
       "contact_name": "Call with Jonathan Bertrand",
       "category": "No Answer",
       "duration_s": 30,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">AI Screen</p></div>",
+      "notes": "AI Screen",
       "week_num": 3,
       "hour_pt": 11
     },
@@ -3597,7 +3597,7 @@
       "contact_name": "Call with Charlie Lundquist",
       "category": "Left Voicemail",
       "duration_s": 83,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">AI Screen</p></div>",
+      "notes": "AI Screen",
       "week_num": 3,
       "hour_pt": 12
     },
@@ -3617,7 +3617,7 @@
       "contact_name": "Call with Chris Elwick",
       "category": "Interested",
       "duration_s": 226,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Chris chris.elwick@adm.com</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Def interested, but \"wants an email\" couldnt overcome that objection. He also mentioned how complex his system is, but I name dropped some of our bigger customers and he seemed open. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Def an opportunity here, just need marketing material to grab him. </p><p style=\"margin:0;\"><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></p></div>",
+      "notes": "Chris chris.elwick@adm.com Def interested, but \"wants an email\" couldnt overcome that objection. He also mentioned how complex his system is, but I name dropped some of our bigger customers and he seemed open. Def an opportunity here, just need marketing material to grab him. @Nicolas Amoretti",
       "week_num": 3,
       "hour_pt": 12
     },
@@ -3657,7 +3657,7 @@
       "contact_name": "Call with Graigory Epperson",
       "category": "Wrong Number",
       "duration_s": 22,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Doesnt work there anymore</p></div>",
+      "notes": "Doesnt work there anymore",
       "week_num": 3,
       "hour_pt": 13
     },
@@ -3667,7 +3667,7 @@
       "contact_name": "Call with Dennis Tubridy",
       "category": "Wrong Number",
       "duration_s": 16,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Said it wasnt him and hung up</p></div>",
+      "notes": "Said it wasnt him and hung up",
       "week_num": 3,
       "hour_pt": 13
     },
@@ -3707,7 +3707,7 @@
       "contact_name": "Call with Troy Zeiter",
       "category": "Referral Given",
       "duration_s": 354,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">hire other companies to do their tracking etc</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Thousand trip plans, he is not the immediate guy, but could maybe put us in front of someone, but needs an email to start the conversation.</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">troy.zeiter@gm.com</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\"><strong><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></strong> If this call records, listen and then proceed. If it didnt record, email this guy and start a conversation. He asked for some more info, but that he would be the start guy to talk with commercial. Additional notes above.</p></div>",
+      "notes": "hire other companies to do their tracking etc Thousand trip plans, he is not the immediate guy, but could maybe put us in front of someone, but needs an email to start the conversation. troy.zeiter@gm.com @Nicolas Amoretti If this call records, listen and then proceed. If it didnt record, email this guy and start a conversation. He asked for some more info, but that he would be the start guy to talk with commercial. Additional notes above.",
       "week_num": 3,
       "hour_pt": 8
     },
@@ -3807,7 +3807,7 @@
       "contact_name": "Call with Terry McLaughlin",
       "category": "Wrong Person",
       "duration_s": 65,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Not the guy, call polk country transit? had no referral info</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p></div>",
+      "notes": "Not the guy, call polk country transit? had no referral info",
       "week_num": 3,
       "hour_pt": 8
     },
@@ -3917,7 +3917,7 @@
       "contact_name": "Call with David Duty",
       "category": "Interested",
       "duration_s": 121,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">procurrent manager, falls under his perview, has a team that handles rail, send him info and they can talk over. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">david.duty@cevalogistics.com</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Needs an email. He doesnt directly handle, but is the starting point. Not really an opportunity to overcome the email as he is screening us for them. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\"><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></p></div>",
+      "notes": "procurrent manager, falls under his perview, has a team that handles rail, send him info and they can talk over. david.duty@cevalogistics.com Needs an email. He doesnt directly handle, but is the starting point. Not really an opportunity to overcome the email as he is screening us for them. @Nicolas Amoretti",
       "week_num": 3,
       "hour_pt": 9
     },
@@ -4007,7 +4007,7 @@
       "contact_name": "Call with Leigh Glass",
       "category": "No Answer",
       "duration_s": 38,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">hung up</p></div>",
+      "notes": "hung up",
       "week_num": 3,
       "hour_pt": 10
     },
@@ -4137,7 +4137,7 @@
       "contact_name": "Call with Erica Francetic",
       "category": "Wrong Person",
       "duration_s": 319,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">She is not the main DM, she is actually a contractor, doesnt even know who I would speak with. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Marking as connected, but this contact/lead specifically cant do anything. She is a contract worker and isnt allowed to discuss or give any information (she actually said she thought this might be a test from her employer). Tried to overcome a few objections, best we could end with was telling her the name of the company and website. </p></div>",
+      "notes": "She is not the main DM, she is actually a contractor, doesnt even know who I would speak with. Marking as connected, but this contact/lead specifically cant do anything. She is a contract worker and isnt allowed to discuss or give any information (she actually said she thought this might be a test from her employer). Tried to overcome a few objections, best we could end with was telling her the name of the company and website.",
       "week_num": 3,
       "hour_pt": 11
     },
@@ -4307,7 +4307,7 @@
       "contact_name": "Call with Dannielle Welch",
       "category": "Not Interested",
       "duration_s": 224,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Bork Logistics, CSX, </p><p style=\"margin:0;\">Danielle Welch</p><p style=\"margin:0;\">Right now just no interest or need. She says budget, but theres something deeper. There could be opportunity here, but we would need to find a painpoint to get her to open up. Im going to set a 1 month follow up to see if I can better engage her with more experience/knowledge. </p></div>",
+      "notes": "Bork Logistics, CSX, Danielle Welch Right now just no interest or need. She says budget, but theres something deeper. There could be opportunity here, but we would need to find a painpoint to get her to open up. Im going to set a 1 month follow up to see if I can better engage her with more experience/knowledge.",
       "week_num": 4,
       "hour_pt": 8
     },
@@ -4407,7 +4407,7 @@
       "contact_name": "Call with Rob Martin",
       "category": "Interested",
       "duration_s": 113,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Production manager, Rob</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Busy now, but asked me to call him back anytime after 2:00 EST today. Follow up set. </p></div>",
+      "notes": "Production manager, Rob Busy now, but asked me to call him back anytime after 2:00 EST today. Follow up set.",
       "week_num": 4,
       "hour_pt": 9
     },
@@ -4447,7 +4447,7 @@
       "contact_name": "Call with David Peschong",
       "category": "Not Interested",
       "duration_s": 51,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Dave using internal system, said no, not interested, tried pushing through but he said he had to go. </p></div>",
+      "notes": "Dave using internal system, said no, not interested, tried pushing through but he said he had to go.",
       "week_num": 4,
       "hour_pt": 9
     },
@@ -4577,7 +4577,7 @@
       "contact_name": "Call with Heather Brent",
       "category": "Not Interested",
       "duration_s": 48,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Heather, </p><p style=\"margin:0;\">rail management software already, in middle of project, cant talk and hung up on me. </p></div>",
+      "notes": "Heather, rail management software already, in middle of project, cant talk and hung up on me.",
       "week_num": 4,
       "hour_pt": 9
     },
@@ -4697,7 +4697,7 @@
       "contact_name": "Call with Yelena Kemp",
       "category": "No Answer",
       "duration_s": 7,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Hung up</p></div>",
+      "notes": "Hung up",
       "week_num": 4,
       "hour_pt": 10
     },
@@ -4717,7 +4717,7 @@
       "contact_name": "Call with Andrew Denton",
       "category": "Referral Given",
       "duration_s": 130,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Andrew is not DM, DO NOT TELL SHAWN I GOT HIS NUMBER FROM HIM (he was adamant about this)</p><p style=\"margin:0;\">Shawn Anderson Sr Manager of Inbound Logistics is DM, 847-720-8369</p></div>",
+      "notes": "Andrew is not DM, DO NOT TELL SHAWN I GOT HIS NUMBER FROM HIM (he was adamant about this) Shawn Anderson Sr Manager of Inbound Logistics is DM, 847-720-8369",
       "week_num": 4,
       "hour_pt": 10
     },
@@ -4727,7 +4727,7 @@
       "contact_name": "Call with Andrew Denton",
       "category": "Left Voicemail",
       "duration_s": 45,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">For Shawn, no answer, VM, I will try again since this could be a good lead. </p></div>",
+      "notes": "For Shawn, no answer, VM, I will try again since this could be a good lead.",
       "week_num": 4,
       "hour_pt": 10
     },
@@ -4767,7 +4767,7 @@
       "contact_name": "Call with Michael Heineman",
       "category": "Referral Given",
       "duration_s": 208,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Mike no longer there, in middle of finding a new gig now. </p><p style=\"margin:0;\">Hemple rail contact: </p><p style=\"margin:0;\">James Dunbar</p><p style=\"margin:0;\">713-456-0159</p><p style=\"margin:0;\">jadu@hempel.com</p></div>",
+      "notes": "Mike no longer there, in middle of finding a new gig now. Hemple rail contact: James Dunbar 713-456-0159 jadu@hempel.com",
       "week_num": 4,
       "hour_pt": 10
     },
@@ -4777,7 +4777,7 @@
       "contact_name": "Call with Michael Heineman",
       "category": "Left Voicemail",
       "duration_s": 43,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">For James, no answer, VM, will try again as this is a referral</p></div>",
+      "notes": "For James, no answer, VM, will try again as this is a referral",
       "week_num": 4,
       "hour_pt": 10
     },
@@ -4857,7 +4857,7 @@
       "contact_name": "Call with Kim Duchene",
       "category": "Wrong Number",
       "duration_s": 0,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Misdial, called the wrong lead</p></div>",
+      "notes": "Misdial, called the wrong lead",
       "week_num": 4,
       "hour_pt": 7
     },
@@ -4867,7 +4867,7 @@
       "contact_name": "Call with Kim Duchene",
       "category": "No Answer",
       "duration_s": 12,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Number cannot be completed at this time. </p></div>",
+      "notes": "Number cannot be completed at this time.",
       "week_num": 4,
       "hour_pt": 7
     },
@@ -5047,7 +5047,7 @@
       "contact_name": "Call with Cole Bright",
       "category": "Not Interested",
       "duration_s": 353,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Cole</p><p style=\"margin:0;\">BNSF, only one portal, the local guys are freaking awesome, theyre good at helping, and they dont struggle yet</p><p style=\"margin:0;\">Pretty good at tracking, ETA's can be off but local guys</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Not interested, just not struggling right now, for the last 7 years its been pretty good. If they need anything those people respond pretty quickly.</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Dont usually deal with it bc they pride themselves with moving super fast, but they have a merchandising team that handles all of that for them.</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">cole.bright@mkcoop.com</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\"><strong><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></strong> Not interested bc they feel like they have support and have no real issues. If the call doesnt record, he really does sound like theyre doing pretty well and probably not a need. HOWEVER, he did save my contact info, so I told him we would email him as well just so we had a connection. He agreed. So probably someone to email and maybe set on a follow up campaign every 90 days or something. </p></div>",
+      "notes": "Cole BNSF, only one portal, the local guys are freaking awesome, theyre good at helping, and they dont struggle yet Pretty good at tracking, ETA's can be off but local guys Not interested, just not struggling right now, for the last 7 years its been pretty good. If they need anything those people respond pretty quickly. Dont usually deal with it bc they pride themselves with moving super fast, but they have a merchandising team that handles all of that for them. cole.bright@mkcoop.com @Nicolas Amoretti Not interested bc they feel like they have support and have no real issues. If the call doesnt record, he really does sound like theyre doing pretty well and probably not a need. HOWEVER, he did save my contact info, so I told him we would email him as well just so we had a connection. He agreed. So probably someone to email and maybe set on a follow up campaign every 90 days or something.",
       "week_num": 4,
       "hour_pt": 8
     },
@@ -5067,7 +5067,7 @@
       "contact_name": "Call with Sequia Wiggins",
       "category": "Not Interested",
       "duration_s": 47,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Hung up</p></div>",
+      "notes": "Hung up",
       "week_num": 4,
       "hour_pt": 8
     },
@@ -5147,7 +5147,7 @@
       "contact_name": "Call with Scott Loudon",
       "category": "No Rail",
       "duration_s": 87,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Scott doesnt ship on rail, supplies to rail ships. Damage prevention (dunnage suplier)</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Doesnt ship on rail. </p></div>",
+      "notes": "Scott doesnt ship on rail, supplies to rail ships. Damage prevention (dunnage suplier) Doesnt ship on rail.",
       "week_num": 4,
       "hour_pt": 8
     },
@@ -5207,7 +5207,7 @@
       "contact_name": "Call with Zakaree Taylor",
       "category": "Not Interested",
       "duration_s": 193,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Zak, doesnt have to chase many cars, enough yards, BNSF, run through the websites with GPS on the cars themselves, cars dont really sit very long. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Most of their trips are 6 hours, just no need according to Zak</p><p style=\"margin:0;\">Not interested/unqualified</p></div>",
+      "notes": "Zak, doesnt have to chase many cars, enough yards, BNSF, run through the websites with GPS on the cars themselves, cars dont really sit very long. Most of their trips are 6 hours, just no need according to Zak Not interested/unqualified",
       "week_num": 4,
       "hour_pt": 8
     },
@@ -5227,7 +5227,7 @@
       "contact_name": "Call with Matthew Gawelczyk",
       "category": "Referral Given",
       "duration_s": 98,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Kyle not the DM, referring me to </p><p style=\"margin:0;\">Oliver 403-333-9916</p></div>",
+      "notes": "Kyle not the DM, referring me to Oliver 403-333-9916",
       "week_num": 4,
       "hour_pt": 8
     },
@@ -5237,7 +5237,7 @@
       "contact_name": "Call with Matthew Gawelczyk",
       "category": "Interested",
       "duration_s": 247,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Oliver, many systems in place, depends on locomotive, car, etc. Oliver is in charge of the locomotive side. Once they find out the issue</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Sentinal softare right now. Doing good job, better than used to be. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Needs an email to get us to the right person from there, its above him. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">oliver.bowser@cpkcr.com</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Not technically the DM, but said he would try and move us up. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\"><strong><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></strong> this guy needs an email. Not technically the DM, but our point of reference to start. </p></div>",
+      "notes": "Oliver, many systems in place, depends on locomotive, car, etc. Oliver is in charge of the locomotive side. Once they find out the issue Sentinal softare right now. Doing good job, better than used to be. Needs an email to get us to the right person from there, its above him. oliver.bowser@cpkcr.com Not technically the DM, but said he would try and move us up. @Nicolas Amoretti this guy needs an email. Not technically the DM, but our point of reference to start.",
       "week_num": 4,
       "hour_pt": 8
     },
@@ -5287,7 +5287,7 @@
       "contact_name": "Call with Audie Cavazos",
       "category": "Referral Given",
       "duration_s": 151,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Audi (maybe), not DM</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Using a program now to track TDS, my logistics </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Teresa Salois 972-653-6049</p></div>",
+      "notes": "Audi (maybe), not DM Using a program now to track TDS, my logistics Teresa Salois 972-653-6049",
       "week_num": 4,
       "hour_pt": 9
     },
@@ -5297,7 +5297,7 @@
       "contact_name": "Call with Audie Cavazos",
       "category": "Left Voicemail",
       "duration_s": 51,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Calling for Teresa</p></div>",
+      "notes": "Calling for Teresa",
       "week_num": 4,
       "hour_pt": 9
     },
@@ -5327,7 +5327,7 @@
       "contact_name": "Call with Gerald Holliday",
       "category": "Not Interested",
       "duration_s": 67,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">They do their own logistics, there system has been fine and works well. </p></div>",
+      "notes": "They do their own logistics, there system has been fine and works well.",
       "week_num": 4,
       "hour_pt": 8
     },
@@ -5447,7 +5447,7 @@
       "contact_name": "Call with Drew Duffie",
       "category": "Referral Given",
       "duration_s": 192,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Steven not the DM, using their own rail group, they dont handle any of that, they use an in house party that only does that, </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">The in house people are reprogramming their system right now, Steven thinks is their own system</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">843-544-6053</p><p style=\"margin:0;\">Kate Hopkins</p></div>",
+      "notes": "Steven not the DM, using their own rail group, they dont handle any of that, they use an in house party that only does that, The in house people are reprogramming their system right now, Steven thinks is their own system 843-544-6053 Kate Hopkins",
       "week_num": 4,
       "hour_pt": 8
     },
@@ -5457,7 +5457,7 @@
       "contact_name": "Call with Drew Duffie",
       "category": "Left Voicemail",
       "duration_s": 43,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Calling for Kate, no answer, VM, will follow up. </p></div>",
+      "notes": "Calling for Kate, no answer, VM, will follow up.",
       "week_num": 4,
       "hour_pt": 8
     },
@@ -5487,7 +5487,7 @@
       "contact_name": "Call with Bill Billn",
       "category": "Referral Given",
       "duration_s": 80,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Phone tree 0, </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Ross</p><p style=\"margin:0;\">712-210-3156</p></div>",
+      "notes": "Phone tree 0, Ross 712-210-3156",
       "week_num": 4,
       "hour_pt": 9
     },
@@ -5497,7 +5497,7 @@
       "contact_name": "Call with Bill Billn",
       "category": "No Answer",
       "duration_s": 10,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Calling for Ross, no answer, VM and follow up</p></div>",
+      "notes": "Calling for Ross, no answer, VM and follow up",
       "week_num": 4,
       "hour_pt": 9
     },
@@ -5607,7 +5607,7 @@
       "contact_name": "Call with Wesley Kelly",
       "category": "No Answer",
       "duration_s": 19,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">hung up</p></div>",
+      "notes": "hung up",
       "week_num": 4,
       "hour_pt": 9
     },
@@ -5677,7 +5677,7 @@
       "contact_name": "Call with Steven Perrott",
       "category": "Interested",
       "duration_s": 46,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Steve</p><p style=\"margin:0;\">said someone walked in hed have to call me back. Said I could call him back in a few and he hung up on me. </p></div>",
+      "notes": "Steve said someone walked in hed have to call me back. Said I could call him back in a few and he hung up on me.",
       "week_num": 4,
       "hour_pt": 11
     },
@@ -5717,7 +5717,7 @@
       "contact_name": "Call with Tangi Parks",
       "category": "Interested",
       "duration_s": 122,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Tangi</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Said she spoke with someone from telegraph on Monday. Nothing on my end in Hubspot, but she said she spoke with someone with the last name Astor and is looking into telegraph now. (She spoke with Shachar, tagging Nico)</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\"><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></p></div>",
+      "notes": "Tangi Said she spoke with someone from telegraph on Monday. Nothing on my end in Hubspot, but she said she spoke with someone with the last name Astor and is looking into telegraph now. (She spoke with Shachar, tagging Nico) @Nicolas Amoretti",
       "week_num": 4,
       "hour_pt": 11
     },
@@ -5777,7 +5777,7 @@
       "contact_name": "Call with Jose' Oliveira",
       "category": "Interested",
       "duration_s": 324,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Joshua</p><p style=\"margin:0;\">They own rail cars (rail link and umlar), OT57 Wise, tracking is good and ETA....... ummmm (pain)</p><p style=\"margin:0;\">\"Within the windows of 12 hours, but the report we are sent daily\"</p><p style=\"margin:0;\">Private cars</p><p style=\"margin:0;\">ICL does all their monitor and they do all the tracking, every car reports where they are in the system. Another report to look at just isnt worth it. Steel wheels. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">I asked if it would make sense if we could reduce the amount of softwares he was having to use. His answer:</p><p style=\"margin:0;\">Not possible to consolidate, all of the class 1's dont report equally to each other. They get all of their info from primary and secondary. After that, all the info is gone. They talk to each other but not enough. They get reports everyday that never match the class 1 sent. RSI they get the rest of their information through RSI. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">He doesnt think there is 1 rail encompassed system that could do it accurately. Hes been doing this. </p><p style=\"margin:0;\"><strong><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></strong> if call doesnt record, I tried to take the best notes. Let me know your thoughts on what he said and if there is an objection handle to this. </p></div>",
+      "notes": "Joshua They own rail cars (rail link and umlar), OT57 Wise, tracking is good and ETA....... ummmm (pain) \"Within the windows of 12 hours, but the report we are sent daily\" Private cars ICL does all their monitor and they do all the tracking, every car reports where they are in the system. Another report to look at just isnt worth it. Steel wheels. I asked if it would make sense if we could reduce the amount of softwares he was having to use. His answer: Not possible to consolidate, all of the class 1's dont report equally to each other. They get all of their info from primary and secondary. After that, all the info is gone. They talk to each other but not enough. They get reports everyday that never match the class 1 sent. RSI they get the rest of their information through RSI. He doesnt think there is 1 rail encompassed system that could do it accurately. Hes been doing this. @Nicolas Amoretti if call doesnt record, I tried to take the best notes. Let me know your thoughts on what he said and if there is an objection handle to this.",
       "week_num": 4,
       "hour_pt": 11
     },
@@ -5817,7 +5817,7 @@
       "contact_name": "Call with Jared Dykstra",
       "category": "Not Interested",
       "duration_s": 102,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Jared</p><p style=\"margin:0;\">Team working on it, </p><p style=\"margin:0;\">2 objection handles, still good. </p></div>",
+      "notes": "Jared Team working on it, 2 objection handles, still good.",
       "week_num": 4,
       "hour_pt": 11
     },
@@ -5837,7 +5837,7 @@
       "contact_name": "Call with Mike Plettell",
       "category": "Not Interested",
       "duration_s": 161,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Mike split between a few different people. In houe built system</p><p style=\"margin:0;\">Just went through this exercise with some external companies which is what led them to design their own. Pushed through a bit, but could tell when he said they did that already didnt make sense to push more. </p></div>",
+      "notes": "Mike split between a few different people. In houe built system Just went through this exercise with some external companies which is what led them to design their own. Pushed through a bit, but could tell when he said they did that already didnt make sense to push more.",
       "week_num": 4,
       "hour_pt": 11
     },
@@ -5917,7 +5917,7 @@
       "contact_name": "Call with Jared Pearl",
       "category": "Referral Given",
       "duration_s": 136,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Jared is not DM, </p><p style=\"margin:0;\">Jamie Padilla, 702-951-4340</p></div>",
+      "notes": "Jared is not DM, Jamie Padilla, 702-951-4340",
       "week_num": 4,
       "hour_pt": 9
     },
@@ -5927,7 +5927,7 @@
       "contact_name": "Call with Jared Pearl",
       "category": "Left Voicemail",
       "duration_s": 40,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Calling for Jamie, No answeer, VM</p></div>",
+      "notes": "Calling for Jamie, No answeer, VM",
       "week_num": 4,
       "hour_pt": 9
     },
@@ -5997,7 +5997,7 @@
       "contact_name": "Call with Erin Powell",
       "category": "No Answer",
       "duration_s": 12,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">She answered, but hung up as soon as i started talking. </p></div>",
+      "notes": "She answered, but hung up as soon as i started talking.",
       "week_num": 4,
       "hour_pt": 9
     },
@@ -6007,7 +6007,7 @@
       "contact_name": "Call with Thomas Giovinazzi",
       "category": "Not Interested",
       "duration_s": 58,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Tom, said no need for it, tried to ask a question and he said hes in a meeting and they just dont have a need and hung up. Normally I dont mark hang ups as not interested, but bc I was able to at least get through who we are and what were doing, I will leave it as a not interested. </p></div>",
+      "notes": "Tom, said no need for it, tried to ask a question and he said hes in a meeting and they just dont have a need and hung up. Normally I dont mark hang ups as not interested, but bc I was able to at least get through who we are and what were doing, I will leave it as a not interested.",
       "week_num": 4,
       "hour_pt": 9
     },
@@ -6027,7 +6027,7 @@
       "contact_name": "Call with Lisa Longtin",
       "category": "No Answer",
       "duration_s": 30,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">AI Screener rejected call</p></div>",
+      "notes": "AI Screener rejected call",
       "week_num": 4,
       "hour_pt": 9
     },
@@ -6117,7 +6117,7 @@
       "contact_name": "Call with Victoria Quero",
       "category": "No Rail",
       "duration_s": 79,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Marking this as wrong person and tagging Nico. She said they do no rail shipping, everything OTR. However she also said she has no clue who would handle their bulk shipments etc and that its a 40k person company and she wouldnt even know who to point me to. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\"><strong><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></strong> Wanted to let you confirm if they do ship rail or not and if so, how you want to proceed with the company, not the contact</p></div>",
+      "notes": "Marking this as wrong person and tagging Nico. She said they do no rail shipping, everything OTR. However she also said she has no clue who would handle their bulk shipments etc and that its a 40k person company and she wouldnt even know who to point me to. @Nicolas Amoretti Wanted to let you confirm if they do ship rail or not and if so, how you want to proceed with the company, not the contact",
       "week_num": 4,
       "hour_pt": 10
     },
@@ -6287,7 +6287,7 @@
       "contact_name": "Call with Thomas Marchese",
       "category": "No Answer",
       "duration_s": 17,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Hung up</p></div>",
+      "notes": "Hung up",
       "week_num": 4,
       "hour_pt": 10
     },
@@ -6307,7 +6307,7 @@
       "contact_name": "Call with Tiffany Lewis",
       "category": "Wrong Person",
       "duration_s": 49,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Tainisha, wrong person</p></div>",
+      "notes": "Tainisha, wrong person",
       "week_num": 4,
       "hour_pt": 10
     },
@@ -6327,7 +6327,7 @@
       "contact_name": "Call with Ron Marcoux",
       "category": "Left Voicemail",
       "duration_s": 87,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Call control, must push button to get through (5 this time)</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p></div>",
+      "notes": "Call control, must push button to get through (5 this time)",
       "week_num": 4,
       "hour_pt": 10
     },
@@ -6437,7 +6437,7 @@
       "contact_name": "Call with Robert Pierce",
       "category": "Left Voicemail",
       "duration_s": 38,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">VM is different contact than listed</p></div>",
+      "notes": "VM is different contact than listed",
       "week_num": 4,
       "hour_pt": 11
     },
@@ -6487,7 +6487,7 @@
       "contact_name": "Call with Taylor Lewis",
       "category": "Referral Given",
       "duration_s": 56,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">taylor.lewis@sherwin.com Not the DM but said if we should him an email he can send us some contacts. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">I emailed him and will add the contacts if he responds. </p></div>",
+      "notes": "taylor.lewis@sherwin.com Not the DM but said if we should him an email he can send us some contacts. I emailed him and will add the contacts if he responds.",
       "week_num": 4,
       "hour_pt": 11
     },
@@ -6507,7 +6507,7 @@
       "contact_name": "Call with Tim Schaffer",
       "category": "No Rail",
       "duration_s": 70,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">selling coatings for rail cars, no rail. </p></div>",
+      "notes": "selling coatings for rail cars, no rail.",
       "week_num": 4,
       "hour_pt": 11
     },
@@ -6527,7 +6527,7 @@
       "contact_name": "Call with Jeremy Lyons",
       "category": "Not Interested",
       "duration_s": 117,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Jeremy</p><p style=\"margin:0;\">Manage with internal tools they built themselves, no interest</p></div>",
+      "notes": "Jeremy Manage with internal tools they built themselves, no interest",
       "week_num": 4,
       "hour_pt": 11
     },
@@ -6617,7 +6617,7 @@
       "contact_name": "Call with James Schlairet",
       "category": "Wrong Person",
       "duration_s": 63,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">This was his wife, wouldnt give me husbands number, so i left a callback msg with her</p></div>",
+      "notes": "This was his wife, wouldnt give me husbands number, so i left a callback msg with her",
       "week_num": 4,
       "hour_pt": 12
     },
@@ -6717,7 +6717,7 @@
       "contact_name": "Call with Dave Fugiel",
       "category": "No Rail",
       "duration_s": 54,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Dave, no rail, large industries group</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p></div>",
+      "notes": "Dave, no rail, large industries group",
       "week_num": 5,
       "hour_pt": 8
     },
@@ -7027,7 +7027,7 @@
       "contact_name": "Call with Bill Billn",
       "category": "Meeting Booked",
       "duration_s": 389,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Ross</p><p style=\"margin:0;\">Not a lot of demurage charges, but ships across rail</p><p style=\"margin:0;\">Each of the rails utilize their own portals, RSVP by ICL that they use for some of their tracking as well, tracking is fine, no real complaints. They were using much more of the module and had more cars on it a year or two ago, but from a cost benefit ration they pulled back. Maybe an hour a day.</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">ross.wiederin@landus.ag</p><p style=\"margin:0;\">Booked with Shachar Wed 2/18 9:45 CT</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p></div>",
+      "notes": "Ross Not a lot of demurage charges, but ships across rail Each of the rails utilize their own portals, RSVP by ICL that they use for some of their tracking as well, tracking is fine, no real complaints. They were using much more of the module and had more cars on it a year or two ago, but from a cost benefit ration they pulled back. Maybe an hour a day. ross.wiederin@landus.ag Booked with Shachar Wed 2/18 9:45 CT",
       "week_num": 5,
       "hour_pt": 11
     },
@@ -7047,7 +7047,7 @@
       "contact_name": "Call with Jared Pearl",
       "category": "Not Interested",
       "duration_s": 253,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Calling for Jamie, DM</p><p style=\"margin:0;\">Already using RSI, was using Intellitrans but got rid of it, alot more accurate, just finished rollout with them, still getting used to it, some of them still want to use the old stuff, in contract (2 year). </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">Doesnt make sense to take meeting bc she had to fight to get RSI in the door, management wouldnt let her with the contract in place. Setting 1 year follow up per our conversation. </p></div>",
+      "notes": "Calling for Jamie, DM Already using RSI, was using Intellitrans but got rid of it, alot more accurate, just finished rollout with them, still getting used to it, some of them still want to use the old stuff, in contract (2 year). Doesnt make sense to take meeting bc she had to fight to get RSI in the door, management wouldnt let her with the contract in place. Setting 1 year follow up per our conversation.",
       "week_num": 5,
       "hour_pt": 11
     },
@@ -7087,7 +7087,7 @@
       "contact_name": "Call with Jean Provencher",
       "category": "Not Interested",
       "duration_s": 31,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Not interested and essentially hung up. </p></div>",
+      "notes": "Not interested and essentially hung up.",
       "week_num": 5,
       "hour_pt": 12
     },
@@ -7097,7 +7097,7 @@
       "contact_name": "Call with Josh Maynard",
       "category": "Wrong Person",
       "duration_s": 38,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Says he doesnt handle rail, doesnt know who would and then hung up</p></div>",
+      "notes": "Says he doesnt handle rail, doesnt know who would and then hung up",
       "week_num": 5,
       "hour_pt": 12
     },
@@ -7117,7 +7117,7 @@
       "contact_name": "Call with Bret Jenkins",
       "category": "Wrong Person",
       "duration_s": 59,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Bret, sail lubricant, has no clue who at shell to talk to. </p></div>",
+      "notes": "Bret, sail lubricant, has no clue who at shell to talk to.",
       "week_num": 5,
       "hour_pt": 12
     },
@@ -7137,7 +7137,7 @@
       "contact_name": "Call with Jackie Werner",
       "category": "Wrong Number",
       "duration_s": 18,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">This is an unassigned number and thiss call will now disconnect.</p></div>",
+      "notes": "This is an unassigned number and thiss call will now disconnect.",
       "week_num": 5,
       "hour_pt": 12
     },
@@ -7147,7 +7147,7 @@
       "contact_name": "Call with Michael Henley",
       "category": "Interested",
       "duration_s": 73,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Mike, not the guy but asked me to call him back tomorrow and he will try and find me someone. </p></div>",
+      "notes": "Mike, not the guy but asked me to call him back tomorrow and he will try and find me someone.",
       "week_num": 5,
       "hour_pt": 12
     },
@@ -7177,7 +7177,7 @@
       "contact_name": "Call with Jean-Francois Vezina",
       "category": "No Answer",
       "duration_s": 10,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">French VM</p></div>",
+      "notes": "French VM",
       "week_num": 5,
       "hour_pt": 12
     },
@@ -7237,7 +7237,7 @@
       "contact_name": "Call with Ankeet S.",
       "category": "Wrong Person",
       "duration_s": 64,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Not the DM, not sure who to connect to</p></div>",
+      "notes": "Not the DM, not sure who to connect to",
       "week_num": 5,
       "hour_pt": 12
     },
@@ -7377,7 +7377,7 @@
       "contact_name": "Call with Mark Debruycker",
       "category": "Wrong Number",
       "duration_s": 21,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Needs an extension</p></div>",
+      "notes": "Needs an extension",
       "week_num": 5,
       "hour_pt": 13
     },
@@ -7387,7 +7387,7 @@
       "contact_name": "Call with Jonathan Soppe",
       "category": "Wrong Person",
       "duration_s": 193,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Jon, not DM, PTI Division maybe (subisidary of AmeriGas), doesnt know where to even start to connect me (he actually thought about it for a minute or two as wel). Said contacting PTI directly would be his best guess</p></div>",
+      "notes": "Jon, not DM, PTI Division maybe (subisidary of AmeriGas), doesnt know where to even start to connect me (he actually thought about it for a minute or two as wel). Said contacting PTI directly would be his best guess",
       "week_num": 5,
       "hour_pt": 13
     },
@@ -7397,7 +7397,7 @@
       "contact_name": "Call with Mike Pollard",
       "category": "No Answer",
       "duration_s": 0,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">DNC Per Shachar/Nico</p></div>",
+      "notes": "DNC Per Shachar/Nico",
       "week_num": 5,
       "hour_pt": 13
     },
@@ -7407,7 +7407,7 @@
       "contact_name": "Call with Tim McDonnell",
       "category": "Left Voicemail",
       "duration_s": 42,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">The DNC listed below is for a different company (RJ Corman) not sure how they are associated. </p></div>",
+      "notes": "The DNC listed below is for a different company (RJ Corman) not sure how they are associated.",
       "week_num": 5,
       "hour_pt": 13
     },
@@ -7447,7 +7447,7 @@
       "contact_name": "Call with Shannon Drown",
       "category": "No Answer",
       "duration_s": 8,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">DNC Per Nico/Shachar</p></div>",
+      "notes": "DNC Per Nico/Shachar",
       "week_num": 5,
       "hour_pt": 13
     },
@@ -7477,7 +7477,7 @@
       "contact_name": "Call with Derxanle Jackson",
       "category": "No Answer",
       "duration_s": 11,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">He answered, but claimed he could not hear me. Calling back.</p></div>",
+      "notes": "He answered, but claimed he could not hear me. Calling back.",
       "week_num": 5,
       "hour_pt": 13
     },
@@ -7497,7 +7497,7 @@
       "contact_name": "Call with Derxanle Jackson",
       "category": "No Answer",
       "duration_s": 0,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Tried calling back, no answer. Follow up set to try again. </p></div>",
+      "notes": "Tried calling back, no answer. Follow up set to try again.",
       "week_num": 5,
       "hour_pt": 13
     },
@@ -7507,7 +7507,7 @@
       "contact_name": "Call with Michael Hengsteler",
       "category": "Referral Given",
       "duration_s": 87,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Michael, caught him at home on his cell. Told him I would call him tomorrow, late morning (his preferred time)</p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">419-446-1235</p></div>",
+      "notes": "Michael, caught him at home on his cell. Told him I would call him tomorrow, late morning (his preferred time) 419-446-1235",
       "week_num": 5,
       "hour_pt": 13
     },
@@ -7527,7 +7527,7 @@
       "contact_name": "Call with Bussard Kimberly",
       "category": "Wrong Person",
       "duration_s": 124,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Returning inbound call. Works with fed ex freight. Said they still did some rail, but not enough to matter. Unsure if she works for fed ex or works with fed ex. </p></div>",
+      "notes": "Returning inbound call. Works with fed ex freight. Said they still did some rail, but not enough to matter. Unsure if she works for fed ex or works with fed ex.",
       "week_num": 5,
       "hour_pt": 13
     },
@@ -7577,7 +7577,7 @@
       "contact_name": "Call with Nataliya M.",
       "category": "Not Interested",
       "duration_s": 20,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Hung up, not sure if DM or not. </p></div>",
+      "notes": "Hung up, not sure if DM or not.",
       "week_num": 5,
       "hour_pt": 14
     },
@@ -7667,7 +7667,7 @@
       "contact_name": "Call with Jeff Zundel",
       "category": "No Answer",
       "duration_s": 32,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">AI Screen</p></div>",
+      "notes": "AI Screen",
       "week_num": 5,
       "hour_pt": 7
     },
@@ -7717,7 +7717,7 @@
       "contact_name": "Call with Brett Weaver",
       "category": "Wrong Person",
       "duration_s": 40,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Brett, Bo Pierce LinkedIn (there is a Robert Pierce from Westrick in our database, LinkedIn confirmed this is the same person). </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p></div>",
+      "notes": "Brett, Bo Pierce LinkedIn (there is a Robert Pierce from Westrick in our database, LinkedIn confirmed this is the same person).",
       "week_num": 5,
       "hour_pt": 8
     },
@@ -7807,7 +7807,7 @@
       "contact_name": "Call with John Purcell",
       "category": "Left Voicemail",
       "duration_s": 48,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Hold for an operatior, operator is not available</p></div>",
+      "notes": "Hold for an operatior, operator is not available",
       "week_num": 5,
       "hour_pt": 8
     },
@@ -7827,7 +7827,7 @@
       "contact_name": "Call with Rayshawn Evans",
       "category": "No Answer",
       "duration_s": 34,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">AI Screen</p></div>",
+      "notes": "AI Screen",
       "week_num": 5,
       "hour_pt": 8
     },
@@ -7957,7 +7957,7 @@
       "contact_name": "Call with Geoff Vecque",
       "category": "Wrong Person",
       "duration_s": 58,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Geoff is not the guy, head office out of richmond, reception could point me in the right direction. </p><p style=\"margin:0;\">Not sure of any direct contact. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p></div>",
+      "notes": "Geoff is not the guy, head office out of richmond, reception could point me in the right direction. Not sure of any direct contact.",
       "week_num": 5,
       "hour_pt": 10
     },
@@ -8017,7 +8017,7 @@
       "contact_name": "Call with Kent Kimerer",
       "category": "Wrong Person",
       "duration_s": 51,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">No longer with the company</p></div>",
+      "notes": "No longer with the company",
       "week_num": 5,
       "hour_pt": 11
     },
@@ -8027,7 +8027,7 @@
       "contact_name": "Call with Troy Temples",
       "category": "Wrong Person",
       "duration_s": 88,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Not the guy, not handled there, handled internaly, no clue who to contact</p></div>",
+      "notes": "Not the guy, not handled there, handled internaly, no clue who to contact",
       "week_num": 5,
       "hour_pt": 11
     },
@@ -8037,7 +8037,7 @@
       "contact_name": "Call with Michael Hengsteler",
       "category": "Wrong Person",
       "duration_s": 171,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Trying for Michael Follow Up, call omaha office and see if someone on a corporate level could help. OTM adn Vector right now, so not sure if there is anything that they would do. </p><p style=\"margin:0;\"><br class=\"hs-trailingbreak\"></p><p style=\"margin:0;\">He genuinely tried, just doesnt know who to connect me with or if it would even help. Nice guy. </p></div>",
+      "notes": "Trying for Michael Follow Up, call omaha office and see if someone on a corporate level could help. OTM adn Vector right now, so not sure if there is anything that they would do. He genuinely tried, just doesnt know who to connect me with or if it would even help. Nice guy.",
       "week_num": 5,
       "hour_pt": 11
     },
@@ -8237,7 +8237,7 @@
       "contact_name": "Call with Harri Mootoor",
       "category": "Wrong Person",
       "duration_s": 28,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">No longer works for the company</p></div>",
+      "notes": "No longer works for the company",
       "week_num": 5,
       "hour_pt": 9
     },
@@ -8257,7 +8257,7 @@
       "contact_name": "Call with Majd Aqel",
       "category": "No Answer",
       "duration_s": 68,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">4:00 CT time today, call back</p><p style=\"margin:0;\">Majd</p></div>",
+      "notes": "4:00 CT time today, call back Majd",
       "week_num": 5,
       "hour_pt": 9
     },
@@ -8427,7 +8427,7 @@
       "contact_name": "Call with Audie Cavazos",
       "category": "No Answer",
       "duration_s": 0,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Calling for Teresa (Referral)</p></div>",
+      "notes": "Calling for Teresa (Referral)",
       "week_num": 5,
       "hour_pt": 12
     },
@@ -8477,7 +8477,7 @@
       "contact_name": "Call with Nick Fidler",
       "category": "Wrong Person",
       "duration_s": 86,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">He doesnt manage the rail side and has no idea who he would connect me to. </p></div>",
+      "notes": "He doesnt manage the rail side and has no idea who he would connect me to.",
       "week_num": 5,
       "hour_pt": 12
     },
@@ -8507,7 +8507,7 @@
       "contact_name": "Call with Brian Navitskas",
       "category": "Wrong Person",
       "duration_s": 29,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">No longer with the company</p></div>",
+      "notes": "No longer with the company",
       "week_num": 5,
       "hour_pt": 12
     },
@@ -8527,7 +8527,7 @@
       "contact_name": "Call with James Kessler",
       "category": "Wrong Number",
       "duration_s": 48,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">wrong number</p></div>",
+      "notes": "wrong number",
       "week_num": 5,
       "hour_pt": 12
     },
@@ -8557,7 +8557,7 @@
       "contact_name": "Call with Patti Maher",
       "category": "No Answer",
       "duration_s": 0,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Returning her call, no answer</p></div>",
+      "notes": "Returning her call, no answer",
       "week_num": 5,
       "hour_pt": 12
     },
@@ -8597,7 +8597,7 @@
       "contact_name": "Call with Lisa Boulanger",
       "category": "No Answer",
       "duration_s": 2,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Direct to VM, possible block</p></div>",
+      "notes": "Direct to VM, possible block",
       "week_num": 5,
       "hour_pt": 8
     },
@@ -8607,7 +8607,7 @@
       "contact_name": "Call with Grace Hewitt",
       "category": "No Answer",
       "duration_s": 42,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">grace, kid crying in background, told her I would call back next week. </p></div>",
+      "notes": "grace, kid crying in background, told her I would call back next week.",
       "week_num": 5,
       "hour_pt": 8
     },
@@ -8627,7 +8627,7 @@
       "contact_name": "Call with Ariana Garcia",
       "category": "Referral Given",
       "duration_s": 94,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">not dm, but might be able to connect, </p><p style=\"margin:0;\">ariana.garcia@nutrien.com</p><p style=\"margin:0;\"><strong><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></strong> send an email on this pls</p></div>",
+      "notes": "not dm, but might be able to connect, ariana.garcia@nutrien.com @Nicolas Amoretti send an email on this pls",
       "week_num": 5,
       "hour_pt": 8
     },
@@ -8727,7 +8727,7 @@
       "contact_name": "Call with Kevin Millet",
       "category": "Referral Given",
       "duration_s": 49,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Wrong person</p><p style=\"margin:0;\">Monty 225-300-5258</p></div>",
+      "notes": "Wrong person Monty 225-300-5258",
       "week_num": 5,
       "hour_pt": 8
     },
@@ -8737,7 +8737,7 @@
       "contact_name": "Call with Kevin Millet",
       "category": "Wrong Number",
       "duration_s": 71,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Call THIS number for Monty, still wrong person, doesnt work in rail</p></div>",
+      "notes": "Call THIS number for Monty, still wrong person, doesnt work in rail",
       "week_num": 5,
       "hour_pt": 8
     },
@@ -8877,7 +8877,7 @@
       "contact_name": "Call with David Parker",
       "category": "Interested",
       "duration_s": 430,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Something his team</p><p style=\"margin:0;\">David Parker </p><p style=\"margin:0;\">RSI, looking Bork Logistcs</p><p style=\"margin:0;\">They are on the 1 yard line and just cant look at this right now, even if he wanted to do it, doesnt know if he could get it approved bc of the other company. </p><p style=\"margin:0;\">Doesnt make sense (objection handled this a few times, theyre just too far along)</p><p style=\"margin:0;\">Travis Vedral, Jack Shires</p><p style=\"margin:0;\">david.parker@univarsolutions.com</p><p style=\"margin:0;\"><strong><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></strong> GREAT call with this guy. He is interested, but theyre \"at the 1 yard line with Bork\" (theyre leaving RSI) and said \"even as interested as I am, we literally cant look at anything else bc starting this process over would eat my entire 2026\". He did agree for us to send him and email so that he has our contact info. Dont think we can move the needle on this, but its so close and has potential down the road wanted to share with you. Also, per the notes above, he said there are two of his peers that are in talks with us now, so wanted to share that so that we reflect well on them. </p></div>",
+      "notes": "Something his team David Parker RSI, looking Bork Logistcs They are on the 1 yard line and just cant look at this right now, even if he wanted to do it, doesnt know if he could get it approved bc of the other company. Doesnt make sense (objection handled this a few times, theyre just too far along) Travis Vedral, Jack Shires david.parker@univarsolutions.com @Nicolas Amoretti GREAT call with this guy. He is interested, but theyre \"at the 1 yard line with Bork\" (theyre leaving RSI) and said \"even as interested as I am, we literally cant look at anything else bc starting this process over would eat my entire 2026\". He did agree for us to send him and email so that he has our contact info. Dont think we can move the needle on this, but its so close and has potential down the road wanted to share with you. Also, per the notes above, he said there are two of his peers that are in talks with us now, so wanted to share that so that we reflect well on them.",
       "week_num": 5,
       "hour_pt": 11
     },
@@ -9117,7 +9117,7 @@
       "contact_name": "Call with Sarita Kenkre",
       "category": "Wrong Number",
       "duration_s": 4,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Bad number</p></div>",
+      "notes": "Bad number",
       "week_num": 6,
       "hour_pt": 8
     },
@@ -9197,7 +9197,7 @@
       "contact_name": "Call with Maria Smyl",
       "category": "Wrong Number",
       "duration_s": 4,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Restricted number</p></div>",
+      "notes": "Restricted number",
       "week_num": 6,
       "hour_pt": 8
     },
@@ -9247,7 +9247,7 @@
       "contact_name": "Call with Margaret Chodack",
       "category": "Wrong Person",
       "duration_s": 101,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Maggie, doesnt handle this, call Pittsburgh office, but has NO contact info for me at all</p></div>",
+      "notes": "Maggie, doesnt handle this, call Pittsburgh office, but has NO contact info for me at all",
       "week_num": 6,
       "hour_pt": 9
     },
@@ -9267,7 +9267,7 @@
       "contact_name": "Call with Derek Kyro",
       "category": "Wrong Number",
       "duration_s": 24,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">This is a phone tree that doesnt allow generic connection</p></div>",
+      "notes": "This is a phone tree that doesnt allow generic connection",
       "week_num": 6,
       "hour_pt": 10
     },
@@ -9437,7 +9437,7 @@
       "contact_name": "Call with William Malak",
       "category": "Wrong Person",
       "duration_s": 50,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">retired about 5 years ago, transportation manager retired too so he has no contacts. </p></div>",
+      "notes": "retired about 5 years ago, transportation manager retired too so he has no contacts.",
       "week_num": 6,
       "hour_pt": 11
     },
@@ -9467,7 +9467,7 @@
       "contact_name": "Call with Frank Carlson",
       "category": "Wrong Number",
       "duration_s": 15,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Unassigned number, DC'd</p></div>",
+      "notes": "Unassigned number, DC'd",
       "week_num": 6,
       "hour_pt": 11
     },
@@ -9497,7 +9497,7 @@
       "contact_name": "Call with Bruno Lavandier",
       "category": "Referral Given",
       "duration_s": 73,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Ben Clock, head of global supply chain</p><p style=\"margin:0;\">ben.clock@ecoclock.com</p><p style=\"margin:0;\">No phone number, but email. </p><p style=\"margin:0;\">We dont have a Ben Clock in our database, so I cant follow up.</p><p style=\"margin:0;\"><strong><span data-mention-id=\"83627643\" data-mention-name=\"Nicolas Amoretti\" style=\"color: #425b76;font-weight: 600;\">@Nicolas Amoretti</span></strong> do you want to shoot him an intro email?</p></div>",
+      "notes": "Ben Clock, head of global supply chain ben.clock@ecoclock.com No phone number, but email. We dont have a Ben Clock in our database, so I cant follow up. @Nicolas Amoretti do you want to shoot him an intro email?",
       "week_num": 6,
       "hour_pt": 11
     },
@@ -9537,7 +9537,7 @@
       "contact_name": "Call with Kim Duchene",
       "category": "No Answer",
       "duration_s": 16,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">\"Call cannot be completed at this time\"</p></div>",
+      "notes": "\"Call cannot be completed at this time\"",
       "week_num": 6,
       "hour_pt": 12
     },
@@ -9587,7 +9587,7 @@
       "contact_name": "Call with Cook Michael",
       "category": "Wrong Number",
       "duration_s": 36,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Wrong number, doesnt work there</p></div>",
+      "notes": "Wrong number, doesnt work there",
       "week_num": 6,
       "hour_pt": 8
     },
@@ -9597,7 +9597,7 @@
       "contact_name": "Call with Francois Gregoire",
       "category": "No Answer",
       "duration_s": 8,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">French VM</p></div>",
+      "notes": "French VM",
       "week_num": 6,
       "hour_pt": 8
     },
@@ -9697,7 +9697,7 @@
       "contact_name": "Call with Alison Harris",
       "category": "Not Interested",
       "duration_s": 17,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">DNC. I will change outcome once added.</p></div>",
+      "notes": "DNC. I will change outcome once added.",
       "week_num": 6,
       "hour_pt": 8
     },
@@ -9737,7 +9737,7 @@
       "contact_name": "Call with Mensur Pudic",
       "category": "Wrong Person",
       "duration_s": 130,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">not the person, its her uncle. She is going to give him my number (didnt want to give me his)</p></div>",
+      "notes": "not the person, its her uncle. She is going to give him my number (didnt want to give me his)",
       "week_num": 6,
       "hour_pt": 8
     },
@@ -9757,7 +9757,7 @@
       "contact_name": "Call with Ruben Barrios",
       "category": "Wrong Person",
       "duration_s": 79,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">not the guy, speak with Ricardo in procurement, no phone number though. </p></div>",
+      "notes": "not the guy, speak with Ricardo in procurement, no phone number though.",
       "week_num": 6,
       "hour_pt": 9
     },
@@ -9827,7 +9827,7 @@
       "contact_name": "Call with Brian Vain",
       "category": "No Answer",
       "duration_s": 36,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Phone tree, '1'</p></div>",
+      "notes": "Phone tree, '1'",
       "week_num": 6,
       "hour_pt": 9
     },
@@ -9837,7 +9837,7 @@
       "contact_name": "Call with Brian Vain",
       "category": "No Answer",
       "duration_s": 36,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Phone tree, '7', no thank you and hung up</p></div>",
+      "notes": "Phone tree, '7', no thank you and hung up",
       "week_num": 6,
       "hour_pt": 9
     },
@@ -9957,7 +9957,7 @@
       "contact_name": "Call with Adam Proudford",
       "category": "No Answer",
       "duration_s": 7,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Call assist by google</p></div>",
+      "notes": "Call assist by google",
       "week_num": 6,
       "hour_pt": 11
     },
@@ -10037,7 +10037,7 @@
       "contact_name": "Call with Abhinav Mittal",
       "category": "Wrong Number",
       "duration_s": 5,
-      "notes": "<div style=\"\" dir=\"auto\" data-top-level=\"true\"><p style=\"margin:0;\">Non working number </p></div>",
+      "notes": "Non working number",
       "week_num": 6,
       "hour_pt": 12
     },

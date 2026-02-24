@@ -24,7 +24,7 @@ from hubspot import (
     fetch_calls, fetch_meeting_details_for_categorized, filter_calls_in_range,
     group_calls_by_week, load_historical_categories,
     calculate_category_stats, categorize_call, parse_hs_timestamp,
-    safe_int,
+    safe_int, strip_html,
     ADAM_OWNER_ID, PACIFIC, PITCHED_CATS,
     HUMAN_CONTACT_CATS, ALL_CATEGORIES,
 )
@@ -86,7 +86,7 @@ def build_call_data(token: str) -> dict:
             "contact_name": (props.get("hs_call_title") or "Unknown").strip(),
             "category": cat,
             "duration_s": duration_ms // 1000,
-            "notes": (props.get("hs_call_body") or "").strip(),
+            "notes": (props.get("hs_body_preview") or strip_html(props.get("hs_call_body") or "")).strip(),
             "week_num": compute_week_number(monday),
             "hour_pt": ts_pt.hour,
         })

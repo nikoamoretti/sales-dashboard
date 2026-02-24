@@ -72,6 +72,27 @@ ALL_CATEGORIES = [
 ]
 
 
+def strip_html(text: str) -> str:
+    """Strip HTML tags and decode entities to plain text."""
+    if not text:
+        return ""
+    from html.parser import HTMLParser
+    from io import StringIO
+
+    class _Stripper(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self._parts = []
+        def handle_data(self, d):
+            self._parts.append(d)
+        def get_text(self):
+            return "".join(self._parts).strip()
+
+    s = _Stripper()
+    s.feed(text)
+    return s.get_text()
+
+
 def safe_int(value, default=0) -> int:
     try:
         return int(float(value or default))
@@ -109,7 +130,7 @@ def fetch_calls(token: str, start_ms: int, end_ms: int, owner_id: str = None) ->
             "properties": [
                 "hs_timestamp", "hs_call_duration", "hs_call_disposition",
                 "hs_call_direction", "hubspot_owner_id", "hs_call_title",
-                "hs_call_body"
+                "hs_call_body", "hs_body_preview",
             ],
             "limit": 100
         }
