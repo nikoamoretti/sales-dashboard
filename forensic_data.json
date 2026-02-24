@@ -1,0 +1,1150 @@
+{
+  "disposition_timeline": [
+    {
+      "guid": "73a0d17f-1163-4015-bdd5-ec830791da20",
+      "label": "No Answer",
+      "first_seen": "2026-01-22",
+      "last_seen": "2026-02-24",
+      "count": 273,
+      "is_new": false
+    },
+    {
+      "guid": "f240bbac-87c9-4f6e-bf70-924b57d47db7",
+      "label": "Connected",
+      "first_seen": "2026-01-23",
+      "last_seen": "2026-02-20",
+      "count": 42,
+      "is_new": false
+    },
+    {
+      "guid": "b2cf5968-551e-4856-9783-52b3da59a7d0",
+      "label": "Voicemail",
+      "first_seen": "2026-01-23",
+      "last_seen": "2026-02-24",
+      "count": 568,
+      "is_new": false
+    },
+    {
+      "guid": "17b47fee-58de-441e-a44c-c6300d46f273",
+      "label": "Wrong Number",
+      "first_seen": "2026-01-23",
+      "last_seen": "2026-02-24",
+      "count": 33,
+      "is_new": false
+    },
+    {
+      "guid": "9d9162e7-6cf3-4944-bf63-4dff82258764",
+      "label": "Busy",
+      "first_seen": "2026-01-26",
+      "last_seen": "2026-02-20",
+      "count": 7,
+      "is_new": false
+    },
+    {
+      "guid": "be31a500-6cfd-4e74-8a31-c664d4615224",
+      "label": "Meeting Booked",
+      "first_seen": "2026-02-05",
+      "last_seen": "2026-02-17",
+      "count": 3,
+      "is_new": false
+    },
+    {
+      "guid": "63eb96bc-75b7-4676-a109-3e0336f95f60",
+      "label": "Interested",
+      "first_seen": "2026-02-06",
+      "last_seen": "2026-02-10",
+      "count": 2,
+      "is_new": false
+    },
+    {
+      "guid": "7bad71c2-dd4b-4627-a3f4-947806c71982",
+      "label": "Not Interested",
+      "first_seen": "2026-02-09",
+      "last_seen": "2026-02-24",
+      "count": 14,
+      "is_new": true
+    },
+    {
+      "guid": "cc08f8e0-4c3b-4e42-97b3-54ff1fb7e7a1",
+      "label": "No Rail",
+      "first_seen": "2026-02-09",
+      "last_seen": "2026-02-17",
+      "count": 4,
+      "is_new": true
+    },
+    {
+      "guid": "896c329d-ec2a-46ed-9c46-6770ed973d95",
+      "label": "Wrong Person",
+      "first_seen": "2026-02-09",
+      "last_seen": "2026-02-24",
+      "count": 24,
+      "is_new": true
+    },
+    {
+      "guid": "d358b45c-2cc2-4d80-84d8-8569829a1248",
+      "label": "Referral",
+      "first_seen": "2026-02-10",
+      "last_seen": "2026-02-23",
+      "count": 6,
+      "is_new": true
+    }
+  ],
+  "disposition_heatmap": {
+    "f240bbac-87c9-4f6e-bf70-924b57d47db7": {
+      "label": "Connected",
+      "counts": [
+        4,
+        16,
+        19,
+        2,
+        1,
+        0
+      ],
+      "total": 42
+    },
+    "b2cf5968-551e-4856-9783-52b3da59a7d0": {
+      "label": "Voicemail",
+      "counts": [
+        18,
+        105,
+        123,
+        138,
+        129,
+        55
+      ],
+      "total": 568
+    },
+    "73a0d17f-1163-4015-bdd5-ec830791da20": {
+      "label": "No Answer",
+      "counts": [
+        4,
+        49,
+        55,
+        68,
+        72,
+        25
+      ],
+      "total": 273
+    },
+    "9d9162e7-6cf3-4944-bf63-4dff82258764": {
+      "label": "Busy",
+      "counts": [
+        0,
+        2,
+        0,
+        2,
+        3,
+        0
+      ],
+      "total": 7
+    },
+    "17b47fee-58de-441e-a44c-c6300d46f273": {
+      "label": "Wrong Number",
+      "counts": [
+        1,
+        4,
+        11,
+        3,
+        8,
+        6
+      ],
+      "total": 33
+    },
+    "be31a500-6cfd-4e74-8a31-c664d4615224": {
+      "label": "Meeting Booked",
+      "counts": [
+        0,
+        0,
+        2,
+        0,
+        1,
+        0
+      ],
+      "total": 3
+    },
+    "63eb96bc-75b7-4676-a109-3e0336f95f60": {
+      "label": "Interested",
+      "counts": [
+        0,
+        0,
+        1,
+        1,
+        0,
+        0
+      ],
+      "total": 2
+    },
+    "7bad71c2-dd4b-4627-a3f4-947806c71982": {
+      "label": "Not Interested",
+      "counts": [
+        0,
+        0,
+        0,
+        10,
+        3,
+        1
+      ],
+      "total": 14
+    },
+    "cc08f8e0-4c3b-4e42-97b3-54ff1fb7e7a1": {
+      "label": "No Rail",
+      "counts": [
+        0,
+        0,
+        0,
+        3,
+        1,
+        0
+      ],
+      "total": 4
+    },
+    "d358b45c-2cc2-4d80-84d8-8569829a1248": {
+      "label": "Referral",
+      "counts": [
+        0,
+        0,
+        0,
+        5,
+        0,
+        1
+      ],
+      "total": 6
+    },
+    "896c329d-ec2a-46ed-9c46-6770ed973d95": {
+      "label": "Wrong Person",
+      "counts": [
+        0,
+        0,
+        0,
+        6,
+        15,
+        3
+      ],
+      "total": 24
+    },
+    "(blank/unknown)": {
+      "label": "(blank)",
+      "counts": [
+        1,
+        5,
+        5,
+        4,
+        4,
+        3
+      ],
+      "total": 22
+    }
+  },
+  "old_system_weekly": [
+    {
+      "week_num": 1,
+      "monday": "2026-01-19",
+      "label": "Wk 1  (Jan 19\u2013Jan 23)",
+      "total": 28,
+      "mtg": 0,
+      "conn_guid": 4,
+      "conn_dur": 0,
+      "vm": 18,
+      "other": 6,
+      "total_conn": 4,
+      "rate": 14.3
+    },
+    {
+      "week_num": 2,
+      "monday": "2026-01-26",
+      "label": "Wk 2  (Jan 26\u2013Jan 30)",
+      "total": 181,
+      "mtg": 0,
+      "conn_guid": 16,
+      "conn_dur": 7,
+      "vm": 105,
+      "other": 53,
+      "total_conn": 24,
+      "rate": 13.3
+    },
+    {
+      "week_num": 3,
+      "monday": "2026-02-02",
+      "label": "Wk 3  (Feb 02\u2013Feb 06)",
+      "total": 216,
+      "mtg": 2,
+      "conn_guid": 20,
+      "conn_dur": 7,
+      "vm": 123,
+      "other": 64,
+      "total_conn": 30,
+      "rate": 13.9
+    },
+    {
+      "week_num": 4,
+      "monday": "2026-02-09",
+      "label": "Wk 4  (Feb 09\u2013Feb 13)",
+      "total": 242,
+      "mtg": 0,
+      "conn_guid": 3,
+      "conn_dur": 20,
+      "vm": 138,
+      "other": 81,
+      "total_conn": 23,
+      "rate": 9.5
+    },
+    {
+      "week_num": 5,
+      "monday": "2026-02-16",
+      "label": "Wk 5  (Feb 16\u2013Feb 20)",
+      "total": 237,
+      "mtg": 1,
+      "conn_guid": 1,
+      "conn_dur": 12,
+      "vm": 129,
+      "other": 94,
+      "total_conn": 14,
+      "rate": 5.9
+    },
+    {
+      "week_num": 6,
+      "monday": "2026-02-23",
+      "label": "Wk 6  (Feb 23\u2013Feb 27)",
+      "total": 94,
+      "mtg": 0,
+      "conn_guid": 0,
+      "conn_dur": 4,
+      "vm": 55,
+      "other": 35,
+      "total_conn": 4,
+      "rate": 4.3
+    }
+  ],
+  "new_system_weekly": [
+    {
+      "week_num": 1,
+      "monday": "2026-01-19",
+      "label": "Wk 1  (Jan 19\u2013Jan 23)",
+      "total": 28,
+      "categories": {
+        "Interested": 3,
+        "Meeting Booked": 0,
+        "Referral Given": 0,
+        "Not Interested": 0,
+        "No Rail": 1,
+        "Wrong Person": 0,
+        "Wrong Number": 1,
+        "Gatekeeper": 0,
+        "Left Voicemail": 18,
+        "No Answer": 5
+      },
+      "hc": 4,
+      "rate": 14.3
+    },
+    {
+      "week_num": 2,
+      "monday": "2026-01-26",
+      "label": "Wk 2  (Jan 26\u2013Jan 30)",
+      "total": 181,
+      "categories": {
+        "Interested": 6,
+        "Meeting Booked": 2,
+        "Referral Given": 3,
+        "Not Interested": 1,
+        "No Rail": 4,
+        "Wrong Person": 4,
+        "Wrong Number": 4,
+        "Gatekeeper": 4,
+        "Left Voicemail": 102,
+        "No Answer": 52
+      },
+      "hc": 24,
+      "rate": 13.3
+    },
+    {
+      "week_num": 3,
+      "monday": "2026-02-02",
+      "label": "Wk 3  (Feb 02\u2013Feb 06)",
+      "total": 216,
+      "categories": {
+        "Interested": 5,
+        "Meeting Booked": 3,
+        "Referral Given": 6,
+        "Not Interested": 4,
+        "No Rail": 3,
+        "Wrong Person": 5,
+        "Wrong Number": 7,
+        "Gatekeeper": 3,
+        "Left Voicemail": 122,
+        "No Answer": 59
+      },
+      "hc": 29,
+      "rate": 13.4
+    },
+    {
+      "week_num": 4,
+      "monday": "2026-02-09",
+      "label": "Wk 4  (Feb 09\u2013Feb 13)",
+      "total": 242,
+      "categories": {
+        "Interested": 5,
+        "Meeting Booked": 0,
+        "Referral Given": 8,
+        "Not Interested": 11,
+        "No Rail": 4,
+        "Wrong Person": 2,
+        "Wrong Number": 3,
+        "Gatekeeper": 0,
+        "Left Voicemail": 138,
+        "No Answer": 71
+      },
+      "hc": 30,
+      "rate": 12.4
+    },
+    {
+      "week_num": 5,
+      "monday": "2026-02-16",
+      "label": "Wk 5  (Feb 16\u2013Feb 20)",
+      "total": 237,
+      "categories": {
+        "Interested": 2,
+        "Meeting Booked": 1,
+        "Referral Given": 3,
+        "Not Interested": 4,
+        "No Rail": 1,
+        "Wrong Person": 13,
+        "Wrong Number": 7,
+        "Gatekeeper": 0,
+        "Left Voicemail": 129,
+        "No Answer": 77
+      },
+      "hc": 24,
+      "rate": 10.1
+    },
+    {
+      "week_num": 6,
+      "monday": "2026-02-23",
+      "label": "Wk 6  (Feb 23\u2013Feb 27)",
+      "total": 94,
+      "categories": {
+        "Interested": 0,
+        "Meeting Booked": 0,
+        "Referral Given": 1,
+        "Not Interested": 1,
+        "No Rail": 0,
+        "Wrong Person": 4,
+        "Wrong Number": 5,
+        "Gatekeeper": 0,
+        "Left Voicemail": 55,
+        "No Answer": 28
+      },
+      "hc": 6,
+      "rate": 6.4
+    }
+  ],
+  "new_raw_weekly": [
+    {
+      "week_num": 1,
+      "monday": "2026-01-19",
+      "label": "Wk 1  (Jan 19\u2013Jan 23)",
+      "total": 28,
+      "categories": {
+        "Interested": 3,
+        "Meeting Booked": 0,
+        "Referral Given": 0,
+        "Not Interested": 0,
+        "No Rail": 1,
+        "Wrong Person": 0,
+        "Wrong Number": 1,
+        "Gatekeeper": 0,
+        "Left Voicemail": 18,
+        "No Answer": 5
+      },
+      "hc": 4,
+      "rate": 14.3
+    },
+    {
+      "week_num": 2,
+      "monday": "2026-01-26",
+      "label": "Wk 2  (Jan 26\u2013Jan 30)",
+      "total": 181,
+      "categories": {
+        "Interested": 12,
+        "Meeting Booked": 2,
+        "Referral Given": 3,
+        "Not Interested": 0,
+        "No Rail": 0,
+        "Wrong Person": 0,
+        "Wrong Number": 4,
+        "Gatekeeper": 0,
+        "Left Voicemail": 105,
+        "No Answer": 55
+      },
+      "hc": 17,
+      "rate": 9.4
+    },
+    {
+      "week_num": 3,
+      "monday": "2026-02-02",
+      "label": "Wk 3  (Feb 02\u2013Feb 06)",
+      "total": 216,
+      "categories": {
+        "Interested": 15,
+        "Meeting Booked": 2,
+        "Referral Given": 2,
+        "Not Interested": 2,
+        "No Rail": 0,
+        "Wrong Person": 1,
+        "Wrong Number": 11,
+        "Gatekeeper": 0,
+        "Left Voicemail": 123,
+        "No Answer": 60
+      },
+      "hc": 22,
+      "rate": 10.2
+    },
+    {
+      "week_num": 4,
+      "monday": "2026-02-09",
+      "label": "Wk 4  (Feb 09\u2013Feb 13)",
+      "total": 242,
+      "categories": {
+        "Interested": 2,
+        "Meeting Booked": 0,
+        "Referral Given": 6,
+        "Not Interested": 10,
+        "No Rail": 3,
+        "Wrong Person": 6,
+        "Wrong Number": 3,
+        "Gatekeeper": 0,
+        "Left Voicemail": 138,
+        "No Answer": 74
+      },
+      "hc": 27,
+      "rate": 11.2
+    },
+    {
+      "week_num": 5,
+      "monday": "2026-02-16",
+      "label": "Wk 5  (Feb 16\u2013Feb 20)",
+      "total": 237,
+      "categories": {
+        "Interested": 0,
+        "Meeting Booked": 1,
+        "Referral Given": 1,
+        "Not Interested": 3,
+        "No Rail": 1,
+        "Wrong Person": 15,
+        "Wrong Number": 8,
+        "Gatekeeper": 0,
+        "Left Voicemail": 129,
+        "No Answer": 79
+      },
+      "hc": 21,
+      "rate": 8.9
+    },
+    {
+      "week_num": 6,
+      "monday": "2026-02-23",
+      "label": "Wk 6  (Feb 23\u2013Feb 27)",
+      "total": 94,
+      "categories": {
+        "Interested": 0,
+        "Meeting Booked": 0,
+        "Referral Given": 1,
+        "Not Interested": 1,
+        "No Rail": 0,
+        "Wrong Person": 3,
+        "Wrong Number": 6,
+        "Gatekeeper": 0,
+        "Left Voicemail": 55,
+        "No Answer": 28
+      },
+      "hc": 5,
+      "rate": 5.3
+    }
+  ],
+  "miscounted_calls": [
+    {
+      "week_num": 2,
+      "call_id": "102205076759",
+      "name": "Mary Lapuz",
+      "time_str": "jan 26 09:56am",
+      "duration_s": 80,
+      "disposition": "17b47fee-58de-441e-a44c-c6300d46f273",
+      "guid_label": "Wrong Number",
+      "new_cat": "Wrong Number",
+      "new_is_hc": false,
+      "old_is_conn": true,
+      "old_path": "duration_60s",
+      "old_label": "dur=80s",
+      "in_historical": true
+    },
+    {
+      "week_num": 2,
+      "call_id": "102266498132",
+      "name": "Benny Sarbeck",
+      "time_str": "jan 26 12:23pm",
+      "duration_s": 54,
+      "disposition": "",
+      "guid_label": "none",
+      "new_cat": "Wrong Person",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=none",
+      "in_historical": true
+    },
+    {
+      "week_num": 2,
+      "call_id": "102266652028",
+      "name": "Holley Molina",
+      "time_str": "jan 26 12:27pm",
+      "duration_s": 68,
+      "disposition": "",
+      "guid_label": "none",
+      "new_cat": "No Answer",
+      "new_is_hc": false,
+      "old_is_conn": true,
+      "old_path": "duration_60s",
+      "old_label": "dur=68s",
+      "in_historical": true
+    },
+    {
+      "week_num": 2,
+      "call_id": "102327159644",
+      "name": "Louis Barnard",
+      "time_str": "jan 27 09:15am",
+      "duration_s": 140,
+      "disposition": "b2cf5968-551e-4856-9783-52b3da59a7d0",
+      "guid_label": "Voicemail",
+      "new_cat": "Gatekeeper",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "voicemail",
+      "old_label": "Voicemail",
+      "in_historical": true
+    },
+    {
+      "week_num": 2,
+      "call_id": "102327388518",
+      "name": "Sumet Thabthimthong",
+      "time_str": "jan 27 09:22am",
+      "duration_s": 142,
+      "disposition": "17b47fee-58de-441e-a44c-c6300d46f273",
+      "guid_label": "Wrong Number",
+      "new_cat": "Wrong Number",
+      "new_is_hc": false,
+      "old_is_conn": true,
+      "old_path": "duration_60s",
+      "old_label": "dur=142s",
+      "in_historical": true
+    },
+    {
+      "week_num": 2,
+      "call_id": "102327489439",
+      "name": "Lorna Ridderhof",
+      "time_str": "jan 27 09:38am",
+      "duration_s": 307,
+      "disposition": "b2cf5968-551e-4856-9783-52b3da59a7d0",
+      "guid_label": "Voicemail",
+      "new_cat": "Gatekeeper",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "voicemail",
+      "old_label": "Voicemail",
+      "in_historical": true
+    },
+    {
+      "week_num": 2,
+      "call_id": "102327869200",
+      "name": "Stepan",
+      "time_str": "jan 27 10:51am",
+      "duration_s": 374,
+      "disposition": "b2cf5968-551e-4856-9783-52b3da59a7d0",
+      "guid_label": "Voicemail",
+      "new_cat": "Gatekeeper",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "voicemail",
+      "old_label": "Voicemail",
+      "in_historical": true
+    },
+    {
+      "week_num": 2,
+      "call_id": "102736246931",
+      "name": "Joshua Meador",
+      "time_str": "jan 30 07:06am",
+      "duration_s": 68,
+      "disposition": "17b47fee-58de-441e-a44c-c6300d46f273",
+      "guid_label": "Wrong Number",
+      "new_cat": "Wrong Number",
+      "new_is_hc": false,
+      "old_is_conn": true,
+      "old_path": "duration_60s",
+      "old_label": "dur=68s",
+      "in_historical": true
+    },
+    {
+      "week_num": 3,
+      "call_id": "103052180754",
+      "name": "Brad Glasson",
+      "time_str": "feb 02 09:07am",
+      "duration_s": 769,
+      "disposition": "b2cf5968-551e-4856-9783-52b3da59a7d0",
+      "guid_label": "Voicemail",
+      "new_cat": "Gatekeeper",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "voicemail",
+      "old_label": "Voicemail",
+      "in_historical": true
+    },
+    {
+      "week_num": 3,
+      "call_id": "103287755101",
+      "name": "Landon Sorapuru",
+      "time_str": "feb 04 07:02am",
+      "duration_s": 47,
+      "disposition": "17b47fee-58de-441e-a44c-c6300d46f273",
+      "guid_label": "Wrong Number",
+      "new_cat": "Wrong Person",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=17b47fee-58de-441e-a",
+      "in_historical": true
+    },
+    {
+      "week_num": 3,
+      "call_id": "103418290699",
+      "name": "Kim Duchene",
+      "time_str": "feb 05 11:09am",
+      "duration_s": 66,
+      "disposition": "17b47fee-58de-441e-a44c-c6300d46f273",
+      "guid_label": "Wrong Number",
+      "new_cat": "Wrong Number",
+      "new_is_hc": false,
+      "old_is_conn": true,
+      "old_path": "duration_60s",
+      "old_label": "dur=66s",
+      "in_historical": true
+    },
+    {
+      "week_num": 3,
+      "call_id": "103418715659",
+      "name": "Kim Duchene",
+      "time_str": "feb 05 11:15am",
+      "duration_s": 114,
+      "disposition": "17b47fee-58de-441e-a44c-c6300d46f273",
+      "guid_label": "Wrong Number",
+      "new_cat": "Wrong Number",
+      "new_is_hc": false,
+      "old_is_conn": true,
+      "old_path": "duration_60s",
+      "old_label": "dur=114s",
+      "in_historical": true
+    },
+    {
+      "week_num": 3,
+      "call_id": "103489215623",
+      "name": "Billy Phillips",
+      "time_str": "feb 06 11:29am",
+      "duration_s": 70,
+      "disposition": "73a0d17f-1163-4015-bdd5-ec830791da20",
+      "guid_label": "No Answer",
+      "new_cat": "No Answer",
+      "new_is_hc": false,
+      "old_is_conn": true,
+      "old_path": "duration_60s",
+      "old_label": "dur=70s",
+      "in_historical": true
+    },
+    {
+      "week_num": 4,
+      "call_id": "103662513771",
+      "name": "David Peschong",
+      "time_str": "feb 09 09:17am",
+      "duration_s": 51,
+      "disposition": "7bad71c2-dd4b-4627-a3f4-947806c71982",
+      "guid_label": "Not Interested",
+      "new_cat": "Not Interested",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=7bad71c2-dd4b-4627-a",
+      "in_historical": true
+    },
+    {
+      "week_num": 4,
+      "call_id": "103669041200",
+      "name": "Heather Brent",
+      "time_str": "feb 09 09:45am",
+      "duration_s": 48,
+      "disposition": "7bad71c2-dd4b-4627-a3f4-947806c71982",
+      "guid_label": "Not Interested",
+      "new_cat": "Not Interested",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=7bad71c2-dd4b-4627-a",
+      "in_historical": true
+    },
+    {
+      "week_num": 4,
+      "call_id": "103785238676",
+      "name": "Sequia Wiggins",
+      "time_str": "feb 10 08:20am",
+      "duration_s": 47,
+      "disposition": "0bae439d-9e80-4327-a6ee-643cb0728bc6",
+      "guid_label": "GUID=0bae439d-9e80-4327-a",
+      "new_cat": "Not Interested",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=0bae439d-9e80-4327-a",
+      "in_historical": true
+    },
+    {
+      "week_num": 4,
+      "call_id": "104017764153",
+      "name": "Steven Perrott",
+      "time_str": "feb 11 11:17am",
+      "duration_s": 46,
+      "disposition": "9d9162e7-6cf3-4944-bf63-4dff82258764",
+      "guid_label": "Busy",
+      "new_cat": "Interested",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=9d9162e7-6cf3-4944-b",
+      "in_historical": true
+    },
+    {
+      "week_num": 4,
+      "call_id": "104083022338",
+      "name": "Thomas Giovinazzi",
+      "time_str": "feb 12 09:35am",
+      "duration_s": 58,
+      "disposition": "7bad71c2-dd4b-4627-a3f4-947806c71982",
+      "guid_label": "Not Interested",
+      "new_cat": "Not Interested",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=7bad71c2-dd4b-4627-a",
+      "in_historical": true
+    },
+    {
+      "week_num": 4,
+      "call_id": "104086327977",
+      "name": "Tiffany Lewis",
+      "time_str": "feb 12 10:49am",
+      "duration_s": 49,
+      "disposition": "896c329d-ec2a-46ed-9c46-6770ed973d95",
+      "guid_label": "Wrong Person",
+      "new_cat": "Wrong Person",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=896c329d-ec2a-46ed-9",
+      "in_historical": true
+    },
+    {
+      "week_num": 4,
+      "call_id": "104161040277",
+      "name": "Taylor Lewis",
+      "time_str": "feb 13 11:26am",
+      "duration_s": 56,
+      "disposition": "896c329d-ec2a-46ed-9c46-6770ed973d95",
+      "guid_label": "Wrong Person",
+      "new_cat": "Referral Given",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=896c329d-ec2a-46ed-9",
+      "in_historical": true
+    },
+    {
+      "week_num": 5,
+      "call_id": "104527026058",
+      "name": "Dave Fugiel",
+      "time_str": "feb 17 08:14am",
+      "duration_s": 54,
+      "disposition": "cc08f8e0-4c3b-4e42-97b3-54ff1fb7e7a1",
+      "guid_label": "No Rail",
+      "new_cat": "No Rail",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=cc08f8e0-4c3b-4e42-9",
+      "in_historical": true
+    },
+    {
+      "week_num": 5,
+      "call_id": "104536381543",
+      "name": "Jean Provencher",
+      "time_str": "feb 17 12:35pm",
+      "duration_s": 31,
+      "disposition": "7bad71c2-dd4b-4627-a3f4-947806c71982",
+      "guid_label": "Not Interested",
+      "new_cat": "Not Interested",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=7bad71c2-dd4b-4627-a",
+      "in_historical": true
+    },
+    {
+      "week_num": 5,
+      "call_id": "104547907365",
+      "name": "Josh Maynard",
+      "time_str": "feb 17 12:36pm",
+      "duration_s": 38,
+      "disposition": "896c329d-ec2a-46ed-9c46-6770ed973d95",
+      "guid_label": "Wrong Person",
+      "new_cat": "Wrong Person",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=896c329d-ec2a-46ed-9",
+      "in_historical": true
+    },
+    {
+      "week_num": 5,
+      "call_id": "104543726124",
+      "name": "Bret Jenkins",
+      "time_str": "feb 17 12:38pm",
+      "duration_s": 59,
+      "disposition": "896c329d-ec2a-46ed-9c46-6770ed973d95",
+      "guid_label": "Wrong Person",
+      "new_cat": "Wrong Person",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=896c329d-ec2a-46ed-9",
+      "in_historical": true
+    },
+    {
+      "week_num": 5,
+      "call_id": "104548207800",
+      "name": "Nataliya M.",
+      "time_str": "feb 17 02:04pm",
+      "duration_s": 20,
+      "disposition": "7bad71c2-dd4b-4627-a3f4-947806c71982",
+      "guid_label": "Not Interested",
+      "new_cat": "Not Interested",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=7bad71c2-dd4b-4627-a",
+      "in_historical": true
+    },
+    {
+      "week_num": 5,
+      "call_id": "104619668243",
+      "name": "Brett Weaver",
+      "time_str": "feb 18 08:08am",
+      "duration_s": 40,
+      "disposition": "896c329d-ec2a-46ed-9c46-6770ed973d95",
+      "guid_label": "Wrong Person",
+      "new_cat": "Wrong Person",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=896c329d-ec2a-46ed-9",
+      "in_historical": true
+    },
+    {
+      "week_num": 5,
+      "call_id": "104621305623",
+      "name": "Geoff Vecque",
+      "time_str": "feb 18 10:53am",
+      "duration_s": 58,
+      "disposition": "896c329d-ec2a-46ed-9c46-6770ed973d95",
+      "guid_label": "Wrong Person",
+      "new_cat": "Wrong Person",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=896c329d-ec2a-46ed-9",
+      "in_historical": true
+    },
+    {
+      "week_num": 5,
+      "call_id": "104620847943",
+      "name": "Kent Kimerer",
+      "time_str": "feb 18 11:15am",
+      "duration_s": 51,
+      "disposition": "896c329d-ec2a-46ed-9c46-6770ed973d95",
+      "guid_label": "Wrong Person",
+      "new_cat": "Wrong Person",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=896c329d-ec2a-46ed-9",
+      "in_historical": true
+    },
+    {
+      "week_num": 5,
+      "call_id": "104691581622",
+      "name": "Harri Mootoor",
+      "time_str": "feb 19 09:33am",
+      "duration_s": 28,
+      "disposition": "17b47fee-58de-441e-a44c-c6300d46f273",
+      "guid_label": "Wrong Number",
+      "new_cat": "Wrong Person",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=17b47fee-58de-441e-a",
+      "in_historical": true
+    },
+    {
+      "week_num": 5,
+      "call_id": "104692306051",
+      "name": "Majd Aqel",
+      "time_str": "feb 19 09:43am",
+      "duration_s": 68,
+      "disposition": "9d9162e7-6cf3-4944-bf63-4dff82258764",
+      "guid_label": "Busy",
+      "new_cat": "No Answer",
+      "new_is_hc": false,
+      "old_is_conn": true,
+      "old_path": "duration_60s",
+      "old_label": "dur=68s",
+      "in_historical": true
+    },
+    {
+      "week_num": 5,
+      "call_id": "104699588244",
+      "name": "JT Minor",
+      "time_str": "feb 19 11:51am",
+      "duration_s": 23,
+      "disposition": "0bae439d-9e80-4327-a6ee-643cb0728bc6",
+      "guid_label": "GUID=0bae439d-9e80-4327-a",
+      "new_cat": "Not Interested",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=0bae439d-9e80-4327-a",
+      "in_historical": true
+    },
+    {
+      "week_num": 5,
+      "call_id": "104707482416",
+      "name": "Brian Navitskas",
+      "time_str": "feb 19 12:32pm",
+      "duration_s": 29,
+      "disposition": "896c329d-ec2a-46ed-9c46-6770ed973d95",
+      "guid_label": "Wrong Person",
+      "new_cat": "Wrong Person",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=896c329d-ec2a-46ed-9",
+      "in_historical": true
+    },
+    {
+      "week_num": 5,
+      "call_id": "104754669868",
+      "name": "Kevin Millet",
+      "time_str": "feb 20 08:46am",
+      "duration_s": 49,
+      "disposition": "896c329d-ec2a-46ed-9c46-6770ed973d95",
+      "guid_label": "Wrong Person",
+      "new_cat": "Referral Given",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=896c329d-ec2a-46ed-9",
+      "in_historical": true
+    },
+    {
+      "week_num": 5,
+      "call_id": "104752717186",
+      "name": "Kevin Millet",
+      "time_str": "feb 20 08:48am",
+      "duration_s": 71,
+      "disposition": "17b47fee-58de-441e-a44c-c6300d46f273",
+      "guid_label": "Wrong Number",
+      "new_cat": "Wrong Number",
+      "new_is_hc": false,
+      "old_is_conn": true,
+      "old_path": "duration_60s",
+      "old_label": "dur=71s",
+      "in_historical": true
+    },
+    {
+      "week_num": 6,
+      "call_id": "104951528795",
+      "name": "William Malak",
+      "time_str": "feb 23 11:39am",
+      "duration_s": 50,
+      "disposition": "17b47fee-58de-441e-a44c-c6300d46f273",
+      "guid_label": "Wrong Number",
+      "new_cat": "Wrong Person",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=17b47fee-58de-441e-a",
+      "in_historical": true
+    },
+    {
+      "week_num": 6,
+      "call_id": "105043490076",
+      "name": "Alison Harris",
+      "time_str": "feb 24 08:48am",
+      "duration_s": 17,
+      "disposition": "7bad71c2-dd4b-4627-a3f4-947806c71982",
+      "guid_label": "Not Interested",
+      "new_cat": "Not Interested",
+      "new_is_hc": true,
+      "old_is_conn": false,
+      "old_path": "other",
+      "old_label": "disp=7bad71c2-dd4b-4627-a",
+      "in_historical": false
+    }
+  ],
+  "summary": {
+    "total_calls": 998,
+    "historical_overrides": 195,
+    "total_diffs": 36,
+    "new_not_old": 27,
+    "old_not_new": 9,
+    "net_impact": 18,
+    "week_rows": [
+      {
+        "week_num": 1,
+        "new_rate": 14.3,
+        "old_rate": 14.3,
+        "delta_pp": 0.0
+      },
+      {
+        "week_num": 2,
+        "new_rate": 13.3,
+        "old_rate": 13.3,
+        "delta_pp": 0.0
+      },
+      {
+        "week_num": 3,
+        "new_rate": 13.4,
+        "old_rate": 13.9,
+        "delta_pp": -0.5
+      },
+      {
+        "week_num": 4,
+        "new_rate": 12.4,
+        "old_rate": 9.5,
+        "delta_pp": 2.9
+      },
+      {
+        "week_num": 5,
+        "new_rate": 10.1,
+        "old_rate": 5.9,
+        "delta_pp": 4.2
+      },
+      {
+        "week_num": 6,
+        "new_rate": 6.4,
+        "old_rate": 4.3,
+        "delta_pp": 2.1
+      }
+    ]
+  }
+}
