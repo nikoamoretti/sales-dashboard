@@ -472,8 +472,8 @@ def _build_trends_tab(data: dict) -> str:
     </div>
   </section>
   <div class="charts-row">
-    <div class="chart-wrap"><h3>Weekly Dials + Human Contact Rate</h3><canvas id="weeklyDialsChart" height="200"></canvas></div>
-    <div class="chart-wrap accent-green"><h3>Conversation Outcomes by Week</h3><canvas id="stackedChart" height="200"></canvas></div>
+    <div class="chart-wrap" style="height:300px;"><h3>Weekly Dials + Human Contact Rate</h3><canvas id="weeklyDialsChart" height="200"></canvas></div>
+    <div class="chart-wrap accent-green" style="height:300px;"><h3>Conversation Outcomes by Week</h3><canvas id="stackedChart" height="200"></canvas></div>
   </div>
 </div>"""
 
@@ -596,6 +596,7 @@ def _build_companies_tab() -> str:
   </div>
   <div class="calllog-stats" id="company-stats"></div>
   <div id="company-list"></div>
+  <div class="calllog-pagination" id="company-pagination"></div>
 </div>"""
 
 
@@ -798,8 +799,8 @@ def _build_inmails_tab(data: dict) -> str:
     </div>
   </section>
   <div class="charts-row">
-    <div class="chart-wrap accent-purple"><h3>Weekly Sent + Reply Rate</h3><canvas id="inmailWeeklyChart" height="200"></canvas></div>
-    <div class="chart-wrap accent-purple"><h3>Reply Sentiment Breakdown</h3><canvas id="inmailSentimentChart" height="200"></canvas></div>
+    <div class="chart-wrap accent-purple" style="height:320px;"><h3>Weekly Sent + Reply Rate</h3><canvas id="inmailWeeklyChart" height="200"></canvas></div>
+    <div class="chart-wrap accent-purple" style="height:320px;"><h3>Reply Sentiment Breakdown</h3><canvas id="inmailSentimentChart" height="200"></canvas></div>
   </div>
 {leads_html}
 </div>"""
@@ -923,7 +924,7 @@ def _build_intel_tab(data: dict) -> str:
     </div>
     <div>
       <div class="section-header" style="border-left-color:var(--green);"><h2>Interest Levels</h2><p>Distribution across analyzed calls</p></div>
-      <div class="chart-wrap accent-green" style="max-width:340px;">
+      <div class="chart-wrap accent-green" style="max-width:340px;height:280px;">
         <h3>Interest Level Breakdown</h3>
         <canvas id="intelInterestChart" height="260"></canvas>
       </div>
@@ -1150,6 +1151,7 @@ def build_html(data: dict) -> str:
     .chart-wrap.accent-purple::before {{ background: var(--purple); }}
     .chart-wrap:hover {{ border-color: var(--border-hover); box-shadow: var(--shadow-hover); transform: translateY(-1px); }}
     .chart-wrap h3 {{ font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; }}
+    .chart-wrap canvas {{ max-height: 100%; }}
 
     /* MEETINGS DETAIL */
     .meetings-detail {{ margin-bottom: 48px; }}
@@ -1755,6 +1757,7 @@ def build_html(data: dict) -> str:
     }},
     options: {{
       responsive: true,
+      maintainAspectRatio: false,
       interaction: {{ mode: 'index', intersect: false }},
       plugins: {{
         legend: {{ labels: {{ color: '#8BA3C7', font: {{ size: 11, family: 'Inter', weight: '600' }}, padding: 16, boxWidth: 12, boxHeight: 12 }} }},
@@ -1782,6 +1785,7 @@ def build_html(data: dict) -> str:
     data: {{ labels: wkLabels, datasets: stackDatasets }},
     options: {{
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {{
         legend: {{ labels: {{ color: '#8BA3C7', font: {{ size: 10, family: 'Inter', weight: '600' }}, padding: 10, boxWidth: 10, boxHeight: 10 }} }},
         tooltip: tooltipStyle,
@@ -1943,6 +1947,8 @@ def build_html(data: dict) -> str:
   }}
 
   // ═══════════════ TAB 5: COMPANIES (lazy) ═══════════════
+  const CO_PAGE_SIZE = 30;
+  let coCurrentPage = 0;
   let companiesRendered = false;
   function renderCompaniesTab() {{
     if (companiesRendered) return;
@@ -1951,6 +1957,7 @@ def build_html(data: dict) -> str:
     const sortSelect = document.getElementById('company-sort');
     const statsEl = document.getElementById('company-stats');
     const listEl = document.getElementById('company-list');
+    const paginationEl = document.getElementById('company-pagination');
 
     // Build company map from allCalls
     const companyMap = {{}};
@@ -1996,11 +2003,15 @@ def build_html(data: dict) -> str:
       visible = sortList(visible, sortSelect.value);
 
       const total = visible.length;
+      const totalPages = Math.ceil(total / CO_PAGE_SIZE) || 1;
+      if (coCurrentPage >= totalPages) coCurrentPage = 0;
+      const pageSlice = visible.slice(coCurrentPage * CO_PAGE_SIZE, (coCurrentPage + 1) * CO_PAGE_SIZE);
+
       statsEl.textContent = total + ' companies contacted' + (unknownCount > 0 ? ' (' + unknownCount + ' calls without company)' : '');
 
       let html = '';
-      visible.forEach((co, idx) => {{
-        const coId = 'co-' + idx;
+      pageSlice.forEach((co, idx) => {{
+        const coId = 'co-' + (coCurrentPage * CO_PAGE_SIZE + idx);
         // Category pills
         let catPills = '';
         Object.entries(co.categories).sort((a,b) => b[1] - a[1]).forEach(([cat, count]) => {{
@@ -2045,15 +2056,38 @@ def build_html(data: dict) -> str:
       }});
 
       listEl.innerHTML = html || '<div style="text-align:center;color:var(--muted);padding:40px;">No companies match your search.</div>';
+
+      // Pagination controls
+      if (totalPages <= 1) {{
+        paginationEl.innerHTML = '';
+      }} else {{
+        let pgHtml = '<button class="pg-btn" onclick="coGoPage(' + (coCurrentPage - 1) + ')"' + (coCurrentPage === 0 ? ' disabled' : '') + '>&laquo; Prev</button>';
+        const start = Math.max(0, coCurrentPage - 2);
+        const end = Math.min(totalPages - 1, coCurrentPage + 2);
+        if (start > 0) pgHtml += '<button class="pg-btn" onclick="coGoPage(0)">1</button>' + (start > 1 ? '<span class="pg-ellipsis">…</span>' : '');
+        for (let p = start; p <= end; p++) {{
+          pgHtml += '<button class="pg-btn' + (p === coCurrentPage ? ' active' : '') + '" onclick="coGoPage(' + p + ')">' + (p + 1) + '</button>';
+        }}
+        if (end < totalPages - 1) pgHtml += (end < totalPages - 2 ? '<span class="pg-ellipsis">…</span>' : '') + '<button class="pg-btn" onclick="coGoPage(' + (totalPages - 1) + ')">' + totalPages + '</button>';
+        pgHtml += '<button class="pg-btn" onclick="coGoPage(' + (coCurrentPage + 1) + ')"' + (coCurrentPage === totalPages - 1 ? ' disabled' : '') + '>Next &raquo;</button>';
+        pgHtml += '<span class="pg-info">Page ' + (coCurrentPage + 1) + ' of ' + totalPages + ' (' + total + ' companies)</span>';
+        paginationEl.innerHTML = pgHtml;
+      }}
     }}
+
+    window.coGoPage = function(p) {{
+      coCurrentPage = p;
+      renderCompanies();
+      document.getElementById('tab-companies').scrollIntoView({{ behavior: 'smooth', block: 'start' }});
+    }};
 
     window.toggleCompany = function(id) {{
       const el = document.getElementById(id);
       if (el) el.classList.toggle('open');
     }};
 
-    searchInput.addEventListener('input', renderCompanies);
-    sortSelect.addEventListener('change', renderCompanies);
+    searchInput.addEventListener('input', () => {{ coCurrentPage = 0; renderCompanies(); }});
+    sortSelect.addEventListener('change', () => {{ coCurrentPage = 0; renderCompanies(); }});
     renderCompanies();
   }}
 
