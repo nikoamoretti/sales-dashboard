@@ -36,6 +36,8 @@ def fetch_open_tasks(token: str, owner_id: str = ADAM_OWNER_ID) -> Dict:
             "properties": [
                 "hs_task_subject", "hs_task_status", "hs_timestamp",
                 "hs_task_priority", "hs_task_type",
+                "hs_created_by_user_id", "hs_object_source",
+                "hs_object_source_label",
             ],
             "limit": 100,
         }
@@ -61,18 +63,9 @@ def fetch_open_tasks(token: str, owner_id: str = ADAM_OWNER_ID) -> Dict:
 
 def _summarize_tasks(tasks: List[Dict]) -> Dict:
     """Build summary from raw task list, excluding auto-generated follow-ups."""
-    # Filter out auto-generated sequence tasks:
-    # - "Follow up" tasks (HubSpot auto-generated)
-    # - "Call [Name]" tasks (Apollo sequence call tasks)
-    # - "Task for [Name]" tasks (Apollo sequence generic tasks)
-    import re
-    auto_pattern = re.compile(
-        r'^(call\s|call$|task for\s|follow up)', re.IGNORECASE
-    )
+    # Filter out HubSpot auto-generated follow-up tasks
     tasks = [t for t in tasks
-             if not auto_pattern.match(
-                 (t.get("properties", {}).get("hs_task_subject") or "").strip()
-             )]
+             if "follow up" not in (t.get("properties", {}).get("hs_task_subject") or "").lower()]
 
     by_priority = {"HIGH": 0, "MEDIUM": 0, "LOW": 0, "NONE": 0}
     oldest_ts: Optional[datetime] = None
@@ -99,6 +92,9 @@ def _summarize_tasks(tasks: List[Dict]) -> Dict:
             "subject": props.get("hs_task_subject", "Untitled"),
             "priority": priority,
             "status": props.get("hs_task_status", ""),
+            "source": props.get("hs_object_source", ""),
+            "source_label": props.get("hs_object_source_label", ""),
+            "created_by": props.get("hs_created_by_user_id", ""),
         })
 
     total = len(tasks)
