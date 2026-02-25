@@ -30,7 +30,7 @@ def fetch_open_tasks(token: str, owner_id: str = ADAM_OWNER_ID) -> Dict:
             "filterGroups": [{
                 "filters": [
                     {"propertyName": "hubspot_owner_id", "operator": "EQ", "value": owner_id},
-                    {"propertyName": "hs_task_status", "operator": "NOT_EQUAL", "value": "COMPLETED"},
+                    {"propertyName": "hs_task_status", "operator": "NEQ", "value": "COMPLETED"},
                 ]
             }],
             "properties": [
