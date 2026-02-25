@@ -77,7 +77,6 @@ def strip_html(text: str) -> str:
     if not text:
         return ""
     from html.parser import HTMLParser
-    from io import StringIO
 
     class _Stripper(HTMLParser):
         def __init__(self):
@@ -91,6 +90,25 @@ def strip_html(text: str) -> str:
     s = _Stripper()
     s.feed(text)
     return s.get_text()
+
+
+def strip_summary_html(text: str) -> str:
+    """Strip HubSpot call summary HTML preserving section structure."""
+    if not text:
+        return ""
+    import re
+    # Add newlines around block elements
+    t = re.sub(r'<hr[^>]*>', '\n---\n', text)
+    t = re.sub(r'<h[1-6][^>]*>', '\n## ', t)
+    t = re.sub(r'</h[1-6]>', '\n', t)
+    t = re.sub(r'<li[^>]*>', '- ', t)
+    t = re.sub(r'</li>', '\n', t)
+    t = re.sub(r'<b>', '**', t)
+    t = re.sub(r'</b>', '**\n', t)
+    t = re.sub(r'<[^>]+>', '', t)
+    # Clean up whitespace
+    t = re.sub(r'\n{3,}', '\n\n', t)
+    return t.strip()
 
 
 def safe_int(value, default=0) -> int:
@@ -131,6 +149,7 @@ def fetch_calls(token: str, start_ms: int, end_ms: int, owner_id: str = None) ->
                 "hs_timestamp", "hs_call_duration", "hs_call_disposition",
                 "hs_call_direction", "hubspot_owner_id", "hs_call_title",
                 "hs_call_body", "hs_body_preview", "hs_call_has_transcript",
+                "hs_call_summary", "hs_call_recording_url",
             ],
             "limit": 100
         }

@@ -30,7 +30,7 @@ from hubspot import (
     fetch_calls, fetch_meeting_details_for_categorized, filter_calls_in_range,
     group_calls_by_week, load_historical_categories,
     calculate_category_stats, categorize_call, parse_hs_timestamp,
-    safe_int, strip_html, enrich_calls_with_associations,
+    safe_int, strip_html, strip_summary_html, enrich_calls_with_associations,
     ADAM_OWNER_ID, PACIFIC, PITCHED_CATS,
     HUMAN_CONTACT_CATS, ALL_CATEGORIES,
 )
@@ -106,6 +106,8 @@ def build_call_data(token: str) -> dict:
             "category": cat,
             "duration_s": duration_ms // 1000,
             "notes": (props.get("hs_body_preview") or strip_html(props.get("hs_call_body") or "")).strip(),
+            "summary": strip_summary_html(props.get("hs_call_summary") or ""),
+            "recording_url": props.get("hs_call_recording_url") or "",
             "engagement_notes": enr.get("engagement_notes", []),
             "has_transcript": str(props.get("hs_call_has_transcript") or "").lower() == "true",
             "week_num": compute_week_number(monday),
