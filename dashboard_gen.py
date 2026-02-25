@@ -350,6 +350,12 @@ def _build_overview_tab(data: dict) -> str:
     </div>
     <div class="today-categories">{cat_pills}</div>
   </div>"""
+    else:
+        today_html = """
+  <div class="today-snapshot">
+    <div class="section-header" style="border-left-color:var(--green);"><h2>Today's Snapshot</h2></div>
+    <div class="today-empty">No calls logged today yet. Stats will appear once dialing starts.</div>
+  </div>"""
 
     # Meeting details
     mtg_html = ""
@@ -892,6 +898,7 @@ def build_html(data: dict) -> str:
     .tab-bar {{
       display: flex; gap: 0; border-bottom: 1px solid var(--border);
       margin-bottom: 36px; overflow-x: auto;
+      position: sticky; top: 0; z-index: 100; background: var(--bg);
     }}
     .tab-btn {{
       background: none; border: none; color: var(--muted);
@@ -904,8 +911,8 @@ def build_html(data: dict) -> str:
     .tab-btn.active {{ color: var(--text); border-bottom-color: var(--blue); }}
 
     /* TAB PANELS */
-    .tab-panel {{ visibility: hidden; height: 0; overflow: hidden; }}
-    .tab-panel.active {{ visibility: visible; height: auto; overflow: visible; }}
+    .tab-panel {{ display: none; }}
+    .tab-panel.active {{ display: block; }}
 
     /* HERO CARDS */
     .hero {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 48px; }}
@@ -949,6 +956,7 @@ def build_html(data: dict) -> str:
     .today-cat-count {{ font-size: 18px; font-weight: 800; color: var(--text); }}
     .today-cat-label {{ font-size: 12px; color: var(--muted); font-weight: 600; }}
     .today-sub {{ display: block; font-size: 12px; color: var(--muted); margin-top: 4px; }}
+    .today-empty {{ color: var(--muted); font-size: 14px; padding: 24px; background: var(--card); border: 1px solid var(--border); border-radius: var(--r); text-align: center; }}
 
     /* SECTION HEADERS */
     .section-header {{ margin-bottom: 24px; padding-left: 14px; border-left: 3px solid var(--blue); }}
@@ -1062,6 +1070,8 @@ def build_html(data: dict) -> str:
     }}
     tbody tr.expandable {{ cursor: pointer; }}
     tbody tr.expandable:hover {{ background: rgba(59,130,246,0.08); }}
+    .expand-arrow {{ display: inline-block; transition: transform 0.2s; font-size: 10px; margin-left: 6px; color: var(--muted); }}
+    tbody tr.expandable.open .expand-arrow {{ transform: rotate(90deg); }}
 
     /* ANALYSIS TAB */
     .bottom-line {{
@@ -1291,7 +1301,7 @@ def build_html(data: dict) -> str:
 <div class="page">
 
   <header>
-    <div class="label">Outbound Central</div>
+    <div class="label">Cold Calling &middot; Email &middot; LinkedIn</div>
     <h1>Outbound Central</h1>
     <div class="subtitle">{date_str} &nbsp;&middot;&nbsp; Week {campaign_week} of campaign</div>
   </header>
@@ -1500,17 +1510,30 @@ def build_html(data: dict) -> str:
   }}
 
   // ═══════════════ TAB SWITCHING ═══════════════
-  document.querySelectorAll('.tab-btn').forEach(btn => {{
-    btn.addEventListener('click', () => {{
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  function switchTab(tabId) {{
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    const btn = document.querySelector('.tab-btn[data-tab="' + tabId + '"]');
+    const panel = document.getElementById('tab-' + tabId);
+    if (btn && panel) {{
       btn.classList.add('active');
-      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-      if (btn.dataset.tab === 'analysis') renderAnalysisCharts();
-      if (btn.dataset.tab === 'emailseq') renderEmailSeqChart();
-      if (btn.dataset.tab === 'inmails') renderInmailCharts();
-    }});
+      panel.classList.add('active');
+      if (tabId === 'analysis') renderAnalysisCharts();
+      if (tabId === 'emailseq') renderEmailSeqChart();
+      if (tabId === 'inmails') renderInmailCharts();
+      history.replaceState(null, '', '#' + tabId);
+    }}
+  }}
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {{
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   }});
+
+  // Restore tab from URL hash on load
+  (function() {{
+    const hash = location.hash.replace('#', '');
+    if (hash && document.getElementById('tab-' + hash)) switchTab(hash);
+  }})();
 
   // ═══════════════ TAB 2: WEEKLY CHARTS ═══════════════
   const wkLabels = weeklyData.map(w => 'Wk ' + w.week_num);
@@ -1662,7 +1685,7 @@ def build_html(data: dict) -> str:
         const hasEngNotes = c.engagement_notes && c.engagement_notes.length > 0;
         const hasDetail = hasNotes || hasEngNotes;
         const expandClass = hasDetail ? ' expandable' : '';
-        const arrow = hasDetail ? ' &#x25B6;' : '';
+        const arrow = hasDetail ? '<span class="expand-arrow">&#x25B6;</span>' : '';
         const txBadge = c.has_transcript ? '<span class="transcript-badge">TRANSCRIPT</span>' : '';
 
         html += '<tr class="' + expandClass + '" onclick="toggleNotes(\\'' + rowId + '\\')">';
@@ -1708,7 +1731,11 @@ def build_html(data: dict) -> str:
     window.calllogPage = function(p) {{ currentPage = p; render(); window.scrollTo(0, document.getElementById('calllog-table').offsetTop - 80); }};
     window.toggleNotes = function(id) {{
       const row = document.getElementById(id);
-      if (row) row.classList.toggle('open');
+      if (row) {{
+        row.classList.toggle('open');
+        const prev = row.previousElementSibling;
+        if (prev) prev.classList.toggle('open');
+      }}
     }};
 
     searchInput.addEventListener('input', applyFilters);
