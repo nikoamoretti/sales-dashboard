@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-24T22:40:44.475675-08:00",
+  "generated_at": "2026-02-25T08:02:16.593424-08:00",
   "calls": [
     {
       "id": "101907888950",
@@ -14245,25 +14245,14 @@
       "No Answer": 292
     }
   },
-  "today": {
-    "dials": 50,
-    "hc": 3,
-    "rate": 6.0,
-    "categories": {
-      "Left Voicemail": 30,
-      "No Answer": 15,
-      "Wrong Number": 2,
-      "Not Interested": 1,
-      "Wrong Person": 2
-    }
-  },
+  "today": null,
   "task_queue": {
     "total_open": 770,
     "by_priority": {
       "NONE": 770
     },
     "alert_level": "ok",
-    "oldest_task_days": -1,
+    "oldest_task_days": 0,
     "tasks": [
       {
         "subject": "Call",
@@ -18119,10 +18108,10 @@
   },
   "apollo_stats": {
     "totals": {
-      "emails_sent": 434,
-      "delivered": 415,
+      "emails_sent": 437,
+      "delivered": 418,
       "opened": 62,
-      "open_rate": 14.9,
+      "open_rate": 14.8,
       "replied": 0,
       "reply_rate": 0.0,
       "clicked": 0,
@@ -18155,8 +18144,8 @@
         "active": true,
         "created_at": "2026-02-24T19:34:39.737Z",
         "num_steps": 0,
-        "emails_sent": 95,
-        "delivered": 92,
+        "emails_sent": 98,
+        "delivered": 95,
         "bounced": 3,
         "opened": 0,
         "open_rate": 0.0,
