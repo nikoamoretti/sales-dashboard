@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-24T22:37:12.698427-08:00",
+  "generated_at": "2026-02-25T10:30:51.054057-08:00",
   "campaign_start": "2026-01-19",
   "inmails": [
     {
@@ -520,6 +520,28 @@
       "week_num": 4
     },
     {
+      "id": "5e3124db8512",
+      "recipient_name": "Mauricio Mart\u00ednez",
+      "recipient_title": "",
+      "company": "",
+      "date_sent": "2026-02-10",
+      "replied": false,
+      "reply_text": "",
+      "sentiment": null,
+      "week_num": 4
+    },
+    {
+      "id": "0db6a77d814b",
+      "recipient_name": "Emmanuel L\u00f3pez",
+      "recipient_title": "Continuous Improvement Lead / Supply Chain Management / Warehouse & log\u00edstics Head",
+      "company": "",
+      "date_sent": "2026-02-10",
+      "replied": false,
+      "reply_text": "",
+      "sentiment": null,
+      "week_num": 4
+    },
+    {
       "id": "5b94c7b38dea",
       "recipient_name": "Rachel Mendiola Cruz",
       "recipient_title": "Gerente de Cadena de Suministro",
@@ -894,9 +916,31 @@
       "week_num": 4
     },
     {
+      "id": "c24cf4f135c9",
+      "recipient_name": "Marlenne Monserrat Martinez Garcia",
+      "recipient_title": "Analista de log\u00edstica con experiencia en administraci\u00f3n y flujo de efectivo",
+      "company": "administraci\u00f3n y flujo de efectivo",
+      "date_sent": "2026-02-12",
+      "replied": false,
+      "reply_text": "",
+      "sentiment": null,
+      "week_num": 4
+    },
+    {
       "id": "67549cd77f90",
       "recipient_name": "Raul Del Pozo",
       "recipient_title": "SUPPLY CHAIN COUNTRY MANAGER, at GRUMA",
+      "company": "GRUMA",
+      "date_sent": "2026-02-12",
+      "replied": false,
+      "reply_text": "",
+      "sentiment": null,
+      "week_num": 4
+    },
+    {
+      "id": "2e22d3c765f4",
+      "recipient_name": "Miranda Leal Alanis",
+      "recipient_title": "Logistics Coordinator at GRUMA",
       "company": "GRUMA",
       "date_sent": "2026-02-12",
       "replied": false,
@@ -1037,6 +1081,17 @@
       "week_num": 4
     },
     {
+      "id": "6c38e1483da2",
+      "recipient_name": "EUNJU INNA S.",
+      "recipient_title": "Settlement Manager-Logistics Area at SAMSUNG SDS",
+      "company": "Samsung SDS",
+      "date_sent": "2026-02-12",
+      "replied": false,
+      "reply_text": "",
+      "sentiment": null,
+      "week_num": 4
+    },
+    {
       "id": "a2fb33aae2a9",
       "recipient_name": "Edher Valencia",
       "recipient_title": "Manager en SAMSUNG SDS",
@@ -1072,7 +1127,7 @@
     {
       "id": "c42b073cbfd1",
       "recipient_name": "Julio Kim",
-      "recipient_title": "Director \u2014 Samsung SDS (North America)",
+      "recipient_title": "",
       "company": "",
       "date_sent": "2026-02-12",
       "replied": false,
@@ -1175,9 +1230,9 @@
     {
       "week_num": 4,
       "monday": "2026-02-09",
-      "sent": 61,
+      "sent": 66,
       "replied": 6,
-      "reply_rate": 9.8,
+      "reply_rate": 9.1,
       "interested": 3,
       "interest_rate": 50.0,
       "not_interested": 3,
@@ -1186,9 +1241,9 @@
     }
   ],
   "totals": {
-    "sent": 104,
+    "sent": 109,
     "replied": 14,
-    "reply_rate": 13.5,
+    "reply_rate": 12.8,
     "interested": 3,
     "interest_rate": 21.4,
     "not_interested": 8,
@@ -1210,7 +1265,8 @@
       "Solistica",
       "TUBACERO",
       "Truper",
-      "Valero"
+      "Valero",
+      "administraci\u00f3n y flujo de efectivo"
     ]
   }
 }
