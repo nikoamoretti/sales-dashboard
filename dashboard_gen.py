@@ -181,6 +181,7 @@ def _tab_bar() -> str:
         ("calllog", "Call Log"),
         ("analysis", "Analysis"),
         ("companies", "Companies"),
+        ("emailseq", "Email Sequences"),
     ]
     btns = []
     for tid, label in tabs:
@@ -587,6 +588,100 @@ def _build_companies_tab() -> str:
 </div>"""
 
 
+def _build_emailseq_tab(data: dict) -> str:
+    """Tab 6: Email Sequences — per-sequence breakdown with metrics table + chart."""
+    apollo = data.get("apollo_stats")
+    if not apollo:
+        return """<div id="tab-emailseq" class="tab-panel">
+  <div class="section-header" style="border-left-color:var(--cyan);"><h2>Email Sequences</h2><p>Not configured &mdash; set APOLLO_API_KEY to enable</p></div>
+</div>"""
+
+    t = apollo["totals"]
+    seqs = apollo["sequences"]
+
+    # Sort: active first, then by emails_sent desc
+    sorted_seqs = sorted(seqs, key=lambda s: (not s["active"], -s["emails_sent"]))
+
+    # Hero cards
+    hero = f"""
+  <div class="hero" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="hero-card accent-cyan">
+      <span class="num">{t['emails_sent']:,}</span>
+      <div class="label">Emails Sent</div>
+      <div class="sub">{t['delivered']:,} delivered</div>
+    </div>
+    <div class="hero-card accent-cyan">
+      <span class="num">{t['open_rate']}%</span>
+      <div class="label">Open Rate</div>
+      <div class="sub">{t['opened']:,} opened</div>
+    </div>
+    <div class="hero-card accent-cyan">
+      <span class="num">{t['reply_rate']}%</span>
+      <div class="label">Reply Rate</div>
+      <div class="sub">{t['replied']:,} replied</div>
+    </div>
+    <div class="hero-card accent-cyan">
+      <span class="num">{t['click_rate']}%</span>
+      <div class="label">Click Rate</div>
+      <div class="sub">{t['clicked']:,} clicked</div>
+    </div>
+  </div>"""
+
+    # Sequences table
+    rows = ""
+    for s in sorted_seqs:
+        status_cls = "active" if s["active"] else "paused"
+        status_label = "Active" if s["active"] else "Paused"
+        rows += f"""<tr>
+            <td style="text-align:left;font-weight:600;">{_h(s['name'])}</td>
+            <td style="text-align:center;"><span class="status-pill {status_cls}">{status_label}</span></td>
+            <td class="num-col">{s['num_steps']}</td>
+            <td class="num-col">{s['emails_sent']:,}</td>
+            <td class="num-col">{s['delivered']:,}</td>
+            <td class="num-col">{s['opened']:,}</td>
+            <td class="pct-col">{s['open_rate']}%</td>
+            <td class="num-col">{s['replied']:,}</td>
+            <td class="pct-col">{s['reply_rate']}%</td>
+            <td class="num-col">{s['clicked']:,}</td>
+          </tr>"""
+
+    # Footer totals
+    total_steps = sum(s["num_steps"] for s in seqs)
+    footer = f"""<tr>
+          <td colspan="2" style="color:var(--muted);font-weight:600;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;">Total ({len(seqs)} sequences)</td>
+          <td class="num-col">{total_steps}</td>
+          <td class="num-col">{t['emails_sent']:,}</td>
+          <td class="num-col">{t['delivered']:,}</td>
+          <td class="num-col">{t['opened']:,}</td>
+          <td class="pct-col">{t['open_rate']}%</td>
+          <td class="num-col">{t['replied']:,}</td>
+          <td class="pct-col">{t['reply_rate']}%</td>
+          <td class="num-col">{t['clicked']:,}</td>
+        </tr>"""
+
+    return f"""<div id="tab-emailseq" class="tab-panel">
+  <div class="section-header" style="border-left-color:var(--cyan);"><h2>Email Sequences</h2><p>Per-sequence breakdown from Apollo</p></div>
+{hero}
+  <section style="margin-bottom:48px;">
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th style="text-align:left;">Sequence</th><th>Status</th><th>Steps</th>
+          <th>Sent</th><th>Delivered</th><th>Opened</th><th>Open %</th>
+          <th>Replied</th><th>Reply %</th><th>Clicked</th>
+        </tr></thead>
+        <tbody>{rows}</tbody>
+        <tfoot>{footer}</tfoot>
+      </table>
+    </div>
+  </section>
+  <div class="chart-wrap accent-cyan" style="max-width:700px;">
+    <h3>Open Rate by Sequence</h3>
+    <canvas id="emailSeqChart" height="250"></canvas>
+  </div>
+</div>"""
+
+
 def build_html(data: dict) -> str:
     """Build the complete self-contained HTML dashboard."""
     now = datetime.fromisoformat(data["generated_at"])
@@ -600,6 +695,7 @@ def build_html(data: dict) -> str:
     calls_json = json.dumps(data["calls"], default=str).replace("</", "<\\/")
     totals_json = json.dumps(data["totals"], default=str).replace("</", "<\\/")
     task_queue_json = json.dumps(data.get("task_queue"), default=str).replace("</", "<\\/")
+    apollo_json = json.dumps(data.get("apollo_stats"), default=str).replace("</", "<\\/")
 
     tab_bar = _tab_bar()
     overview = _build_overview_tab(data)
@@ -607,6 +703,7 @@ def build_html(data: dict) -> str:
     calllog = _build_calllog_tab()
     analysis = _build_analysis_tab()
     companies = _build_companies_tab()
+    emailseq = _build_emailseq_tab(data)
 
     # Analysis chart data for lazy init (set by _build_analysis_tab if forensic data exists)
     analysis_chart_data = getattr(_build_analysis_tab, "_data", None)
@@ -782,6 +879,7 @@ def build_html(data: dict) -> str:
     }}
     .chart-wrap::before {{ content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--blue); }}
     .chart-wrap.accent-green::before {{ background: var(--green); }}
+    .chart-wrap.accent-cyan::before {{ background: var(--cyan); }}
     .chart-wrap:hover {{ border-color: var(--border-hover); box-shadow: var(--shadow-hover); transform: translateY(-1px); }}
     .chart-wrap h3 {{ font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; }}
 
@@ -1030,6 +1128,14 @@ def build_html(data: dict) -> str:
       text-align: center; padding: 20px 0;
     }}
 
+    /* STATUS PILLS */
+    .status-pill {{
+      display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+      padding: 3px 10px; border-radius: 12px;
+    }}
+    .status-pill.active {{ background: rgba(16,185,129,0.15); color: var(--green); }}
+    .status-pill.paused {{ background: rgba(139,163,199,0.12); color: var(--muted); }}
+
     /* RESPONSIVE */
     @media (max-width: 860px) {{ .charts-row {{ grid-template-columns: 1fr; }} .channels-grid {{ grid-template-columns: 1fr; }} }}
     @media (max-width: 640px) {{
@@ -1058,6 +1164,7 @@ def build_html(data: dict) -> str:
   {calllog}
   {analysis}
   {companies}
+  {emailseq}
 
   <footer>
     <strong>Outbound Central</strong><br>
@@ -1072,6 +1179,7 @@ def build_html(data: dict) -> str:
   const allCalls = {calls_json};
   const totals = {totals_json};
   const taskQueue = {task_queue_json};
+  const apolloData = {apollo_json};
 
   // ═══════════════ TASK LIST RENDER ═══════════════
   (function() {{
@@ -1137,6 +1245,48 @@ def build_html(data: dict) -> str:
     }});
   }}
 
+  // ═══════════════ EMAIL SEQUENCES CHART (lazy init) ═══════════════
+  let emailSeqChartRendered = false;
+
+  function renderEmailSeqChart() {{
+    if (emailSeqChartRendered || !apolloData) return;
+    const canvas = document.getElementById('emailSeqChart');
+    if (!canvas) return;
+    emailSeqChartRendered = true;
+
+    const seqs = apolloData.sequences
+      .filter(s => s.active && s.delivered > 0)
+      .sort((a, b) => b.open_rate - a.open_rate);
+    if (seqs.length === 0) return;
+
+    new Chart(canvas, {{
+      type: 'bar',
+      data: {{
+        labels: seqs.map(s => s.name.length > 30 ? s.name.slice(0, 28) + '...' : s.name),
+        datasets: [{{
+          label: 'Open Rate %',
+          data: seqs.map(s => s.open_rate),
+          backgroundColor: 'rgba(6,182,212,0.35)',
+          borderColor: 'rgba(6,182,212,0.80)',
+          borderWidth: 1.5,
+          borderRadius: 4,
+        }}]
+      }},
+      options: {{
+        indexAxis: 'y',
+        responsive: true,
+        plugins: {{
+          legend: {{ display: false }},
+          tooltip: {{ ...tooltipStyle, callbacks: {{ label: ctx => ' Open Rate: ' + ctx.raw + '%' }} }},
+        }},
+        scales: {{
+          x: {{ beginAtZero: true, max: 100, ticks: {{ color: '#8BA3C7', callback: v => v + '%' }}, grid: gridStyle }},
+          y: {{ ticks: {{ color: '#8BA3C7', font: {{ size: 11, family: 'Inter' }} }}, grid: {{ display: false }} }},
+        }}
+      }}
+    }});
+  }}
+
   // ═══════════════ TAB SWITCHING ═══════════════
   document.querySelectorAll('.tab-btn').forEach(btn => {{
     btn.addEventListener('click', () => {{
@@ -1145,6 +1295,7 @@ def build_html(data: dict) -> str:
       btn.classList.add('active');
       document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
       if (btn.dataset.tab === 'analysis') renderAnalysisCharts();
+      if (btn.dataset.tab === 'emailseq') renderEmailSeqChart();
     }});
   }});
 

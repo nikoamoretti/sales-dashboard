@@ -62,11 +62,18 @@ def fetch_apollo_stats(api_key: str) -> Dict[str, Any]:
             bounced = safe_int(c.get("unique_bounced", 0))
             opened = safe_int(c.get("unique_opened_unfiltered", 0))
             replied = safe_int(c.get("unique_replied", 0))
+            clicked = safe_int(c.get("unique_clicked", 0))
+            unsubscribed = safe_int(c.get("unique_unsubscribed", 0))
+            spam_blocked = safe_int(c.get("unique_spam_blocked", 0))
             sent = delivered + bounced
 
+            steps = c.get("emailer_steps") or []
             sequences.append({
+                "id": c.get("id", ""),
                 "name": c.get("name", "Unknown"),
                 "active": c.get("active", False),
+                "created_at": c.get("created_at", ""),
+                "num_steps": len(steps),
                 "emails_sent": sent,
                 "delivered": delivered,
                 "bounced": bounced,
@@ -74,6 +81,10 @@ def fetch_apollo_stats(api_key: str) -> Dict[str, Any]:
                 "open_rate": _calc_rate(opened, delivered),
                 "replied": replied,
                 "reply_rate": _calc_rate(replied, delivered),
+                "clicked": clicked,
+                "click_rate": _calc_rate(clicked, delivered),
+                "unsubscribed": unsubscribed,
+                "spam_blocked": spam_blocked,
             })
 
         pagination = data.get("pagination", {})
@@ -86,6 +97,9 @@ def fetch_apollo_stats(api_key: str) -> Dict[str, Any]:
     total_delivered = sum(s["delivered"] for s in sequences)
     total_opened = sum(s["opened"] for s in sequences)
     total_replied = sum(s["replied"] for s in sequences)
+    total_clicked = sum(s["clicked"] for s in sequences)
+    total_bounced = sum(s["bounced"] for s in sequences)
+    total_unsubscribed = sum(s["unsubscribed"] for s in sequences)
 
     return {
         "totals": {
@@ -95,6 +109,10 @@ def fetch_apollo_stats(api_key: str) -> Dict[str, Any]:
             "open_rate": _calc_rate(total_opened, total_delivered),
             "replied": total_replied,
             "reply_rate": _calc_rate(total_replied, total_delivered),
+            "clicked": total_clicked,
+            "click_rate": _calc_rate(total_clicked, total_delivered),
+            "bounced": total_bounced,
+            "unsubscribed": total_unsubscribed,
         },
         "sequences": sequences,
     }
