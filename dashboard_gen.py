@@ -345,7 +345,7 @@ def _build_overview_tab(data: dict) -> str:
     <div class="today-grid">
       <div class="today-stat"><span class="today-num" style="color:var(--blue);">{today['dials']}</span><span class="today-label">Dials</span></div>
       <div class="today-stat"><span class="today-num" style="color:var(--green);">{today['hc']}</span><span class="today-label">Contacts</span></div>
-      <div class="today-stat"><span class="today-num" style="color:var(--orange);">{today['rate']}%</span><span class="today-label">Contact Rate</span></div>
+      <div class="today-stat"><span class="today-num" style="color:var(--orange);">{today['rate']}%</span><span class="today-label">Contact Rate</span><span class="today-sub">avg {t['hc_rate']}%</span></div>
     </div>
     <div class="today-categories">{cat_pills}</div>
   </div>"""
@@ -603,7 +603,9 @@ def _build_emailseq_tab(data: dict) -> str:
     seqs = [s for s in seqs if s["emails_sent"] > 0]
     sorted_seqs = sorted(seqs, key=lambda s: (not s["active"], -s["emails_sent"]))
 
-    # Hero cards
+    # Hero cards — semantic color: cyan for volume, green for good rates, muted for zero
+    reply_accent = "green" if t['reply_rate'] > 0 else "muted"
+    click_accent = "green" if t['click_rate'] > 0 else "muted"
     hero = f"""
   <div class="hero" style="grid-template-columns: repeat(4, 1fr);">
     <div class="hero-card accent-cyan">
@@ -611,17 +613,17 @@ def _build_emailseq_tab(data: dict) -> str:
       <div class="label">Emails Sent</div>
       <div class="sub">{t['delivered']:,} delivered</div>
     </div>
-    <div class="hero-card accent-cyan">
+    <div class="hero-card accent-green">
       <span class="num">{t['open_rate']}%</span>
       <div class="label">Open Rate</div>
       <div class="sub">{t['opened']:,} opened</div>
     </div>
-    <div class="hero-card accent-cyan">
+    <div class="hero-card accent-{reply_accent}">
       <span class="num">{t['reply_rate']}%</span>
       <div class="label">Reply Rate</div>
       <div class="sub">{t['replied']:,} replied</div>
     </div>
-    <div class="hero-card accent-cyan">
+    <div class="hero-card accent-{click_accent}">
       <span class="num">{t['click_rate']}%</span>
       <div class="label">Click Rate</div>
       <div class="sub">{t['clicked']:,} clicked</div>
@@ -636,7 +638,6 @@ def _build_emailseq_tab(data: dict) -> str:
         rows += f"""<tr>
             <td style="text-align:left;font-weight:600;">{_h(s['name'])}</td>
             <td style="text-align:center;"><span class="status-pill {status_cls}">{status_label}</span></td>
-            <td class="num-col">{s['num_steps']}</td>
             <td class="num-col">{s['emails_sent']:,}</td>
             <td class="num-col">{s['delivered']:,}</td>
             <td class="num-col">{s['opened']:,}</td>
@@ -647,10 +648,8 @@ def _build_emailseq_tab(data: dict) -> str:
           </tr>"""
 
     # Footer totals
-    total_steps = sum(s["num_steps"] for s in seqs)
     footer = f"""<tr>
           <td colspan="2" style="color:var(--muted);font-weight:600;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;">Total ({len(seqs)} sequences)</td>
-          <td class="num-col">{total_steps}</td>
           <td class="num-col">{t['emails_sent']:,}</td>
           <td class="num-col">{t['delivered']:,}</td>
           <td class="num-col">{t['opened']:,}</td>
@@ -667,7 +666,7 @@ def _build_emailseq_tab(data: dict) -> str:
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th style="text-align:left;">Sequence</th><th>Status</th><th>Steps</th>
+          <th style="text-align:left;">Sequence</th><th>Status</th>
           <th>Sent</th><th>Delivered</th><th>Opened</th><th>Open %</th>
           <th>Replied</th><th>Reply %</th><th>Clicked</th>
         </tr></thead>
@@ -833,6 +832,7 @@ def build_html(data: dict) -> str:
     .today-cat-item {{ background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; display: flex; align-items: center; gap: 8px; }}
     .today-cat-count {{ font-size: 18px; font-weight: 800; color: var(--text); }}
     .today-cat-label {{ font-size: 12px; color: var(--muted); font-weight: 600; }}
+    .today-sub {{ display: block; font-size: 12px; color: var(--muted); margin-top: 4px; }}
 
     /* SECTION HEADERS */
     .section-header {{ margin-bottom: 24px; padding-left: 14px; border-left: 3px solid var(--blue); }}
@@ -1038,6 +1038,8 @@ def build_html(data: dict) -> str:
     /* HERO CARD — CYAN ACCENT */
     .hero-card.accent-cyan::before {{ background: var(--cyan); }}
     .hero-card.accent-cyan .num {{ color: var(--cyan); text-shadow: 0 0 28px rgba(6,182,212,0.35); }}
+    .hero-card.accent-muted::before {{ background: var(--muted); }}
+    .hero-card.accent-muted .num {{ color: var(--muted); }}
 
     /* TASK QUEUE BANNER */
     .task-banner {{
