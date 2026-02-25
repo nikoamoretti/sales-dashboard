@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-25T09:56:46.827959-08:00",
+  "generated_at": "2026-02-25T10:16:48.255550-08:00",
   "calls": [
     {
       "id": "101907888950",
@@ -18640,10 +18640,5 @@
       }
     ]
   },
-  "linkedin_stats": {
-    "requests_sent": 31,
-    "connected": 18,
-    "pending": 13,
-    "accept_rate": 58.1
-  }
+  "inmail_stats": null
 }
