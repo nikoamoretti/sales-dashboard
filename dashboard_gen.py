@@ -184,6 +184,7 @@ def _tab_bar() -> str:
         ("companies", "Companies"),
         ("emailseq", "Email Sequences"),
         ("inmails", "LinkedIn InMails"),
+        ("intel", "Intelligence"),
     ]
     btns = []
     for tid, label in tabs:
@@ -804,6 +805,135 @@ def _build_inmails_tab(data: dict) -> str:
 </div>"""
 
 
+def _build_intel_tab(data: dict) -> str:
+    """Tab 8: Call Intelligence — extracted insights from call transcripts."""
+    intel = data.get("call_intel")
+    if not intel:
+        return """<div id="tab-intel" class="tab-panel">
+  <div class="section-header" style="border-left-color:var(--cyan);"><h2>Intelligence</h2><p>No data &mdash; run call_intel_extractor.py to generate call_intel.json</p></div>
+</div>"""
+
+    s = intel["summary"]
+    total = intel["total_extracted"]
+    qualified = s["qualified"]
+    action_items = s["with_next_action"]
+    referrals = s["with_referral"]
+
+    # Hero cards
+    hero = f"""
+  <div class="hero" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="hero-card accent-blue">
+      <span class="num">{total}</span>
+      <div class="label">Calls Analyzed</div>
+    </div>
+    <div class="hero-card accent-green">
+      <span class="num">{qualified}</span>
+      <div class="label">Qualified</div>
+      <div class="sub">{round(qualified / total * 100) if total else 0}% of calls</div>
+    </div>
+    <div class="hero-card accent-orange">
+      <span class="num">{action_items}</span>
+      <div class="label">Action Items</div>
+      <div class="sub">with next step</div>
+    </div>
+    <div class="hero-card accent-cyan">
+      <span class="num">{referrals}</span>
+      <div class="label">Referrals</div>
+      <div class="sub">contacts identified</div>
+    </div>
+  </div>"""
+
+    # Competitors section
+    internal_names = {"nico", "nicolas amoretti", "adam", "adam jackson"}
+    competitors = [
+        (r["company_name"], r["competitor"])
+        for r in intel["intel"]
+        if r.get("competitor")
+    ]
+    competitors_html = ""
+    if competitors:
+        items = "".join(
+            f'<div class="intel-competitor-row"><span class="intel-co-name">{_h(co)}</span>'
+            f'<span class="intel-competitor-badge">{_h(comp)}</span></div>'
+            for co, comp in competitors
+        )
+        competitors_html = f"""
+  <div style="margin-top:48px;">
+    <div class="section-header" style="border-left-color:var(--red);"><h2>Competitor Mentions</h2><p>{len(competitors)} calls mentioned a competitor</p></div>
+    <div class="intel-list-card">{items}</div>
+  </div>"""
+
+    # Referrals section
+    referral_items = [
+        r for r in intel["intel"]
+        if r.get("referral_name") and r["referral_name"].strip().lower() not in internal_names
+    ]
+    referrals_html = ""
+    if referral_items:
+        def _referral_role_span(r: dict) -> str:
+            if r.get("referral_role"):
+                return f'<span class="intel-referral-role">{_h(r["referral_role"])}</span>'
+            return ""
+
+        items = "".join(
+            f'<div class="intel-referral-row">'
+            f'<span class="intel-referral-name">{_h(r["referral_name"])}</span>'
+            f'{_referral_role_span(r)}'
+            f'<span class="intel-referral-at">at {_h(r["company_name"])}</span>'
+            f'</div>'
+            for r in referral_items
+        )
+        referrals_html = f"""
+  <div style="margin-top:48px;">
+    <div class="section-header" style="border-left-color:var(--cyan);"><h2>Referrals to Follow Up</h2><p>{len(referral_items)} external contacts identified</p></div>
+    <div class="intel-list-card">{items}</div>
+  </div>"""
+
+    return f"""<div id="tab-intel" class="tab-panel">
+  <div class="section-header" style="border-left-color:var(--cyan);"><h2>Call Intelligence</h2><p>AI-extracted insights from call transcripts</p></div>
+{hero}
+  <div class="intel-main-grid">
+    <div>
+      <div class="section-header" style="border-left-color:var(--blue);"><h2>Action Items</h2><p>Calls with defined next steps</p></div>
+      <div class="calllog-controls" style="margin-bottom:16px;">
+        <input type="text" id="intel-search" placeholder="Search by contact, company, or action..." />
+        <select id="intel-filter">
+          <option value="">All Interest Levels</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+          <option value="none">None</option>
+        </select>
+      </div>
+      <div class="calllog-stats" id="intel-stats"></div>
+      <div class="table-wrap">
+        <table id="intel-table">
+          <thead><tr>
+            <th style="text-align:left;">Contact</th>
+            <th style="text-align:left;">Company</th>
+            <th style="text-align:center;">Interest</th>
+            <th style="text-align:left;">Next Action</th>
+            <th style="text-align:left;">Referral</th>
+            <th style="text-align:left;">Competitor</th>
+          </tr></thead>
+          <tbody id="intel-body"></tbody>
+        </table>
+      </div>
+      <div class="calllog-pagination" id="intel-pagination"></div>
+    </div>
+    <div>
+      <div class="section-header" style="border-left-color:var(--green);"><h2>Interest Levels</h2><p>Distribution across analyzed calls</p></div>
+      <div class="chart-wrap accent-green" style="max-width:340px;">
+        <h3>Interest Level Breakdown</h3>
+        <canvas id="intelInterestChart" height="260"></canvas>
+      </div>
+    </div>
+  </div>
+{competitors_html}
+{referrals_html}
+</div>"""
+
+
 def build_html(data: dict) -> str:
     """Build the complete self-contained HTML dashboard."""
     now = datetime.fromisoformat(data["generated_at"])
@@ -819,6 +949,7 @@ def build_html(data: dict) -> str:
     task_queue_json = json.dumps(data.get("task_queue"), default=str).replace("</", "<\\/")
     apollo_json = json.dumps(data.get("apollo_stats"), default=str).replace("</", "<\\/")
     inmail_json = json.dumps(data.get("inmail_stats"), default=str).replace("</", "<\\/")
+    intel_json = json.dumps(data.get("call_intel"), default=str).replace("</", "<\\/")
 
     tab_bar = _tab_bar()
     overview = _build_overview_tab(data)
@@ -828,6 +959,7 @@ def build_html(data: dict) -> str:
     companies = _build_companies_tab()
     emailseq = _build_emailseq_tab(data)
     inmails_tab = _build_inmails_tab(data)
+    intel_tab = _build_intel_tab(data)
 
     # Analysis chart data for lazy init (set by _build_analysis_tab if forensic data exists)
     analysis_chart_data = getattr(_build_analysis_tab, "_data", None)
@@ -1287,8 +1419,57 @@ def build_html(data: dict) -> str:
     .status-pill.active {{ background: rgba(16,185,129,0.15); color: var(--green); }}
     .status-pill.paused {{ background: rgba(139,163,199,0.12); color: var(--muted); }}
 
+    /* INTELLIGENCE TAB */
+    .intel-main-grid {{ display: grid; grid-template-columns: 1fr 340px; gap: 28px; align-items: start; margin-bottom: 48px; }}
+    .intel-pill {{
+      display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+      padding: 3px 10px; border-radius: 12px; white-space: nowrap;
+    }}
+    .intel-pill.high  {{ background: rgba(16,185,129,0.15);  color: var(--green); }}
+    .intel-pill.medium {{ background: rgba(59,130,246,0.15); color: var(--blue); }}
+    .intel-pill.low   {{ background: rgba(245,158,11,0.15); color: var(--orange); }}
+    .intel-pill.none  {{ background: rgba(139,163,199,0.10); color: var(--muted); }}
+    .intel-detail-row td {{
+      padding: 0 10px 14px 10px !important;
+      border-top: none !important;
+    }}
+    .intel-detail-row {{ display: none; }}
+    .intel-detail-row.open {{ display: table-row; }}
+    .intel-detail-content {{
+      background: rgba(59,130,246,0.04); border-radius: 8px;
+      padding: 14px 18px; font-size: 13px; color: var(--muted); line-height: 1.6;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px;
+    }}
+    .intel-detail-field {{ display: flex; flex-direction: column; gap: 3px; }}
+    .intel-detail-label {{
+      font-size: 10px; font-weight: 700; letter-spacing: 0.10em;
+      text-transform: uppercase; color: rgba(139,163,199,0.6);
+    }}
+    .intel-detail-value {{ font-size: 13px; color: var(--text); }}
+    .intel-quote {{ font-style: italic; color: rgba(240,246,255,0.7); }}
+    .intel-list-card {{
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--r);
+      padding: 8px 0; box-shadow: var(--shadow); margin-bottom: 32px;
+    }}
+    .intel-competitor-row, .intel-referral-row {{
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      padding: 12px 22px; border-bottom: 1px solid var(--border); font-size: 13px;
+    }}
+    .intel-competitor-row:last-child, .intel-referral-row:last-child {{ border-bottom: none; }}
+    .intel-co-name {{ color: var(--text); font-weight: 600; flex: 1; }}
+    .intel-competitor-badge {{
+      font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 10px;
+      background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.25);
+    }}
+    .intel-referral-name {{ color: var(--text); font-weight: 600; min-width: 140px; }}
+    .intel-referral-role {{
+      font-size: 12px; color: var(--cyan); background: rgba(6,182,212,0.10);
+      border: 1px solid rgba(6,182,212,0.20); border-radius: 8px; padding: 2px 9px;
+    }}
+    .intel-referral-at {{ color: var(--muted); font-size: 12px; }}
+
     /* RESPONSIVE */
-    @media (max-width: 860px) {{ .charts-row {{ grid-template-columns: 1fr; }} .channels-grid {{ grid-template-columns: 1fr; }} }}
+    @media (max-width: 860px) {{ .charts-row {{ grid-template-columns: 1fr; }} .channels-grid {{ grid-template-columns: 1fr; }} .intel-main-grid {{ grid-template-columns: 1fr; }} }}
     @media (max-width: 640px) {{
       .hero {{ grid-template-columns: 1fr; }}
       .today-grid {{ grid-template-columns: 1fr; }}
@@ -1317,6 +1498,7 @@ def build_html(data: dict) -> str:
   {companies}
   {emailseq}
   {inmails_tab}
+  {intel_tab}
 
   <footer>
     <strong>Outbound Central</strong><br>
@@ -1333,6 +1515,7 @@ def build_html(data: dict) -> str:
   const taskQueue = {task_queue_json};
   const apolloData = {apollo_json};
   const inmailData = {inmail_json};
+  const intelData = {intel_json};
 
   // ═══════════════ TASK LIST RENDER ═══════════════
   (function() {{
@@ -1523,6 +1706,7 @@ def build_html(data: dict) -> str:
       if (tabId === 'analysis') renderAnalysisCharts();
       if (tabId === 'emailseq') renderEmailSeqChart();
       if (tabId === 'inmails') renderInmailCharts();
+      if (tabId === 'intel') renderIntelTab();
       history.replaceState(null, '', '#' + tabId);
     }}
   }}
@@ -1857,6 +2041,170 @@ def build_html(data: dict) -> str:
     sortSelect.addEventListener('change', renderCompanies);
     renderCompanies();
   }})();
+
+  // ═══════════════ TAB 8: CALL INTELLIGENCE ═══════════════
+  let intelTabRendered = false;
+
+  function renderIntelTab() {{
+    if (intelTabRendered || !intelData) return;
+    intelTabRendered = true;
+
+    const interestOrder = {{ high: 0, medium: 1, low: 2, none: 3 }};
+    const pillClass = {{ high: 'high', medium: 'medium', low: 'low', none: 'none' }};
+    const pillLabel = {{ high: 'High', medium: 'Medium', low: 'Low', none: 'None' }};
+
+    // Sort by interest level priority, then by has next_action
+    const allIntel = (intelData.intel || []).slice().sort((a, b) => {{
+      const oa = interestOrder[a.interest_level] ?? 99;
+      const ob = interestOrder[b.interest_level] ?? 99;
+      if (oa !== ob) return oa - ob;
+      // secondary: those with next_action first
+      return (b.next_action ? 1 : 0) - (a.next_action ? 1 : 0);
+    }});
+
+    // Interest donut chart
+    const chartCanvas = document.getElementById('intelInterestChart');
+    if (chartCanvas && intelData.summary) {{
+      const levels = intelData.summary.interest_levels || {{}};
+      const chartData = [levels.high || 0, levels.medium || 0, levels.low || 0, levels.none || 0];
+      if (chartData.some(v => v > 0)) {{
+        new Chart(chartCanvas, {{
+          type: 'doughnut',
+          data: {{
+            labels: ['High', 'Medium', 'Low', 'None'],
+            datasets: [{{
+              data: chartData,
+              backgroundColor: [
+                'rgba(16,185,129,0.75)',
+                'rgba(59,130,246,0.65)',
+                'rgba(245,158,11,0.60)',
+                'rgba(139,163,199,0.35)',
+              ],
+              borderColor: ['#10B981', '#3B82F6', '#F59E0B', '#8BA3C7'],
+              borderWidth: 2,
+            }}]
+          }},
+          options: {{
+            responsive: true, maintainAspectRatio: false,
+            cutout: '58%',
+            plugins: {{
+              legend: {{ position: 'bottom', labels: {{ color: '#8BA3C7', font: {{ size: 12, family: 'Inter', weight: '600' }}, padding: 14, boxWidth: 13, boxHeight: 13 }} }},
+              tooltip: {{ backgroundColor: '#1B2A4A', borderColor: 'rgba(59,130,246,0.30)', borderWidth: 1, titleColor: '#F0F6FF', bodyColor: '#8BA3C7', padding: 12 }},
+            }}
+          }}
+        }});
+      }}
+    }}
+
+    // Action items table
+    const PAGE_SIZE = 30;
+    let filtered = [];
+    let currentPage = 0;
+
+    const searchInput = document.getElementById('intel-search');
+    const filterSelect = document.getElementById('intel-filter');
+    const tbody = document.getElementById('intel-body');
+    const statsEl = document.getElementById('intel-stats');
+    const pagEl = document.getElementById('intel-pagination');
+
+    function applyIntelFilters() {{
+      const q = searchInput.value.toLowerCase().trim();
+      const level = filterSelect.value;
+      filtered = allIntel.filter(r => {{
+        if (level && r.interest_level !== level) return false;
+        if (q) {{
+          const hay = [r.contact_name, r.company_name, r.next_action, r.referral_name, r.competitor, r.key_quote, r.objection, r.commodities].filter(Boolean).join(' ').toLowerCase();
+          return hay.includes(q);
+        }}
+        return true;
+      }});
+      currentPage = 0;
+      renderIntelTable();
+    }}
+
+    function renderIntelTable() {{
+      const start = currentPage * PAGE_SIZE;
+      const page = filtered.slice(start, start + PAGE_SIZE);
+      const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+
+      if (filtered.length === 0) {{
+        statsEl.textContent = 'No entries match your filter.';
+      }} else {{
+        statsEl.textContent = 'Showing ' + (start + 1) + '\u2013' + Math.min(start + PAGE_SIZE, filtered.length) + ' of ' + filtered.length + ' entries';
+      }}
+
+      let html = '';
+      page.forEach((r, i) => {{
+        const rowId = 'intel-row-' + start + '-' + i;
+        const lvl = r.interest_level || 'none';
+        const pill = '<span class="intel-pill ' + (pillClass[lvl] || 'none') + '">' + escapeHtml(pillLabel[lvl] || lvl) + '</span>';
+        const nextAction = r.next_action ? escapeHtml(r.next_action) : '<span style="color:var(--muted);">&mdash;</span>';
+        const referral = r.referral_name
+          ? escapeHtml(r.referral_name) + (r.referral_role ? ' <span style="color:var(--muted);font-size:11px;">(' + escapeHtml(r.referral_role) + ')</span>' : '')
+          : '<span style="color:var(--muted);">&mdash;</span>';
+        const competitor = r.competitor ? '<span style="color:var(--red);font-weight:600;">' + escapeHtml(r.competitor) + '</span>' : '<span style="color:var(--muted);">&mdash;</span>';
+
+        const hasDetail = r.objection || r.commodities || r.key_quote || r.category;
+
+        html += '<tr class="expandable" onclick="toggleIntelRow(\\'' + rowId + '\\')">';
+        html += '<td style="font-weight:600;">' + escapeHtml(r.contact_name || '') + '<span class="expand-arrow">&#x25B6;</span></td>';
+        html += '<td style="color:var(--muted);font-size:12px;">' + escapeHtml(r.company_name || '') + '</td>';
+        html += '<td style="text-align:center;">' + pill + '</td>';
+        html += '<td style="font-size:12px;max-width:220px;">' + nextAction + '</td>';
+        html += '<td style="font-size:12px;">' + referral + '</td>';
+        html += '<td style="font-size:12px;">' + competitor + '</td>';
+        html += '</tr>';
+
+        if (hasDetail) {{
+          let fields = '';
+          if (r.category) fields += '<div class="intel-detail-field"><span class="intel-detail-label">Category</span><span class="intel-detail-value">' + escapeHtml(r.category) + '</span></div>';
+          if (r.commodities) fields += '<div class="intel-detail-field"><span class="intel-detail-label">Commodities</span><span class="intel-detail-value">' + escapeHtml(r.commodities) + '</span></div>';
+          if (r.objection) fields += '<div class="intel-detail-field"><span class="intel-detail-label">Objection</span><span class="intel-detail-value">' + escapeHtml(r.objection) + '</span></div>';
+          if (r.key_quote) fields += '<div class="intel-detail-field" style="grid-column:1/-1;"><span class="intel-detail-label">Key Quote</span><span class="intel-detail-value intel-quote">&ldquo;' + escapeHtml(r.key_quote) + '&rdquo;</span></div>';
+          html += '<tr class="intel-detail-row" id="' + rowId + '"><td colspan="6"><div style="padding:4px;"><div class="intel-detail-content">' + fields + '</div></div></td></tr>';
+        }}
+      }});
+
+      tbody.innerHTML = html || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px;">No entries match your filter.</td></tr>';
+
+      // Pagination
+      let pagHtml = '';
+      if (totalPages > 1) {{
+        if (currentPage > 0) pagHtml += '<button onclick="intelPage(' + (currentPage - 1) + ')">&laquo; Prev</button>';
+        const maxBtns = 7;
+        let startP = Math.max(0, currentPage - 3);
+        let endP = Math.min(totalPages, startP + maxBtns);
+        if (endP - startP < maxBtns) startP = Math.max(0, endP - maxBtns);
+        for (let p = startP; p < endP; p++) {{
+          const cls = p === currentPage ? ' class="active"' : '';
+          pagHtml += '<button' + cls + ' onclick="intelPage(' + p + ')">' + (p + 1) + '</button>';
+        }}
+        if (currentPage < totalPages - 1) pagHtml += '<button onclick="intelPage(' + (currentPage + 1) + ')">Next &raquo;</button>';
+      }}
+      pagEl.innerHTML = pagHtml;
+    }}
+
+    window.intelPage = function(p) {{
+      currentPage = p;
+      renderIntelTable();
+      const tbl = document.getElementById('intel-table');
+      if (tbl) window.scrollTo(0, tbl.offsetTop - 80);
+    }};
+
+    window.toggleIntelRow = function(id) {{
+      const row = document.getElementById(id);
+      if (row) {{
+        row.classList.toggle('open');
+        const prev = row.previousElementSibling;
+        if (prev) prev.classList.toggle('open');
+      }}
+    }};
+
+    if (searchInput) searchInput.addEventListener('input', applyIntelFilters);
+    if (filterSelect) filterSelect.addEventListener('change', applyIntelFilters);
+
+    applyIntelFilters();
+  }}
 </script>
 </body>
 </html>"""
@@ -1916,6 +2264,16 @@ def main():
     else:
         data["inmail_stats"] = None
         print("  InMails: inmail_data.json not found, skipping")
+
+    # Call intelligence (from call_intel.json)
+    intel_path = HERE / "call_intel.json"
+    if intel_path.exists():
+        intel_data = json.loads(intel_path.read_text())
+        data["call_intel"] = intel_data
+        print(f"  Intel: {intel_data['total_extracted']} calls analyzed, {intel_data['summary']['qualified']} qualified")
+    else:
+        data["call_intel"] = None
+        print("  Intel: call_intel.json not found, skipping")
 
     # 3. Write call_data.json
     json_path = HERE / "call_data.json"
