@@ -944,9 +944,16 @@ def build_html(data: dict) -> str:
 
     # Escape </ to prevent </script> breaking the HTML parser
     weekly_json = json.dumps(data["weekly_data"], default=str).replace("</", "<\\/")
-    calls_json = json.dumps(data["calls"], default=str).replace("</", "<\\/")
+    # Strip fields not used by frontend JS (saves ~500KB from embedded script)
+    _JS_CALL_FIELDS = {"id", "timestamp", "contact_name", "company_name", "category", "duration_s", "notes", "has_transcript"}
+    slim_calls = [{k: v for k, v in c.items() if k in _JS_CALL_FIELDS} for c in data["calls"]]
+    calls_json = json.dumps(slim_calls, default=str).replace("</", "<\\/")
     totals_json = json.dumps(data["totals"], default=str).replace("</", "<\\/")
-    task_queue_json = json.dumps(data.get("task_queue"), default=str).replace("</", "<\\/")
+    # Cap task queue to 20 items for frontend (770 tasks = 60KB bloat)
+    tq = data.get("task_queue")
+    if tq and tq.get("tasks"):
+        tq = {**tq, "tasks": tq["tasks"][:20]}
+    task_queue_json = json.dumps(tq, default=str).replace("</", "<\\/")
     apollo_json = json.dumps(data.get("apollo_stats"), default=str).replace("</", "<\\/")
     inmail_json = json.dumps(data.get("inmail_stats"), default=str).replace("</", "<\\/")
     intel_json = json.dumps(data.get("call_intel"), default=str).replace("</", "<\\/")
@@ -1703,6 +1710,8 @@ def build_html(data: dict) -> str:
     if (btn && panel) {{
       btn.classList.add('active');
       panel.classList.add('active');
+      if (tabId === 'calllog') renderCallLog();
+      if (tabId === 'companies') renderCompaniesTab();
       if (tabId === 'analysis') renderAnalysisCharts();
       if (tabId === 'emailseq') renderEmailSeqChart();
       if (tabId === 'inmails') renderInmailCharts();
@@ -1815,8 +1824,11 @@ def build_html(data: dict) -> str:
     return div.innerHTML;
   }}
 
-  // ═══════════════ TAB 3: CALL LOG ═══════════════
-  (function() {{
+  // ═══════════════ TAB 3: CALL LOG (lazy) ═══════════════
+  let calllogRendered = false;
+  function renderCallLog() {{
+    if (calllogRendered) return;
+    calllogRendered = true;
     const PAGE_SIZE = 50;
     let filtered = [];
     let currentPage = 0;
@@ -1928,10 +1940,13 @@ def build_html(data: dict) -> str:
     filterSelect.addEventListener('change', applyFilters);
 
     applyFilters();
-  }})();
+  }}
 
-  // ═══════════════ TAB 5: COMPANIES ═══════════════
-  (function() {{
+  // ═══════════════ TAB 5: COMPANIES (lazy) ═══════════════
+  let companiesRendered = false;
+  function renderCompaniesTab() {{
+    if (companiesRendered) return;
+    companiesRendered = true;
     const searchInput = document.getElementById('company-search');
     const sortSelect = document.getElementById('company-sort');
     const statsEl = document.getElementById('company-stats');
@@ -2040,7 +2055,7 @@ def build_html(data: dict) -> str:
     searchInput.addEventListener('input', renderCompanies);
     sortSelect.addEventListener('change', renderCompanies);
     renderCompanies();
-  }})();
+  }}
 
   // ═══════════════ TAB 8: CALL INTELLIGENCE ═══════════════
   let intelTabRendered = false;
