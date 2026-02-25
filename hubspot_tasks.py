@@ -36,8 +36,6 @@ def fetch_open_tasks(token: str, owner_id: str = ADAM_OWNER_ID) -> Dict:
             "properties": [
                 "hs_task_subject", "hs_task_status", "hs_timestamp",
                 "hs_task_priority", "hs_task_type",
-                "hs_created_by_user_id", "hs_object_source",
-                "hs_object_source_label",
             ],
             "limit": 100,
         }
@@ -92,9 +90,6 @@ def _summarize_tasks(tasks: List[Dict]) -> Dict:
             "subject": props.get("hs_task_subject", "Untitled"),
             "priority": priority,
             "status": props.get("hs_task_status", ""),
-            "source": props.get("hs_object_source", ""),
-            "source_label": props.get("hs_object_source_label", ""),
-            "created_by": props.get("hs_created_by_user_id", ""),
         })
 
     total = len(tasks)
