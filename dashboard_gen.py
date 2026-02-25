@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 """
-dashboard_gen.py — Unified multi-tab dashboard generator for GitHub Pages.
+dashboard_gen.py — Outbound Central: multi-channel dashboard generator for GitHub Pages.
 
 Generates:
   - call_data.json  (daily JSON snapshot of all calls)
   - index.html      (5-tab management dashboard)
 
-Standalone dashboard generator.
+Data sources (all optional except HubSpot calls):
+  - HubSpot Calls   — cold calling stats (required)
+  - HubSpot Tasks   — Adam's open task queue
+  - Apollo           — email sequence stats
+  - Google Sheets    — LinkedIn outreach stats
 
 Usage:
     HUBSPOT_TOKEN=xxx python3 dashboard_gen.py
+    HUBSPOT_TOKEN=xxx APOLLO_API_KEY=yyy python3 dashboard_gen.py
 """
 
 import html as _html
@@ -18,16 +23,20 @@ import os
 import sys
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
+from typing import Optional
 from zoneinfo import ZoneInfo
 
 from hubspot import (
     fetch_calls, fetch_meeting_details_for_categorized, filter_calls_in_range,
     group_calls_by_week, load_historical_categories,
     calculate_category_stats, categorize_call, parse_hs_timestamp,
-    safe_int, strip_html,
+    safe_int, strip_html, enrich_calls_with_associations,
     ADAM_OWNER_ID, PACIFIC, PITCHED_CATS,
     HUMAN_CONTACT_CATS, ALL_CATEGORIES,
 )
+from hubspot_tasks import fetch_open_tasks
+from apollo_stats import fetch_apollo_stats
+from sheets_reader import fetch_linkedin_stats
 
 HERE = Path(__file__).parent
 CAMPAIGN_START = date(2026, 1, 19)
@@ -66,6 +75,10 @@ def build_call_data(token: str) -> dict:
     all_calls = fetch_calls(token, 0, end_ms, owner_id=ADAM_OWNER_ID)
     print(f"Total calls: {len(all_calls)}")
 
+    # Enrich with contact/company/note associations
+    print("Enriching calls with associations...")
+    enrichment = enrich_calls_with_associations(token, all_calls)
+
     # Build individual call records
     calls_list = []
     for call in all_calls:
@@ -79,14 +92,23 @@ def build_call_data(token: str) -> dict:
 
         cat = categorize_call(call, historical)
         duration_ms = safe_int(props.get("hs_call_duration"))
+        call_id = call.get("id", "")
+        enr = enrichment.get(call_id, {})
+
+        # Use enriched contact name if available, fall back to call title
+        contact = enr.get("contact_name") or (props.get("hs_call_title") or "Unknown").strip()
 
         calls_list.append({
-            "id": call.get("id", ""),
+            "id": call_id,
             "timestamp": ts_pt.isoformat(),
-            "contact_name": (props.get("hs_call_title") or "Unknown").strip(),
+            "contact_name": contact,
+            "company_name": enr.get("company_name", ""),
+            "company_id": enr.get("company_id", ""),
             "category": cat,
             "duration_s": duration_ms // 1000,
             "notes": (props.get("hs_body_preview") or strip_html(props.get("hs_call_body") or "")).strip(),
+            "engagement_notes": enr.get("engagement_notes", []),
+            "has_transcript": str(props.get("hs_call_has_transcript") or "").lower() == "true",
             "week_num": compute_week_number(monday),
             "hour_pt": ts_pt.hour,
         })
@@ -158,7 +180,7 @@ def _tab_bar() -> str:
         ("trends", "Weekly Trends"),
         ("calllog", "Call Log"),
         ("analysis", "Analysis"),
-        ("hourly", "Hourly Trends"),
+        ("companies", "Companies"),
     ]
     btns = []
     for tid, label in tabs:
@@ -167,15 +189,124 @@ def _tab_bar() -> str:
     return '<div class="tab-bar">' + "".join(btns) + "</div>"
 
 
+def _build_task_queue_banner(data: dict) -> str:
+    """Build task queue alert banner HTML. Returns empty string if no data."""
+    tq = data.get("task_queue")
+    if not tq:
+        return ""
+
+    alert = tq["alert_level"]
+    total = tq["total_open"]
+    high = tq["by_priority"].get("HIGH", 0)
+    oldest = tq["oldest_task_days"]
+
+    icon_map = {"ok": "&#x2705;", "warning": "&#x26A0;&#xFE0F;", "critical": "&#x1F6A8;"}
+    icon = icon_map.get(alert, "")
+
+    priority_parts = []
+    for p in ["HIGH", "MEDIUM", "LOW"]:
+        count = tq["by_priority"].get(p, 0)
+        if count > 0:
+            priority_parts.append(f'<div class="tb-stat"><span class="tb-num">{count}</span><span class="tb-label">{p}</span></div>')
+
+    return f"""
+  <div class="task-banner alert-{alert}" id="task-banner" onclick="document.getElementById('task-list').classList.toggle('open');this.classList.toggle('open');">
+    <span class="tb-icon">{icon}</span>
+    <div class="tb-stats">
+      <div class="tb-stat"><span class="tb-num">{total}</span><span class="tb-label">Open Tasks</span></div>
+      {"".join(priority_parts)}
+      <div class="tb-stat"><span class="tb-num">{oldest}d</span><span class="tb-label">Oldest</span></div>
+    </div>
+    <span class="tb-chevron">&#x25B6;</span>
+  </div>
+  <div class="task-list" id="task-list">
+    <div class="task-list-inner" id="task-list-inner"></div>
+  </div>"""
+
+
+def _build_channels_grid(data: dict) -> str:
+    """Build outbound channels 3-column grid."""
+    t = data["totals"]
+    apollo = data.get("apollo_stats")
+    linkedin = data.get("linkedin_stats")
+
+    # Cold Calling column
+    calls_html = f"""
+    <div class="channel-card ch-calls">
+      <div class="channel-title">Cold Calling</div>
+      <div class="channel-stats">
+        <div class="channel-stat"><span class="channel-stat-label">Dials</span><span class="channel-stat-val highlight">{t['dials']:,}</span></div>
+        <div class="channel-stat"><span class="channel-stat-label">HC Rate</span><span class="channel-stat-val">{t['hc_rate']}%</span></div>
+        <div class="channel-stat"><span class="channel-stat-label">Meetings</span><span class="channel-stat-val">{t['meetings']}</span></div>
+      </div>
+    </div>"""
+
+    # Email Sequences column
+    if apollo:
+        at = apollo["totals"]
+        email_html = f"""
+    <div class="channel-card ch-email">
+      <div class="channel-title">Email Sequences</div>
+      <div class="channel-stats">
+        <div class="channel-stat"><span class="channel-stat-label">Sent</span><span class="channel-stat-val highlight">{at['emails_sent']:,}</span></div>
+        <div class="channel-stat"><span class="channel-stat-label">Open Rate</span><span class="channel-stat-val">{at['open_rate']}%</span></div>
+        <div class="channel-stat"><span class="channel-stat-label">Reply Rate</span><span class="channel-stat-val">{at['reply_rate']}%</span></div>
+      </div>
+    </div>"""
+    else:
+        email_html = """
+    <div class="channel-card ch-email">
+      <div class="channel-title">Email Sequences</div>
+      <div class="channel-not-configured">Not configured &mdash; set APOLLO_API_KEY</div>
+    </div>"""
+
+    # LinkedIn column
+    if linkedin:
+        li_html = f"""
+    <div class="channel-card ch-linkedin">
+      <div class="channel-title">LinkedIn Outreach</div>
+      <div class="channel-stats">
+        <div class="channel-stat"><span class="channel-stat-label">Requests</span><span class="channel-stat-val highlight">{linkedin['requests_sent']}</span></div>
+        <div class="channel-stat"><span class="channel-stat-label">Connected</span><span class="channel-stat-val">{linkedin['connected']}</span></div>
+        <div class="channel-stat"><span class="channel-stat-label">Accept Rate</span><span class="channel-stat-val">{linkedin['accept_rate']}%</span></div>
+      </div>
+    </div>"""
+    else:
+        li_html = """
+    <div class="channel-card ch-linkedin">
+      <div class="channel-title">LinkedIn Outreach</div>
+      <div class="channel-not-configured">Not configured &mdash; set GOOGLE_SHEET_ID</div>
+    </div>"""
+
+    return f"""
+  <div class="section-header" style="border-left-color:var(--cyan);"><h2>Outbound Channels</h2><p>All active outreach channels at a glance</p></div>
+  <div class="channels-grid">
+    {calls_html}
+    {email_html}
+    {li_html}
+  </div>"""
+
+
 def _build_overview_tab(data: dict) -> str:
-    """Tab 1: Hero KPIs + today snapshot + meeting details."""
+    """Tab 1: Task queue + Hero KPIs + outbound channels + today snapshot + meetings."""
     t = data["totals"]
     today = data["today"]
     meetings = data["meeting_details"]
+    apollo = data.get("apollo_stats")
 
-    # Hero cards — meetings prominent
+    # Hero cards — 4 cards (add Emails Sent if available)
+    emails_sent_card = ""
+    if apollo:
+        at = apollo["totals"]
+        emails_sent_card = f"""
+    <div class="hero-card accent-cyan">
+      <span class="num">{at['emails_sent']:,}</span>
+      <div class="label">Emails Sent</div>
+      <div class="sub">{at['open_rate']}% open rate</div>
+    </div>"""
+
     hero = f"""
-  <div class="hero">
+  <div class="hero" style="grid-template-columns: repeat({4 if apollo else 3}, 1fr);">
     <div class="hero-card accent-green">
       <span class="num">{t['meetings']}</span>
       <div class="label">Meetings Booked</div>
@@ -189,7 +320,14 @@ def _build_overview_tab(data: dict) -> str:
       <div class="label">Human Contact Rate</div>
       <div class="sub">{t['hc']:,} conversations</div>
     </div>
+    {emails_sent_card}
   </div>"""
+
+    # Task queue banner
+    task_html = _build_task_queue_banner(data)
+
+    # Outbound channels grid
+    channels_html = _build_channels_grid(data)
 
     # Today snapshot
     today_html = ""
@@ -224,7 +362,9 @@ def _build_overview_tab(data: dict) -> str:
   </div>"""
 
     return f"""<div id="tab-overview" class="tab-panel active">
+{task_html}
 {hero}
+{channels_html}
 {today_html}
 {mtg_html}
 </div>"""
@@ -329,9 +469,9 @@ def _build_trends_tab(data: dict) -> str:
 def _build_calllog_tab() -> str:
     """Tab 3: Call log — rendered client-side from embedded JSON."""
     return """<div id="tab-calllog" class="tab-panel">
-  <div class="section-header"><h2>Call Log</h2><p>Every call, newest first &mdash; click a row to see notes</p></div>
+  <div class="section-header"><h2>Call Log</h2><p>Every call, newest first &mdash; click a row to see full details</p></div>
   <div class="calllog-controls">
-    <input type="text" id="calllog-search" placeholder="Search by name, category, or notes..." />
+    <input type="text" id="calllog-search" placeholder="Search by name, company, category, or notes..." />
     <select id="calllog-filter">
       <option value="">All Categories</option>
     </select>
@@ -342,6 +482,7 @@ def _build_calllog_tab() -> str:
       <thead><tr>
         <th style="text-align:left;">Date/Time</th>
         <th style="text-align:left;">Contact</th>
+        <th style="text-align:left;">Company</th>
         <th>Category</th>
         <th>Duration</th>
         <th style="text-align:left;">Notes</th>
@@ -428,16 +569,21 @@ def _build_analysis_tab() -> str:
 </div>"""
 
 
-def _build_hourly_tab() -> str:
-    """Tab 5: Hourly Trends — placeholder for Phase 3."""
-    return """<div id="tab-hourly" class="tab-panel">
-  <div class="section-header"><h2>Hourly Trends</h2><p>Best time-of-day analysis</p></div>
-  <div class="placeholder-card">
-    <div class="placeholder-icon">&#x1f552;</div>
-    <h3>Coming in Phase 3</h3>
-    <p>This tab will show a heatmap of connect rates by hour and day of week,
-    helping identify the best times to call. Requires the SQLite data layer from Phase 2.</p>
+def _build_companies_tab() -> str:
+    """Tab 5: Companies — aggregated company view, rendered client-side."""
+    return """<div id="tab-companies" class="tab-panel">
+  <div class="section-header"><h2>Companies</h2><p>Every company contacted &mdash; click to expand call history</p></div>
+  <div class="calllog-controls">
+    <input type="text" id="company-search" placeholder="Search by company name..." />
+    <select id="company-sort">
+      <option value="calls">Most Calls</option>
+      <option value="recent">Most Recent</option>
+      <option value="name">Alphabetical</option>
+      <option value="meetings">Meetings First</option>
+    </select>
   </div>
+  <div class="calllog-stats" id="company-stats"></div>
+  <div id="company-list"></div>
 </div>"""
 
 
@@ -447,20 +593,20 @@ def build_html(data: dict) -> str:
     date_str = now.strftime("%B %d, %Y")
     current_monday = now.date() - timedelta(days=now.weekday())
     campaign_week = compute_week_number(current_monday)
-    gen_time = now.strftime("%B %d, %Y at %I:%M %p %Z")
+    gen_time = now.strftime("%B %d, %Y at %I:%M %p") + " PT"
 
     # Escape </ to prevent </script> breaking the HTML parser
     weekly_json = json.dumps(data["weekly_data"], default=str).replace("</", "<\\/")
     calls_json = json.dumps(data["calls"], default=str).replace("</", "<\\/")
     totals_json = json.dumps(data["totals"], default=str).replace("</", "<\\/")
-
+    task_queue_json = json.dumps(data.get("task_queue"), default=str).replace("</", "<\\/")
 
     tab_bar = _tab_bar()
     overview = _build_overview_tab(data)
     trends = _build_trends_tab(data)
     calllog = _build_calllog_tab()
     analysis = _build_analysis_tab()
-    hourly = _build_hourly_tab()
+    companies = _build_companies_tab()
 
     # Analysis chart data for lazy init (set by _build_analysis_tab if forensic data exists)
     analysis_chart_data = getattr(_build_analysis_tab, "_data", None)
@@ -471,7 +617,7 @@ def build_html(data: dict) -> str:
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sales Intelligence Dashboard &mdash; {date_str}</title>
+  <title>Outbound Central &mdash; {date_str}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -718,27 +864,181 @@ def build_html(data: dict) -> str:
     .explain strong {{ color: var(--text); }}
     .explain em {{ color: var(--orange); font-style: normal; font-weight: 600; }}
 
-    /* PLACEHOLDER (Phase 3) */
-    .placeholder-card {{
-      background: var(--card); border: 1px solid var(--border); border-radius: var(--r);
-      padding: 64px 32px; text-align: center; box-shadow: var(--shadow);
+    /* TRANSCRIPT + ENGAGEMENT NOTES */
+    .transcript-badge {{
+      display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.05em;
+      background: rgba(139,92,246,0.15); color: var(--purple); border-radius: 4px;
+      padding: 2px 6px; margin-left: 6px; vertical-align: middle;
     }}
-    .placeholder-icon {{ font-size: 48px; margin-bottom: 16px; }}
-    .placeholder-card h3 {{ font-size: 18px; font-weight: 700; margin-bottom: 8px; color: var(--muted); }}
-    .placeholder-card p {{ font-size: 14px; color: rgba(139,163,199,0.6); max-width: 400px; margin: 0 auto; }}
+    .eng-notes {{ margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }}
+    .eng-notes-label {{
+      font-size: 10px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase;
+      color: var(--orange); margin-bottom: 6px;
+    }}
+    .eng-note-item {{
+      font-size: 13px; color: var(--muted); line-height: 1.6;
+      padding: 6px 0; white-space: pre-wrap; word-break: break-word;
+    }}
+    .eng-note-item + .eng-note-item {{ border-top: 1px dashed rgba(59,130,246,0.12); }}
+
+    /* COMPANIES TAB */
+    .company-card {{
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--r);
+      margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }}
+    .company-card:hover {{ border-color: var(--border-hover); box-shadow: var(--shadow-hover); }}
+    .company-header {{
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 22px; cursor: pointer; gap: 16px;
+    }}
+    .company-header:hover {{ background: rgba(59,130,246,0.04); }}
+    .company-name {{ font-size: 16px; font-weight: 700; color: var(--text); flex: 1; }}
+    .company-meta {{ display: flex; gap: 16px; align-items: center; flex-shrink: 0; }}
+    .company-stat {{
+      font-size: 12px; color: var(--muted); text-align: center; min-width: 50px;
+    }}
+    .company-stat .cs-num {{ font-size: 18px; font-weight: 800; display: block; line-height: 1.2; }}
+    .company-stat .cs-num.green {{ color: var(--green); }}
+    .company-stat .cs-num.blue {{ color: var(--blue); }}
+    .company-stat .cs-num.orange {{ color: var(--orange); }}
+    .company-stat .cs-label {{ font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }}
+    .company-chevron {{ color: var(--muted); font-size: 14px; transition: transform 0.2s; }}
+    .company-card.open .company-chevron {{ transform: rotate(90deg); }}
+    .company-detail {{ display: none; padding: 0 22px 18px; }}
+    .company-card.open .company-detail {{ display: block; }}
+    .company-cats {{
+      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;
+    }}
+    .company-cat-pill {{
+      font-size: 11px; font-weight: 600; padding: 4px 10px;
+      border-radius: 6px; background: rgba(59,130,246,0.08);
+      color: var(--muted); border: 1px solid var(--border);
+    }}
+    .company-timeline {{ border-left: 2px solid var(--border); margin-left: 8px; padding-left: 18px; }}
+    .company-call {{
+      position: relative; padding: 10px 0; font-size: 13px;
+      border-bottom: 1px solid rgba(59,130,246,0.06);
+    }}
+    .company-call:last-child {{ border-bottom: none; }}
+    .company-call::before {{
+      content: ''; position: absolute; left: -23px; top: 16px;
+      width: 8px; height: 8px; border-radius: 50%; background: var(--border);
+    }}
+    .company-call-header {{ display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }}
+    .company-call-date {{ color: var(--muted); font-size: 12px; min-width: 120px; }}
+    .company-call-contact {{ color: var(--text); font-weight: 600; }}
+    .company-call-cat {{ font-size: 11px; font-weight: 600; }}
+    .company-call-dur {{ color: var(--muted); font-size: 12px; }}
+    .company-call-notes {{ color: rgba(139,163,199,0.7); font-size: 12px; margin-top: 4px; line-height: 1.5; }}
 
     /* FOOTER */
     footer {{ border-top: 1px solid var(--border); padding-top: 28px; text-align: center; font-size: 13px; color: var(--muted); line-height: 1.8; }}
     footer strong {{ color: var(--text); }}
 
+    /* HERO CARD — CYAN ACCENT */
+    .hero-card.accent-cyan::before {{ background: var(--cyan); }}
+    .hero-card.accent-cyan .num {{ color: var(--cyan); text-shadow: 0 0 28px rgba(6,182,212,0.35); }}
+
+    /* TASK QUEUE BANNER */
+    .task-banner {{
+      border-radius: var(--r); padding: 20px 28px; margin-bottom: 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; box-shadow: var(--shadow); cursor: pointer;
+      transition: box-shadow 0.2s;
+    }}
+    .task-banner:hover {{ box-shadow: var(--shadow-hover); }}
+    .task-banner.alert-ok {{
+      background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.30);
+      border-left: 4px solid var(--green);
+    }}
+    .task-banner.alert-warning {{
+      background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.30);
+      border-left: 4px solid var(--orange);
+    }}
+    .task-banner.alert-critical {{
+      background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.30);
+      border-left: 4px solid var(--red);
+    }}
+    .task-banner .tb-icon {{ font-size: 24px; flex-shrink: 0; }}
+    .task-banner .tb-stats {{
+      display: flex; gap: 24px; flex-wrap: wrap; flex: 1;
+    }}
+    .task-banner .tb-stat {{ text-align: center; }}
+    .task-banner .tb-num {{
+      font-size: 28px; font-weight: 900; display: block; line-height: 1;
+    }}
+    .task-banner.alert-ok .tb-num {{ color: var(--green); }}
+    .task-banner.alert-warning .tb-num {{ color: var(--orange); }}
+    .task-banner.alert-critical .tb-num {{ color: var(--red); }}
+    .task-banner .tb-label {{
+      font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--muted);
+    }}
+    .task-banner .tb-chevron {{
+      color: var(--muted); font-size: 14px; transition: transform 0.2s; flex-shrink: 0;
+    }}
+    .task-banner.open .tb-chevron {{ transform: rotate(90deg); }}
+    .task-list {{ display: none; margin-bottom: 32px; }}
+    .task-list.open {{ display: block; }}
+    .task-list-inner {{
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--r);
+      padding: 16px 22px; max-height: 300px; overflow-y: auto;
+    }}
+    .task-item {{
+      display: flex; align-items: center; gap: 12px; padding: 8px 0;
+      border-bottom: 1px solid var(--border); font-size: 13px;
+    }}
+    .task-item:last-child {{ border-bottom: none; }}
+    .task-priority {{
+      font-size: 10px; font-weight: 700; letter-spacing: 0.06em; padding: 2px 8px;
+      border-radius: 4px; text-transform: uppercase; flex-shrink: 0;
+    }}
+    .task-priority.high {{ background: rgba(239,68,68,0.15); color: var(--red); }}
+    .task-priority.medium {{ background: rgba(245,158,11,0.15); color: var(--orange); }}
+    .task-priority.low {{ background: rgba(59,130,246,0.15); color: var(--blue); }}
+    .task-priority.none {{ background: rgba(139,163,199,0.10); color: var(--muted); }}
+
+    /* OUTBOUND CHANNELS GRID */
+    .channels-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 48px; }}
+    .channel-card {{
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--r);
+      padding: 24px 22px; position: relative; overflow: hidden;
+      box-shadow: var(--shadow); transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }}
+    .channel-card::before {{ content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }}
+    .channel-card.ch-calls::before {{ background: var(--blue); }}
+    .channel-card.ch-email::before {{ background: var(--cyan); }}
+    .channel-card.ch-linkedin::before {{ background: var(--purple); }}
+    .channel-card:hover {{ border-color: var(--border-hover); box-shadow: var(--shadow-hover); transform: translateY(-1px); }}
+    .channel-title {{
+      font-size: 11px; font-weight: 700; letter-spacing: 0.10em;
+      text-transform: uppercase; margin-bottom: 16px;
+    }}
+    .ch-calls .channel-title {{ color: var(--blue); }}
+    .ch-email .channel-title {{ color: var(--cyan); }}
+    .ch-linkedin .channel-title {{ color: var(--purple); }}
+    .channel-stats {{ display: flex; flex-direction: column; gap: 12px; }}
+    .channel-stat {{
+      display: flex; justify-content: space-between; align-items: baseline;
+    }}
+    .channel-stat-label {{ font-size: 13px; color: var(--muted); }}
+    .channel-stat-val {{ font-size: 20px; font-weight: 800; color: var(--text); }}
+    .channel-stat-val.highlight {{ font-size: 24px; }}
+    .channel-not-configured {{
+      color: var(--muted); font-size: 13px; font-style: italic;
+      text-align: center; padding: 20px 0;
+    }}
+
     /* RESPONSIVE */
-    @media (max-width: 860px) {{ .charts-row {{ grid-template-columns: 1fr; }} }}
+    @media (max-width: 860px) {{ .charts-row {{ grid-template-columns: 1fr; }} .channels-grid {{ grid-template-columns: 1fr; }} }}
     @media (max-width: 640px) {{
       .hero {{ grid-template-columns: 1fr; }}
       .today-grid {{ grid-template-columns: 1fr; }}
       .today-categories {{ flex-direction: column; }}
       thead th, tbody td, tfoot td {{ padding: 10px 8px; font-size: 12px; }}
       .calllog-controls {{ flex-direction: column; }}
+      .task-banner .tb-stats {{ gap: 14px; }}
     }}
   </style>
 </head>
@@ -746,8 +1046,8 @@ def build_html(data: dict) -> str:
 <div class="page">
 
   <header>
-    <div class="label">Sales Intelligence Dashboard</div>
-    <h1>Cold Calling Performance</h1>
+    <div class="label">Outbound Central</div>
+    <h1>Outbound Central</h1>
     <div class="subtitle">{date_str} &nbsp;&middot;&nbsp; Week {campaign_week} of campaign</div>
   </header>
 
@@ -757,10 +1057,10 @@ def build_html(data: dict) -> str:
   {trends}
   {calllog}
   {analysis}
-  {hourly}
+  {companies}
 
   <footer>
-    <strong>Sales Intelligence Dashboard</strong><br>
+    <strong>Outbound Central</strong><br>
     Generated {gen_time}
   </footer>
 
@@ -771,6 +1071,23 @@ def build_html(data: dict) -> str:
   const weeklyData = {weekly_json};
   const allCalls = {calls_json};
   const totals = {totals_json};
+  const taskQueue = {task_queue_json};
+
+  // ═══════════════ TASK LIST RENDER ═══════════════
+  (function() {{
+    if (!taskQueue || !taskQueue.tasks) return;
+    const el = document.getElementById('task-list-inner');
+    if (!el) return;
+    let html = '';
+    taskQueue.tasks.forEach(t => {{
+      const pClass = t.priority.toLowerCase();
+      html += '<div class="task-item">'
+        + '<span class="task-priority ' + pClass + '">' + t.priority + '</span>'
+        + '<span>' + t.subject.replace(/</g, '&lt;') + '</span>'
+        + '</div>';
+    }});
+    el.innerHTML = html || '<div style="color:var(--muted);padding:8px;">No open tasks.</div>';
+  }})();
 
   // ═══════════════ CHART DEFAULTS ═══════════════
   Chart.defaults.color = '#8BA3C7';
@@ -894,6 +1211,37 @@ def build_html(data: dict) -> str:
     }}
   }});
 
+  // ═══════════════ SHARED UTILS ═══════════════
+  function formatDuration(s) {{
+    if (s < 60) return s + 's';
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return sec > 0 ? m + 'm ' + sec + 's' : m + 'm';
+  }}
+
+  function formatTimestamp(iso) {{
+    const d = new Date(iso);
+    const mon = d.toLocaleString('en-US', {{ month: 'short' }});
+    const day = d.getDate();
+    const h = d.getHours();
+    const m = String(d.getMinutes()).padStart(2, '0');
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const h12 = h % 12 || 12;
+    return mon + ' ' + day + ', ' + h12 + ':' + m + ' ' + ampm;
+  }}
+
+  function truncate(s, len) {{
+    if (!s) return '<span style="color:var(--muted);">&mdash;</span>';
+    if (s.length <= len) return escapeHtml(s);
+    return escapeHtml(s.slice(0, len)) + '&hellip;';
+  }}
+
+  function escapeHtml(s) {{
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }}
+
   // ═══════════════ TAB 3: CALL LOG ═══════════════
   (function() {{
     const PAGE_SIZE = 50;
@@ -920,7 +1268,7 @@ def build_html(data: dict) -> str:
       filtered = allCalls.filter(c => {{
         if (cat && c.category !== cat) return false;
         if (q) {{
-          const haystack = (c.contact_name + ' ' + c.category + ' ' + c.notes).toLowerCase();
+          const haystack = (c.contact_name + ' ' + (c.company_name||'') + ' ' + c.category + ' ' + c.notes + ' ' + (c.engagement_notes||[]).join(' ')).toLowerCase();
           return haystack.includes(q);
         }}
         return true;
@@ -929,36 +1277,6 @@ def build_html(data: dict) -> str:
       filtered.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
       currentPage = 0;
       render();
-    }}
-
-    function formatDuration(s) {{
-      if (s < 60) return s + 's';
-      const m = Math.floor(s / 60);
-      const sec = s % 60;
-      return sec > 0 ? m + 'm ' + sec + 's' : m + 'm';
-    }}
-
-    function formatTimestamp(iso) {{
-      const d = new Date(iso);
-      const mon = d.toLocaleString('en-US', {{ month: 'short' }});
-      const day = d.getDate();
-      const h = d.getHours();
-      const m = String(d.getMinutes()).padStart(2, '0');
-      const ampm = h >= 12 ? 'PM' : 'AM';
-      const h12 = h % 12 || 12;
-      return mon + ' ' + day + ', ' + h12 + ':' + m + ' ' + ampm;
-    }}
-
-    function truncate(s, len) {{
-      if (!s) return '<span style="color:var(--muted);">&mdash;</span>';
-      if (s.length <= len) return escapeHtml(s);
-      return escapeHtml(s.slice(0, len)) + '&hellip;';
-    }}
-
-    function escapeHtml(s) {{
-      const div = document.createElement('div');
-      div.textContent = s;
-      return div.innerHTML;
     }}
 
     function render() {{
@@ -977,19 +1295,30 @@ def build_html(data: dict) -> str:
         const rowId = 'row-' + start + '-' + i;
         const catColor = catColors[c.category] || '#8BA3C7';
         const hasNotes = c.notes && c.notes.trim().length > 0;
-        const expandClass = hasNotes ? ' expandable' : '';
-        const arrow = hasNotes ? ' &#x25B6;' : '';
+        const hasEngNotes = c.engagement_notes && c.engagement_notes.length > 0;
+        const hasDetail = hasNotes || hasEngNotes;
+        const expandClass = hasDetail ? ' expandable' : '';
+        const arrow = hasDetail ? ' &#x25B6;' : '';
+        const txBadge = c.has_transcript ? '<span class="transcript-badge">TRANSCRIPT</span>' : '';
 
         html += '<tr class="' + expandClass + '" onclick="toggleNotes(\\'' + rowId + '\\')">';
         html += '<td class="muted" style="white-space:nowrap;">' + formatTimestamp(c.timestamp) + '</td>';
-        html += '<td>' + escapeHtml(c.contact_name) + '</td>';
+        html += '<td>' + escapeHtml(c.contact_name) + txBadge + '</td>';
+        html += '<td style="color:var(--muted);font-size:12px;">' + escapeHtml(c.company_name || '') + '</td>';
         html += '<td style="text-align:center;"><span style="color:' + catColor + ';font-weight:600;">' + escapeHtml(c.category) + '</span></td>';
         html += '<td class="num-col">' + formatDuration(c.duration_s) + '</td>';
-        html += '<td style="max-width:300px;">' + truncate(c.notes, 60) + arrow + '</td>';
+        html += '<td style="max-width:280px;">' + truncate(c.notes, 50) + arrow + '</td>';
         html += '</tr>';
 
-        if (hasNotes) {{
-          html += '<tr class="notes-row" id="' + rowId + '"><td colspan="5"><div class="notes-content">' + escapeHtml(c.notes) + '</div></td></tr>';
+        if (hasDetail) {{
+          let detailHtml = '';
+          if (hasNotes) detailHtml += '<div class="notes-content">' + escapeHtml(c.notes) + '</div>';
+          if (hasEngNotes) {{
+            detailHtml += '<div class="eng-notes"><div class="eng-notes-label">Engagement Notes</div>';
+            c.engagement_notes.forEach(n => {{ detailHtml += '<div class="eng-note-item">' + escapeHtml(n) + '</div>'; }});
+            detailHtml += '</div>';
+          }}
+          html += '<tr class="notes-row" id="' + rowId + '"><td colspan="6"><div style="padding:4px;">' + detailHtml + '</div></td></tr>';
         }}
       }});
 
@@ -1023,6 +1352,118 @@ def build_html(data: dict) -> str:
 
     applyFilters();
   }})();
+
+  // ═══════════════ TAB 5: COMPANIES ═══════════════
+  (function() {{
+    const searchInput = document.getElementById('company-search');
+    const sortSelect = document.getElementById('company-sort');
+    const statsEl = document.getElementById('company-stats');
+    const listEl = document.getElementById('company-list');
+
+    // Build company map from allCalls
+    const companyMap = {{}};
+    let unknownCount = 0;
+    allCalls.forEach(c => {{
+      const co = (c.company_name || '').trim();
+      if (!co) {{ unknownCount++; return; }}
+      if (!companyMap[co]) {{
+        companyMap[co] = {{ name: co, calls: [], categories: {{}}, contactSet: {{}}, meetings: 0 }};
+      }}
+      const entry = companyMap[co];
+      entry.calls.push(c);
+      entry.categories[c.category] = (entry.categories[c.category] || 0) + 1;
+      if (c.contact_name) entry.contactSet[c.contact_name] = 1;
+      if (c.category === 'Meeting Booked') entry.meetings++;
+    }});
+
+    let companies = Object.values(companyMap);
+    companies.forEach(co => {{
+      co.contacts = Object.keys(co.contactSet);
+      co.totalCalls = co.calls.length;
+      co.humanContacts = co.calls.filter(c => ['Interested','Meeting Booked','Referral Given','Not Interested','No Rail','Wrong Person','Gatekeeper'].includes(c.category)).length;
+      co.calls.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+      co.lastCall = co.calls[0].timestamp;
+      co.firstCall = co.calls[co.calls.length - 1].timestamp;
+    }});
+
+    function sortList(arr, key) {{
+      const cmp = {{
+        calls: (a, b) => b.totalCalls - a.totalCalls,
+        recent: (a, b) => b.lastCall.localeCompare(a.lastCall),
+        name: (a, b) => a.name.localeCompare(b.name),
+        meetings: (a, b) => b.meetings - a.meetings || b.totalCalls - a.totalCalls,
+      }};
+      return arr.slice().sort(cmp[key] || cmp.calls);
+    }}
+
+    function renderCompanies() {{
+      const q = searchInput.value.toLowerCase().trim();
+      let visible = companies;
+      if (q) visible = companies.filter(co => co.name.toLowerCase().includes(q) || co.contacts.some(ct => ct.toLowerCase().includes(q)));
+
+      visible = sortList(visible, sortSelect.value);
+
+      const total = visible.length;
+      statsEl.textContent = total + ' companies contacted' + (unknownCount > 0 ? ' (' + unknownCount + ' calls without company)' : '');
+
+      let html = '';
+      visible.forEach((co, idx) => {{
+        const coId = 'co-' + idx;
+        // Category pills
+        let catPills = '';
+        Object.entries(co.categories).sort((a,b) => b[1] - a[1]).forEach(([cat, count]) => {{
+          const color = catColors[cat] || '#8BA3C7';
+          catPills += '<span class="company-cat-pill" style="color:' + color + ';border-color:' + color + '33;">' + count + ' ' + escapeHtml(cat) + '</span>';
+        }});
+
+        // Timeline
+        let timeline = '';
+        co.calls.forEach(c => {{
+          const catColor = catColors[c.category] || '#8BA3C7';
+          const notePreview = c.notes ? '<div class="company-call-notes">' + escapeHtml(c.notes.slice(0, 120)) + (c.notes.length > 120 ? '...' : '') + '</div>' : '';
+          const engNotes = (c.engagement_notes || []).map(n => '<div class="company-call-notes" style="color:var(--orange);opacity:0.8;">Note: ' + escapeHtml(n.slice(0, 100)) + (n.length > 100 ? '...' : '') + '</div>').join('');
+          const txBadge = c.has_transcript ? ' <span class="transcript-badge">TX</span>' : '';
+          timeline += '<div class="company-call">'
+            + '<div class="company-call-header">'
+            + '<span class="company-call-date">' + formatTimestamp(c.timestamp) + '</span>'
+            + '<span class="company-call-contact">' + escapeHtml(c.contact_name) + txBadge + '</span>'
+            + '<span class="company-call-cat" style="color:' + catColor + ';">' + escapeHtml(c.category) + '</span>'
+            + '<span class="company-call-dur">' + formatDuration(c.duration_s) + '</span>'
+            + '</div>'
+            + notePreview + engNotes
+            + '</div>';
+        }});
+
+        html += '<div class="company-card" id="' + coId + '">'
+          + '<div class="company-header" onclick="toggleCompany(\\'' + coId + '\\')">'
+          + '<div class="company-name">' + escapeHtml(co.name) + '</div>'
+          + '<div class="company-meta">'
+          + '<div class="company-stat"><span class="cs-num blue">' + co.totalCalls + '</span><span class="cs-label">Calls</span></div>'
+          + '<div class="company-stat"><span class="cs-num orange">' + co.humanContacts + '</span><span class="cs-label">HC</span></div>'
+          + (co.meetings > 0 ? '<div class="company-stat"><span class="cs-num green">' + co.meetings + '</span><span class="cs-label">Mtgs</span></div>' : '')
+          + '<div class="company-stat"><span class="cs-label">' + co.contacts.length + ' contact' + (co.contacts.length !== 1 ? 's' : '') + '</span></div>'
+          + '</div>'
+          + '<span class="company-chevron">&#x25B6;</span>'
+          + '</div>'
+          + '<div class="company-detail">'
+          + '<div class="company-cats">' + catPills + '</div>'
+          + '<div class="company-timeline">' + timeline + '</div>'
+          + '</div>'
+          + '</div>';
+      }});
+
+      listEl.innerHTML = html || '<div style="text-align:center;color:var(--muted);padding:40px;">No companies match your search.</div>';
+    }}
+
+    window.toggleCompany = function(id) {{
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('open');
+    }};
+
+    searchInput.addEventListener('input', renderCompanies);
+    sortSelect.addEventListener('change', renderCompanies);
+    renderCompanies();
+  }})();
 </script>
 </body>
 </html>"""
@@ -1030,22 +1471,75 @@ def build_html(data: dict) -> str:
     return html
 
 
+def _fetch_task_queue(token: str) -> Optional[dict]:
+    """Fetch HubSpot task queue. Returns None on failure."""
+    try:
+        print("Fetching task queue...")
+        result = fetch_open_tasks(token)
+        print(f"  Task queue: {result['total_open']} open tasks ({result['alert_level']})")
+        return result
+    except Exception as e:
+        print(f"  Warning: task queue fetch failed: {e}")
+        return None
+
+
+def _fetch_apollo(api_key: str) -> Optional[dict]:
+    """Fetch Apollo email stats. Returns None on failure."""
+    try:
+        print("Fetching Apollo email stats...")
+        result = fetch_apollo_stats(api_key)
+        t = result["totals"]
+        print(f"  Apollo: {t['emails_sent']} sent, {t['open_rate']}% open, {t['reply_rate']}% reply")
+        return result
+    except Exception as e:
+        print(f"  Warning: Apollo fetch failed: {e}")
+        return None
+
+
+def _fetch_linkedin(sheet_id: str, creds_json: str) -> Optional[dict]:
+    """Fetch LinkedIn stats from Google Sheet. Returns None on failure."""
+    try:
+        print("Fetching LinkedIn stats from Google Sheet...")
+        result = fetch_linkedin_stats(sheet_id, creds_json)
+        print(f"  LinkedIn: {result['requests_sent']} sent, {result['connected']} connected ({result['accept_rate']}%)")
+        return result
+    except Exception as e:
+        print(f"  Warning: LinkedIn stats fetch failed: {e}")
+        return None
+
+
 def main():
-    print("Sales Intelligence Dashboard Generator")
+    print("Outbound Central — Dashboard Generator")
     print("=" * 45)
 
     token = validate_env()
 
-    # 1. Build data
+    # 1. Build core call data
     data = build_call_data(token)
 
-    # 2. Write call_data.json
+    # 2. Fetch optional data sources
+    data["task_queue"] = _fetch_task_queue(token)
+
+    apollo_key = os.getenv("APOLLO_API_KEY")
+    data["apollo_stats"] = _fetch_apollo(apollo_key) if apollo_key else None
+    if not apollo_key:
+        print("  Apollo: APOLLO_API_KEY not set, skipping")
+
+    sheet_id = os.getenv("GOOGLE_SHEET_ID")
+    creds_json = os.getenv("GOOGLE_CREDENTIALS_JSON")
+    if sheet_id and creds_json:
+        data["linkedin_stats"] = _fetch_linkedin(sheet_id, creds_json)
+    else:
+        data["linkedin_stats"] = None
+        print("  LinkedIn: GOOGLE_SHEET_ID/GOOGLE_CREDENTIALS_JSON not set, skipping")
+
+    # 3. Write call_data.json
     json_path = HERE / "call_data.json"
     with open(json_path, "w") as f:
         json.dump(data, f, indent=2, default=str)
     print(f"Written {json_path} ({json_path.stat().st_size:,} bytes)")
 
-    # 3. Generate HTML
+    # 4. Generate HTML
     print("Generating dashboard HTML...")
     html = build_html(data)
 

@@ -130,7 +130,7 @@ def fetch_calls(token: str, start_ms: int, end_ms: int, owner_id: str = None) ->
             "properties": [
                 "hs_timestamp", "hs_call_duration", "hs_call_disposition",
                 "hs_call_direction", "hubspot_owner_id", "hs_call_title",
-                "hs_call_body", "hs_body_preview",
+                "hs_call_body", "hs_body_preview", "hs_call_has_transcript",
             ],
             "limit": 100
         }
@@ -287,3 +287,173 @@ def fetch_meeting_details_for_categorized(token: str, calls: List[Dict], histori
         details.append({"date": date_str, "name": name, "company": company})
 
     return details
+
+
+def batch_fetch_associations(token: str, from_type: str, to_type: str,
+                             from_ids: List[str], batch_size: int = 100) -> Dict[str, List[str]]:
+    """Batch fetch associations using HubSpot v4 API.
+
+    Returns dict mapping from_id -> [to_id, ...].
+    """
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    result: Dict[str, List[str]] = {}
+
+    for i in range(0, len(from_ids), batch_size):
+        batch = from_ids[i:i + batch_size]
+        payload = {"inputs": [{"id": str(fid)} for fid in batch]}
+        try:
+            resp = requests.post(
+                f"{HUBSPOT_API_BASE}/crm/v4/associations/{from_type}/{to_type}/batch/read",
+                json=payload, headers=headers, timeout=30,
+            )
+            resp.raise_for_status()
+            for item in resp.json().get("results", []):
+                from_id = str(item["from"]["id"])
+                to_ids = [str(t.get("toObjectId", t.get("id", "")))
+                          for t in item.get("to", []) if t.get("toObjectId") or t.get("id")]
+                result[from_id] = to_ids
+        except requests.RequestException as e:
+            print(f"  Warning: batch assoc {from_type}->{to_type} page {i//batch_size}: {e}")
+            continue
+
+    return result
+
+
+def batch_fetch_objects(token: str, object_type: str, object_ids: List[str],
+                        properties: List[str], batch_size: int = 100) -> Dict[str, Dict]:
+    """Batch fetch CRM objects by ID. Returns dict mapping id -> properties."""
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    result: Dict[str, Dict] = {}
+    unique_ids = list({str(oid) for oid in object_ids if oid})
+
+    for i in range(0, len(unique_ids), batch_size):
+        batch = unique_ids[i:i + batch_size]
+        payload = {"inputs": [{"id": oid} for oid in batch], "properties": properties}
+        try:
+            resp = requests.post(
+                f"{HUBSPOT_API_BASE}/crm/v3/objects/{object_type}/batch/read",
+                json=payload, headers=headers, timeout=30,
+            )
+            resp.raise_for_status()
+            for item in resp.json().get("results", []):
+                result[str(item["id"])] = item.get("properties", {})
+        except requests.RequestException as e:
+            print(f"  Warning: batch fetch {object_type} page {i//batch_size}: {e}")
+            continue
+
+    return result
+
+
+def enrich_calls_with_associations(token: str, calls: List[Dict]) -> Dict[str, Dict]:
+    """Resolve call->contact->company and call->note associations in bulk.
+
+    Returns dict mapping call_id -> {contact_name, company_name, company_id, engagement_notes}.
+    """
+    call_ids = [str(c.get("id", "")) for c in calls if c.get("id")]
+    if not call_ids:
+        return {}
+
+    print(f"  Enriching {len(call_ids)} calls with associations...")
+
+    # Call -> Contact
+    print("  Fetching call->contact associations...")
+    call_contacts = batch_fetch_associations(token, "call", "contact", call_ids)
+
+    # Call -> Note
+    print("  Fetching call->note associations...")
+    call_notes_map = batch_fetch_associations(token, "call", "note", call_ids)
+
+    # Unique contact IDs
+    all_contact_ids: set = set()
+    for cids in call_contacts.values():
+        all_contact_ids.update(cids)
+
+    # Batch fetch contacts
+    contacts: Dict[str, Dict] = {}
+    if all_contact_ids:
+        print(f"  Fetching {len(all_contact_ids)} contacts...")
+        contacts = batch_fetch_objects(
+            token, "contacts", list(all_contact_ids),
+            ["firstname", "lastname", "company"],
+        )
+
+    # Contact -> Company
+    contact_companies: Dict[str, List[str]] = {}
+    if all_contact_ids:
+        print("  Fetching contact->company associations...")
+        contact_companies = batch_fetch_associations(
+            token, "contact", "company", list(all_contact_ids),
+        )
+
+    # Unique company IDs
+    all_company_ids: set = set()
+    for cids in contact_companies.values():
+        all_company_ids.update(cids)
+
+    # Batch fetch companies
+    companies: Dict[str, Dict] = {}
+    if all_company_ids:
+        print(f"  Fetching {len(all_company_ids)} companies...")
+        companies = batch_fetch_objects(
+            token, "companies", list(all_company_ids),
+            ["name", "domain", "industry", "city", "state"],
+        )
+
+    # Unique note IDs
+    all_note_ids: set = set()
+    for nids in call_notes_map.values():
+        all_note_ids.update(nids)
+
+    # Batch fetch notes
+    notes: Dict[str, Dict] = {}
+    if all_note_ids:
+        print(f"  Fetching {len(all_note_ids)} notes...")
+        notes = batch_fetch_objects(
+            token, "notes", list(all_note_ids),
+            ["hs_note_body", "hs_timestamp"],
+        )
+
+    # Build enrichment map
+    enrichment: Dict[str, Dict] = {}
+    for call_id in call_ids:
+        contact_name = ""
+        company_name = ""
+        company_id = ""
+
+        cid_list = call_contacts.get(call_id, [])
+        if cid_list:
+            cid = cid_list[0]
+            cp = contacts.get(cid, {})
+            first = cp.get("firstname", "")
+            last = cp.get("lastname", "")
+            contact_name = f"{first} {last}".strip()
+            company_name = cp.get("company", "")
+
+            comp_ids = contact_companies.get(cid, [])
+            if comp_ids:
+                comp_p = companies.get(comp_ids[0], {})
+                resolved = comp_p.get("name", "")
+                if resolved:
+                    company_name = resolved
+                company_id = comp_ids[0]
+
+        note_ids = call_notes_map.get(call_id, [])
+        engagement_notes = []
+        for nid in note_ids:
+            np = notes.get(nid, {})
+            body = np.get("hs_note_body", "")
+            if body:
+                engagement_notes.append(strip_html(body))
+
+        enrichment[call_id] = {
+            "contact_name": contact_name,
+            "company_name": company_name,
+            "company_id": company_id,
+            "engagement_notes": engagement_notes,
+        }
+
+    with_co = sum(1 for e in enrichment.values() if e["company_name"])
+    with_notes = sum(1 for e in enrichment.values() if e["engagement_notes"])
+    print(f"  Enrichment done: {with_co} with company, {with_notes} with notes")
+
+    return enrichment

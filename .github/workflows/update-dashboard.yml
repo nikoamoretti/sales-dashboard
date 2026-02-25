@@ -30,6 +30,9 @@ jobs:
       - name: Generate dashboard
         env:
           HUBSPOT_TOKEN: ${{ secrets.HUBSPOT_TOKEN }}
+          APOLLO_API_KEY: ${{ secrets.APOLLO_API_KEY }}
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
         run: python dashboard_gen.py
 
       - name: Deploy to GitHub Pages
