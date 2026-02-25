@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-24T17:55:59.801484-08:00",
+  "generated_at": "2026-02-24T18:00:58.042610-08:00",
   "calls": [
     {
       "id": "101907888950",
@@ -14261,7 +14261,7 @@
   "apollo_stats": {
     "totals": {
       "emails_sent": 434,
-      "delivered": 416,
+      "delivered": 415,
       "opened": 62,
       "open_rate": 14.9,
       "replied": 0,
@@ -14272,8 +14272,8 @@
         "name": "Market Consist Chem",
         "active": true,
         "emails_sent": 181,
-        "delivered": 175,
-        "bounced": 6,
+        "delivered": 174,
+        "bounced": 7,
         "opened": 0,
         "open_rate": 0.0,
         "replied": 0,
