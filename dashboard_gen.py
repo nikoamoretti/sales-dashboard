@@ -599,7 +599,8 @@ def _build_emailseq_tab(data: dict) -> str:
     t = apollo["totals"]
     seqs = apollo["sequences"]
 
-    # Sort: active first, then by emails_sent desc
+    # Filter out sequences with 0 emails sent, then sort: active first, by sent desc
+    seqs = [s for s in seqs if s["emails_sent"] > 0]
     sorted_seqs = sorted(seqs, key=lambda s: (not s["active"], -s["emails_sent"]))
 
     # Hero cards
