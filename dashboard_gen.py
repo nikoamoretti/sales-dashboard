@@ -189,8 +189,9 @@ def _tab_bar() -> str:
     btns = []
     for tid, label in tabs:
         cls = ' active' if tid == "overview" else ""
-        btns.append(f'<button class="tab-btn{cls}" data-tab="{tid}">{label}</button>')
-    return '<div class="tab-bar">' + "".join(btns) + "</div>"
+        selected = 'true' if tid == "overview" else 'false'
+        btns.append(f'<button class="tab-btn{cls}" data-tab="{tid}" role="tab" aria-selected="{selected}" aria-controls="tab-{tid}">{label}</button>')
+    return '<div class="tab-bar" role="tablist" aria-label="Dashboard sections">' + "".join(btns) + "</div>"
 
 
 def _build_task_queue_banner(data: dict) -> str:
@@ -372,7 +373,7 @@ def _build_overview_tab(data: dict) -> str:
     <div class="meetings-card">{items}</div>
   </div>"""
 
-    return f"""<div id="tab-overview" class="tab-panel active">
+    return f"""<div id="tab-overview" class="tab-panel active" role="tabpanel">
 {task_html}
 {hero}
 {channels_html}
@@ -450,7 +451,7 @@ def _build_trends_tab(data: dict) -> str:
     total_mtg = cat_totals.get("Meeting Booked", 0)
     mtg_foot = f'<td class="total-meet"><span class="meeting-dot"></span>{total_mtg}</td>' if total_mtg else '<td class="total-meet">&mdash;</td>'
 
-    return f"""<div id="tab-trends" class="tab-panel">
+    return f"""<div id="tab-trends" class="tab-panel" role="tabpanel">
   <section style="margin-bottom:48px;">
     <div class="section-header"><h2>Weekly Performance</h2><p>Full breakdown with all 10 categories</p></div>
     <div class="table-wrap">
@@ -480,15 +481,15 @@ def _build_trends_tab(data: dict) -> str:
 
 def _build_calllog_tab() -> str:
     """Tab 3: Call log — rendered client-side from embedded JSON."""
-    return """<div id="tab-calllog" class="tab-panel">
+    return """<div id="tab-calllog" class="tab-panel" role="tabpanel">
   <div class="section-header"><h2>Call Log</h2><p>Every call, newest first &mdash; click a row to see full details</p></div>
   <div class="calllog-controls">
-    <input type="text" id="calllog-search" placeholder="Search by name, company, category, or notes..." />
-    <select id="calllog-filter">
+    <input type="text" id="calllog-search" placeholder="Search by name, company, category, or notes..." aria-label="Search call log" />
+    <select id="calllog-filter" aria-label="Filter by category">
       <option value="">All Categories</option>
     </select>
   </div>
-  <div class="calllog-stats" id="calllog-stats"></div>
+  <div class="calllog-stats" id="calllog-stats" aria-live="polite"></div>
   <div class="table-wrap">
     <table id="calllog-table">
       <thead><tr>
@@ -511,7 +512,7 @@ def _build_analysis_tab() -> str:
     # Load forensic data if available
     forensic_path = HERE / "forensic_data.json"
     if not forensic_path.exists():
-        return """<div id="tab-analysis" class="tab-panel">
+        return """<div id="tab-analysis" class="tab-panel" role="tabpanel">
   <div class="section-header"><h2>Analysis</h2><p>Forensic data not available. Run forensic_audit.py first.</p></div>
 </div>"""
 
@@ -522,7 +523,7 @@ def _build_analysis_tab() -> str:
     new_raw = fd.get("new_raw_weekly", fd["new_system_weekly"])
 
     if not old_weekly or not new_raw:
-        return """<div id="tab-analysis" class="tab-panel">
+        return """<div id="tab-analysis" class="tab-panel" role="tabpanel">
   <div class="section-header"><h2>Analysis</h2><p>Insufficient data to render analysis.</p></div>
 </div>"""
 
@@ -547,7 +548,7 @@ def _build_analysis_tab() -> str:
     # Attach to the function so build_html can access it
     _build_analysis_tab._data = analysis_data
 
-    return f"""<div id="tab-analysis" class="tab-panel">
+    return f"""<div id="tab-analysis" class="tab-panel" role="tabpanel">
   <div class="bottom-line">
     <h2>The contact rate decline was a dashboard bug, not a sales problem.</h2>
     <p>The old dashboard showed a cliff from {old_start}% to {old_end}%.
@@ -583,18 +584,18 @@ def _build_analysis_tab() -> str:
 
 def _build_companies_tab() -> str:
     """Tab 5: Companies — aggregated company view, rendered client-side."""
-    return """<div id="tab-companies" class="tab-panel">
+    return """<div id="tab-companies" class="tab-panel" role="tabpanel">
   <div class="section-header"><h2>Companies</h2><p>Every company contacted &mdash; click to expand call history</p></div>
   <div class="calllog-controls">
-    <input type="text" id="company-search" placeholder="Search by company name..." />
-    <select id="company-sort">
+    <input type="text" id="company-search" placeholder="Search by company name..." aria-label="Search companies" />
+    <select id="company-sort" aria-label="Sort companies">
       <option value="calls">Most Calls</option>
       <option value="recent">Most Recent</option>
       <option value="name">Alphabetical</option>
       <option value="meetings">Meetings First</option>
     </select>
   </div>
-  <div class="calllog-stats" id="company-stats"></div>
+  <div class="calllog-stats" id="company-stats" aria-live="polite"></div>
   <div id="company-list"></div>
   <div class="calllog-pagination" id="company-pagination"></div>
 </div>"""
@@ -604,8 +605,15 @@ def _build_emailseq_tab(data: dict) -> str:
     """Tab 6: Email Sequences — per-sequence breakdown with metrics table + chart."""
     apollo = data.get("apollo_stats")
     if not apollo:
-        return """<div id="tab-emailseq" class="tab-panel">
-  <div class="section-header" style="border-left-color:var(--cyan);"><h2>Email Sequences</h2><p>Not configured &mdash; set APOLLO_API_KEY to enable</p></div>
+        return """<div id="tab-emailseq" class="tab-panel" role="tabpanel">
+  <div class="section-header" style="border-left-color:var(--cyan);"><h2>Email Sequences</h2><p>Per-sequence breakdown from Apollo</p></div>
+  <div style="text-align:center;padding:60px 20px;">
+    <div style="font-size:48px;margin-bottom:16px;opacity:0.3;">&#9993;</div>
+    <h3 style="color:var(--text);margin-bottom:8px;">Email tracking not connected</h3>
+    <p style="color:var(--muted);max-width:400px;margin:0 auto;line-height:1.6;">
+      Connect Apollo email sequences to track open rates, reply rates, and sequence performance alongside your other outreach channels.
+    </p>
+  </div>
 </div>"""
 
     t = apollo["totals"]
@@ -671,7 +679,7 @@ def _build_emailseq_tab(data: dict) -> str:
           <td class="num-col">{t['clicked']:,}</td>
         </tr>"""
 
-    return f"""<div id="tab-emailseq" class="tab-panel">
+    return f"""<div id="tab-emailseq" class="tab-panel" role="tabpanel">
   <div class="section-header" style="border-left-color:var(--cyan);"><h2>Email Sequences</h2><p>Per-sequence breakdown from Apollo</p></div>
 {hero}
   <section style="margin-bottom:48px;">
@@ -698,7 +706,7 @@ def _build_inmails_tab(data: dict) -> str:
     """Tab 7: LinkedIn InMails — weekly breakdown, sentiment charts, interested leads."""
     inmail = data.get("inmail_stats")
     if not inmail:
-        return """<div id="tab-inmails" class="tab-panel">
+        return """<div id="tab-inmails" class="tab-panel" role="tabpanel">
   <div class="section-header" style="border-left-color:var(--purple);"><h2>LinkedIn InMails</h2><p>No data &mdash; run inmail_pipeline.py to generate</p></div>
 </div>"""
 
@@ -782,7 +790,7 @@ def _build_inmails_tab(data: dict) -> str:
     <div class="inmail-leads-grid">{items}</div>
   </div>"""
 
-    return f"""<div id="tab-inmails" class="tab-panel">
+    return f"""<div id="tab-inmails" class="tab-panel" role="tabpanel">
   <div class="section-header" style="border-left-color:var(--purple);"><h2>LinkedIn InMails</h2><p>Sales Navigator InMail outreach performance</p></div>
 {hero}
   <section style="margin-bottom:48px;">
@@ -810,7 +818,7 @@ def _build_intel_tab(data: dict) -> str:
     """Tab 8: Call Intelligence — extracted insights from call transcripts."""
     intel = data.get("call_intel")
     if not intel:
-        return """<div id="tab-intel" class="tab-panel">
+        return """<div id="tab-intel" class="tab-panel" role="tabpanel">
   <div class="section-header" style="border-left-color:var(--cyan);"><h2>Intelligence</h2><p>No data &mdash; run call_intel_extractor.py to generate call_intel.json</p></div>
 </div>"""
 
@@ -890,15 +898,15 @@ def _build_intel_tab(data: dict) -> str:
     <div class="intel-list-card">{items}</div>
   </div>"""
 
-    return f"""<div id="tab-intel" class="tab-panel">
+    return f"""<div id="tab-intel" class="tab-panel" role="tabpanel">
   <div class="section-header" style="border-left-color:var(--cyan);"><h2>Call Intelligence</h2><p>AI-extracted insights from call transcripts</p></div>
 {hero}
   <div class="intel-main-grid">
     <div>
       <div class="section-header" style="border-left-color:var(--blue);"><h2>Action Items</h2><p>Calls with defined next steps</p></div>
       <div class="calllog-controls" style="margin-bottom:16px;">
-        <input type="text" id="intel-search" placeholder="Search by contact, company, or action..." />
-        <select id="intel-filter">
+        <input type="text" id="intel-search" placeholder="Search by contact, company, or action..." aria-label="Search intelligence" />
+        <select id="intel-filter" aria-label="Filter by interest level">
           <option value="">All Interest Levels</option>
           <option value="high">High</option>
           <option value="medium">Medium</option>
@@ -906,7 +914,7 @@ def _build_intel_tab(data: dict) -> str:
           <option value="none">None</option>
         </select>
       </div>
-      <div class="calllog-stats" id="intel-stats"></div>
+      <div class="calllog-stats" id="intel-stats" aria-live="polite"></div>
       <div class="table-wrap">
         <table id="intel-table">
           <thead><tr>
@@ -1051,6 +1059,23 @@ def build_html(data: dict) -> str:
     }}
     .tab-btn:hover {{ color: var(--text); }}
     .tab-btn.active {{ color: var(--text); border-bottom-color: var(--blue); }}
+    .tab-btn:focus-visible {{
+      outline: 2px solid var(--blue); outline-offset: -2px;
+      border-radius: 4px 4px 0 0;
+    }}
+    *:focus-visible {{
+      outline: 2px solid var(--blue); outline-offset: 2px;
+    }}
+    .calllog-controls input:focus-visible, .calllog-controls select:focus-visible {{
+      outline: none; border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    }}
+    .tab-bar::after {{
+      content: ''; position: sticky; right: 0; top: 0; bottom: 0;
+      min-width: 40px; flex-shrink: 0;
+      background: linear-gradient(to right, transparent, var(--bg) 80%);
+      pointer-events: none;
+    }}
 
     /* TAB PANELS */
     .tab-panel {{ display: none; }}
@@ -1306,6 +1331,18 @@ def build_html(data: dict) -> str:
     footer {{ border-top: 1px solid var(--border); padding-top: 28px; text-align: center; font-size: 13px; color: var(--muted); line-height: 1.8; }}
     footer strong {{ color: var(--text); }}
 
+    /* SKIP LINK */
+    .skip-link {{
+      position: absolute; left: -9999px; top: auto;
+      background: var(--blue); color: #fff; padding: 8px 16px;
+      border-radius: 0 0 8px 8px; font-size: 14px; font-weight: 600;
+      z-index: 200; text-decoration: none;
+    }}
+    .skip-link:focus {{
+      position: fixed; left: 50%; top: 0;
+      transform: translateX(-50%);
+    }}
+
     /* HERO CARD — CYAN ACCENT */
     .hero-card.accent-cyan::before {{ background: var(--cyan); }}
     .hero-card.accent-cyan .num {{ color: var(--cyan); text-shadow: 0 0 28px rgba(6,182,212,0.35); }}
@@ -1486,11 +1523,13 @@ def build_html(data: dict) -> str:
       thead th, tbody td, tfoot td {{ padding: 10px 8px; font-size: 12px; }}
       .calllog-controls {{ flex-direction: column; }}
       .task-banner .tb-stats {{ gap: 14px; }}
+      .tab-btn {{ padding: 12px 14px; font-size: 13px; }}
     }}
   </style>
 </head>
 <body>
 <div class="page">
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <header>
     <div class="label">Cold Calling &middot; Email &middot; LinkedIn</div>
@@ -1500,6 +1539,7 @@ def build_html(data: dict) -> str:
 
   {tab_bar}
 
+  <main id="main-content">
   {overview}
   {trends}
   {calllog}
@@ -1508,6 +1548,7 @@ def build_html(data: dict) -> str:
   {emailseq}
   {inmails_tab}
   {intel_tab}
+  </main>
 
   <footer>
     <strong>Outbound Central</strong><br>
@@ -1705,13 +1746,15 @@ def build_html(data: dict) -> str:
 
   // ═══════════════ TAB SWITCHING ═══════════════
   function switchTab(tabId) {{
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => {{ b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); }});
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     const btn = document.querySelector('.tab-btn[data-tab="' + tabId + '"]');
     const panel = document.getElementById('tab-' + tabId);
     if (btn && panel) {{
       btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
       panel.classList.add('active');
+      if (tabId === 'trends') renderTrendsCharts();
       if (tabId === 'calllog') renderCallLog();
       if (tabId === 'companies') renderCompaniesTab();
       if (tabId === 'analysis') renderAnalysisCharts();
@@ -1726,76 +1769,77 @@ def build_html(data: dict) -> str:
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   }});
 
-  // Restore tab from URL hash on load
-  (function() {{
-    const hash = location.hash.replace('#', '');
-    if (hash && document.getElementById('tab-' + hash)) switchTab(hash);
-  }})();
+  // ═══════════════ TAB 2: WEEKLY CHARTS (lazy init) ═══════════════
+  let trendsChartsRendered = false;
 
-  // ═══════════════ TAB 2: WEEKLY CHARTS ═══════════════
-  const wkLabels = weeklyData.map(w => 'Wk ' + w.week_num);
-  const wkDials = weeklyData.map(w => w.total_dials);
-  const wkHCRate = weeklyData.map(w => w.human_contact_rate);
+  function renderTrendsCharts() {{
+    if (trendsChartsRendered) return;
+    trendsChartsRendered = true;
 
-  new Chart(document.getElementById('weeklyDialsChart'), {{
-    type: 'bar',
-    data: {{
-      labels: wkLabels,
-      datasets: [
-        {{
-          label: 'Dials', data: wkDials,
-          backgroundColor: 'rgba(59,130,246,0.28)', borderColor: 'rgba(59,130,246,0.70)',
-          borderWidth: 1.5, borderRadius: 5, yAxisID: 'y', order: 2,
+    const wkLabels = weeklyData.map(w => 'Wk ' + w.week_num);
+    const wkDials = weeklyData.map(w => w.total_dials);
+    const wkHCRate = weeklyData.map(w => w.human_contact_rate);
+
+    new Chart(document.getElementById('weeklyDialsChart'), {{
+      type: 'bar',
+      data: {{
+        labels: wkLabels,
+        datasets: [
+          {{
+            label: 'Dials', data: wkDials,
+            backgroundColor: 'rgba(59,130,246,0.28)', borderColor: 'rgba(59,130,246,0.70)',
+            borderWidth: 1.5, borderRadius: 5, yAxisID: 'y', order: 2,
+          }},
+          {{
+            label: 'Human Contact %', data: wkHCRate, type: 'line',
+            borderColor: '#10B981', backgroundColor: 'rgba(16,185,129,0.07)',
+            borderWidth: 2.5, pointBackgroundColor: '#10B981', pointRadius: 5,
+            pointHoverRadius: 7, fill: true, tension: 0.35, yAxisID: 'y1', order: 0,
+          }}
+        ]
+      }},
+      options: {{
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {{ mode: 'index', intersect: false }},
+        plugins: {{
+          legend: {{ labels: {{ color: '#8BA3C7', font: {{ size: 11, family: 'Inter', weight: '600' }}, padding: 16, boxWidth: 12, boxHeight: 12 }} }},
+          tooltip: {{ ...tooltipStyle, callbacks: {{ label: ctx => ctx.dataset.yAxisID === 'y1' ? ' HC Rate: ' + ctx.raw + '%' : ' Dials: ' + ctx.raw }} }},
         }},
-        {{
-          label: 'Human Contact %', data: wkHCRate, type: 'line',
-          borderColor: '#10B981', backgroundColor: 'rgba(16,185,129,0.07)',
-          borderWidth: 2.5, pointBackgroundColor: '#10B981', pointRadius: 5,
-          pointHoverRadius: 7, fill: true, tension: 0.35, yAxisID: 'y1', order: 0,
+        scales: {{
+          x: {{ ticks: {{ color: '#8BA3C7', font: {{ size: 11, family: 'Inter' }} }}, grid: gridStyle }},
+          y: {{ beginAtZero: true, title: {{ display: true, text: 'Dials', color: '#8BA3C7', font: {{ size: 11 }} }}, ticks: {{ color: '#8BA3C7' }}, grid: gridStyle }},
+          y1: {{ beginAtZero: true, position: 'right', max: 25, title: {{ display: true, text: 'HC Rate %', color: '#8BA3C7', font: {{ size: 11 }} }}, ticks: {{ color: '#8BA3C7', callback: v => v + '%' }}, grid: {{ drawOnChartArea: false }} }},
         }}
-      ]
-    }},
-    options: {{
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: {{ mode: 'index', intersect: false }},
-      plugins: {{
-        legend: {{ labels: {{ color: '#8BA3C7', font: {{ size: 11, family: 'Inter', weight: '600' }}, padding: 16, boxWidth: 12, boxHeight: 12 }} }},
-        tooltip: {{ ...tooltipStyle, callbacks: {{ label: ctx => ctx.dataset.yAxisID === 'y1' ? ' HC Rate: ' + ctx.raw + '%' : ' Dials: ' + ctx.raw }} }},
-      }},
-      scales: {{
-        x: {{ ticks: {{ color: '#8BA3C7', font: {{ size: 11, family: 'Inter' }} }}, grid: gridStyle }},
-        y: {{ beginAtZero: true, title: {{ display: true, text: 'Dials', color: '#8BA3C7', font: {{ size: 11 }} }}, ticks: {{ color: '#8BA3C7' }}, grid: gridStyle }},
-        y1: {{ beginAtZero: true, position: 'right', max: 25, title: {{ display: true, text: 'HC Rate %', color: '#8BA3C7', font: {{ size: 11 }} }}, ticks: {{ color: '#8BA3C7', callback: v => v + '%' }}, grid: {{ drawOnChartArea: false }} }},
       }}
-    }}
-  }});
+    }});
 
-  // Stacked conversation outcomes
-  const convCats = ['Interested', 'Meeting Booked', 'Referral Given', 'Not Interested', 'No Rail', 'Wrong Person', 'Wrong Number', 'Gatekeeper', 'Left Voicemail', 'No Answer'];
-  const stackDatasets = convCats.map(cat => ({{
-    label: cat,
-    data: weeklyData.map(w => (w.categories && w.categories[cat]) || 0),
-    backgroundColor: catColors[cat] + 'CC', borderColor: catColors[cat],
-    borderWidth: 1, borderRadius: 2,
-  }}));
+    // Stacked conversation outcomes
+    const convCats = ['Interested', 'Meeting Booked', 'Referral Given', 'Not Interested', 'No Rail', 'Wrong Person', 'Wrong Number', 'Gatekeeper', 'Left Voicemail', 'No Answer'];
+    const stackDatasets = convCats.map(cat => ({{
+      label: cat,
+      data: weeklyData.map(w => (w.categories && w.categories[cat]) || 0),
+      backgroundColor: catColors[cat] + 'CC', borderColor: catColors[cat],
+      borderWidth: 1, borderRadius: 2,
+    }}));
 
-  new Chart(document.getElementById('stackedChart'), {{
-    type: 'bar',
-    data: {{ labels: wkLabels, datasets: stackDatasets }},
-    options: {{
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {{
-        legend: {{ labels: {{ color: '#8BA3C7', font: {{ size: 10, family: 'Inter', weight: '600' }}, padding: 10, boxWidth: 10, boxHeight: 10 }} }},
-        tooltip: tooltipStyle,
-      }},
-      scales: {{
-        x: {{ stacked: true, ticks: {{ color: '#8BA3C7', font: {{ size: 11, family: 'Inter' }} }}, grid: gridStyle }},
-        y: {{ stacked: true, beginAtZero: true, title: {{ display: true, text: 'Conversations', color: '#8BA3C7', font: {{ size: 11 }} }}, ticks: {{ color: '#8BA3C7' }}, grid: gridStyle }},
+    new Chart(document.getElementById('stackedChart'), {{
+      type: 'bar',
+      data: {{ labels: wkLabels, datasets: stackDatasets }},
+      options: {{
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {{
+          legend: {{ labels: {{ color: '#8BA3C7', font: {{ size: 10, family: 'Inter', weight: '600' }}, padding: 10, boxWidth: 10, boxHeight: 10 }} }},
+          tooltip: tooltipStyle,
+        }},
+        scales: {{
+          x: {{ stacked: true, ticks: {{ color: '#8BA3C7', font: {{ size: 11, family: 'Inter' }} }}, grid: gridStyle }},
+          y: {{ stacked: true, beginAtZero: true, title: {{ display: true, text: 'Conversations', color: '#8BA3C7', font: {{ size: 11 }} }}, ticks: {{ color: '#8BA3C7' }}, grid: gridStyle }},
+        }}
       }}
-    }}
-  }});
+    }});
+  }}
 
   // ═══════════════ SHARED UTILS ═══════════════
   function formatDuration(s) {{
@@ -1890,7 +1934,7 @@ def build_html(data: dict) -> str:
         const arrow = hasDetail ? '<span class="expand-arrow">&#x25B6;</span>' : '';
         const txBadge = c.has_transcript ? '<span class="transcript-badge">TRANSCRIPT</span>' : '';
 
-        html += '<tr class="' + expandClass + '" onclick="toggleNotes(\\'' + rowId + '\\')">';
+        html += '<tr class="' + expandClass + '"' + (hasDetail ? ' tabindex="0" onclick="toggleNotes(\\'' + rowId + '\\')" onkeydown="if(event.key===\\'Enter\\'||event.key===\\' \\'){{event.preventDefault();toggleNotes(\\'' + rowId + '\\')}}"' : '') + '>';
         html += '<td class="muted" style="white-space:nowrap;">' + formatTimestamp(c.timestamp) + '</td>';
         html += '<td>' + escapeHtml(c.contact_name) + txBadge + '</td>';
         html += '<td style="color:var(--muted);font-size:12px;">' + escapeHtml(c.company_name || '') + '</td>';
@@ -2038,7 +2082,7 @@ def build_html(data: dict) -> str:
         }});
 
         html += '<div class="company-card" id="' + coId + '">'
-          + '<div class="company-header" onclick="toggleCompany(\\'' + coId + '\\')">'
+          + '<div class="company-header" tabindex="0" onclick="toggleCompany(\\'' + coId + '\\')" onkeydown="if(event.key===\\'Enter\\'||event.key===\\' \\'){{event.preventDefault();toggleCompany(\\'' + coId + '\\')}}">'
           + '<div class="company-name">' + escapeHtml(co.name) + '</div>'
           + '<div class="company-meta">'
           + '<div class="company-stat"><span class="cs-num blue">' + co.totalCalls + '</span><span class="cs-label">Calls</span></div>'
@@ -2195,7 +2239,7 @@ def build_html(data: dict) -> str:
 
         const hasDetail = r.objection || r.commodities || r.key_quote || r.category;
 
-        html += '<tr class="expandable" onclick="toggleIntelRow(\\'' + rowId + '\\')">';
+        html += '<tr class="expandable" tabindex="0" onclick="toggleIntelRow(\\'' + rowId + '\\')" onkeydown="if(event.key===\\'Enter\\'||event.key===\\' \\'){{event.preventDefault();toggleIntelRow(\\'' + rowId + '\\')}}">';
         html += '<td style="font-weight:600;">' + escapeHtml(r.contact_name || '') + '<span class="expand-arrow">&#x25B6;</span></td>';
         html += '<td style="color:var(--muted);font-size:12px;">' + escapeHtml(r.company_name || '') + '</td>';
         html += '<td style="text-align:center;">' + pill + '</td>';
@@ -2254,6 +2298,18 @@ def build_html(data: dict) -> str:
 
     applyIntelFilters();
   }}
+
+  // Restore tab from URL hash on load (deferred to ensure all init is complete)
+  setTimeout(function() {{
+    const hash = location.hash.replace('#', '');
+    if (hash && document.getElementById('tab-' + hash)) switchTab(hash);
+  }}, 0);
+
+  // Support browser back/forward between tabs
+  window.addEventListener('hashchange', function() {{
+    const hash = location.hash.replace('#', '');
+    if (hash && document.getElementById('tab-' + hash)) switchTab(hash);
+  }});
 </script>
 </body>
 </html>"""

@@ -76,6 +76,23 @@
     }
     .tab-btn:hover { color: var(--text); }
     .tab-btn.active { color: var(--text); border-bottom-color: var(--blue); }
+    .tab-btn:focus-visible {
+      outline: 2px solid var(--blue); outline-offset: -2px;
+      border-radius: 4px 4px 0 0;
+    }
+    *:focus-visible {
+      outline: 2px solid var(--blue); outline-offset: 2px;
+    }
+    .calllog-controls input:focus-visible, .calllog-controls select:focus-visible {
+      outline: none; border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    }
+    .tab-bar::after {
+      content: ''; position: sticky; right: 0; top: 0; bottom: 0;
+      min-width: 40px; flex-shrink: 0;
+      background: linear-gradient(to right, transparent, var(--bg) 80%);
+      pointer-events: none;
+    }
 
     /* TAB PANELS */
     .tab-panel { display: none; }
@@ -331,6 +348,18 @@
     footer { border-top: 1px solid var(--border); padding-top: 28px; text-align: center; font-size: 13px; color: var(--muted); line-height: 1.8; }
     footer strong { color: var(--text); }
 
+    /* SKIP LINK */
+    .skip-link {
+      position: absolute; left: -9999px; top: auto;
+      background: var(--blue); color: #fff; padding: 8px 16px;
+      border-radius: 0 0 8px 8px; font-size: 14px; font-weight: 600;
+      z-index: 200; text-decoration: none;
+    }
+    .skip-link:focus {
+      position: fixed; left: 50%; top: 0;
+      transform: translateX(-50%);
+    }
+
     /* HERO CARD — CYAN ACCENT */
     .hero-card.accent-cyan::before { background: var(--cyan); }
     .hero-card.accent-cyan .num { color: var(--cyan); text-shadow: 0 0 28px rgba(6,182,212,0.35); }
@@ -511,11 +540,13 @@
       thead th, tbody td, tfoot td { padding: 10px 8px; font-size: 12px; }
       .calllog-controls { flex-direction: column; }
       .task-banner .tb-stats { gap: 14px; }
+      .tab-btn { padding: 12px 14px; font-size: 13px; }
     }
   </style>
 </head>
 <body>
 <div class="page">
+  <a href="#main-content" class="skip-link">Skip to content</a>
 
   <header>
     <div class="label">Cold Calling &middot; Email &middot; LinkedIn</div>
@@ -523,9 +554,10 @@
     <div class="subtitle">February 25, 2026 &nbsp;&middot;&nbsp; Week 6 of campaign</div>
   </header>
 
-  <div class="tab-bar"><button class="tab-btn active" data-tab="overview">Overview</button><button class="tab-btn" data-tab="trends">Weekly Trends</button><button class="tab-btn" data-tab="calllog">Call Log</button><button class="tab-btn" data-tab="analysis">Analysis</button><button class="tab-btn" data-tab="companies">Companies</button><button class="tab-btn" data-tab="emailseq">Email Sequences</button><button class="tab-btn" data-tab="inmails">LinkedIn InMails</button><button class="tab-btn" data-tab="intel">Intelligence</button></div>
+  <div class="tab-bar" role="tablist" aria-label="Dashboard sections"><button class="tab-btn active" data-tab="overview" role="tab" aria-selected="true" aria-controls="tab-overview">Overview</button><button class="tab-btn" data-tab="trends" role="tab" aria-selected="false" aria-controls="tab-trends">Weekly Trends</button><button class="tab-btn" data-tab="calllog" role="tab" aria-selected="false" aria-controls="tab-calllog">Call Log</button><button class="tab-btn" data-tab="analysis" role="tab" aria-selected="false" aria-controls="tab-analysis">Analysis</button><button class="tab-btn" data-tab="companies" role="tab" aria-selected="false" aria-controls="tab-companies">Companies</button><button class="tab-btn" data-tab="emailseq" role="tab" aria-selected="false" aria-controls="tab-emailseq">Email Sequences</button><button class="tab-btn" data-tab="inmails" role="tab" aria-selected="false" aria-controls="tab-inmails">LinkedIn InMails</button><button class="tab-btn" data-tab="intel" role="tab" aria-selected="false" aria-controls="tab-intel">Intelligence</button></div>
 
-  <div id="tab-overview" class="tab-panel active">
+  <main id="main-content">
+  <div id="tab-overview" class="tab-panel active" role="tabpanel">
 
   <div class="task-banner alert-ok" id="task-banner" onclick="document.getElementById('task-list').classList.toggle('open');this.classList.toggle('open');">
     <span class="tb-icon">&#x2705;</span>
@@ -599,7 +631,7 @@
     <div class="meetings-card"><div class="mtg-item"><span class="meeting-dot"></span><div><strong>Jessica Higdon</strong><span class="mtg-company">AmSty</span><span class="mtg-date">Jan 26</span></div></div><div class="mtg-item"><span class="meeting-dot"></span><div><strong>Matt Gentry</strong><span class="mtg-company">MKC - Mid Kansas Coop</span><span class="mtg-date">Feb 04</span></div></div><div class="mtg-item"><span class="meeting-dot"></span><div><strong>Marty Cielen</strong><span class="mtg-company">Richardson International</span><span class="mtg-date">Feb 05</span></div></div><div class="mtg-item"><span class="meeting-dot"></span><div><strong>Tania Murillo</strong><span class="mtg-company">Interoceanic Corporation</span><span class="mtg-date">Feb 05</span></div></div><div class="mtg-item"><span class="meeting-dot"></span><div><strong>Bill Billn</strong><span class="mtg-company">West Central Cooperative</span><span class="mtg-date">Feb 17</span></div></div></div>
   </div>
 </div>
-  <div id="tab-trends" class="tab-panel">
+  <div id="tab-trends" class="tab-panel" role="tabpanel">
   <section style="margin-bottom:48px;">
     <div class="section-header"><h2>Weekly Performance</h2><p>Full breakdown with all 10 categories</p></div>
     <div class="table-wrap">
@@ -667,15 +699,15 @@
     <div class="chart-wrap accent-green" style="height:300px;"><h3>Conversation Outcomes by Week</h3><canvas id="stackedChart" height="200"></canvas></div>
   </div>
 </div>
-  <div id="tab-calllog" class="tab-panel">
+  <div id="tab-calllog" class="tab-panel" role="tabpanel">
   <div class="section-header"><h2>Call Log</h2><p>Every call, newest first &mdash; click a row to see full details</p></div>
   <div class="calllog-controls">
-    <input type="text" id="calllog-search" placeholder="Search by name, company, category, or notes..." />
-    <select id="calllog-filter">
+    <input type="text" id="calllog-search" placeholder="Search by name, company, category, or notes..." aria-label="Search call log" />
+    <select id="calllog-filter" aria-label="Filter by category">
       <option value="">All Categories</option>
     </select>
   </div>
-  <div class="calllog-stats" id="calllog-stats"></div>
+  <div class="calllog-stats" id="calllog-stats" aria-live="polite"></div>
   <div class="table-wrap">
     <table id="calllog-table">
       <thead><tr>
@@ -691,7 +723,7 @@
   </div>
   <div class="calllog-pagination" id="calllog-pagination"></div>
 </div>
-  <div id="tab-analysis" class="tab-panel">
+  <div id="tab-analysis" class="tab-panel" role="tabpanel">
   <div class="bottom-line">
     <h2>The contact rate decline was a dashboard bug, not a sales problem.</h2>
     <p>The old dashboard showed a cliff from 14.3% to 4.3%.
@@ -723,25 +755,32 @@
     </div>
   </div>
 </div>
-  <div id="tab-companies" class="tab-panel">
+  <div id="tab-companies" class="tab-panel" role="tabpanel">
   <div class="section-header"><h2>Companies</h2><p>Every company contacted &mdash; click to expand call history</p></div>
   <div class="calllog-controls">
-    <input type="text" id="company-search" placeholder="Search by company name..." />
-    <select id="company-sort">
+    <input type="text" id="company-search" placeholder="Search by company name..." aria-label="Search companies" />
+    <select id="company-sort" aria-label="Sort companies">
       <option value="calls">Most Calls</option>
       <option value="recent">Most Recent</option>
       <option value="name">Alphabetical</option>
       <option value="meetings">Meetings First</option>
     </select>
   </div>
-  <div class="calllog-stats" id="company-stats"></div>
+  <div class="calllog-stats" id="company-stats" aria-live="polite"></div>
   <div id="company-list"></div>
   <div class="calllog-pagination" id="company-pagination"></div>
 </div>
-  <div id="tab-emailseq" class="tab-panel">
-  <div class="section-header" style="border-left-color:var(--cyan);"><h2>Email Sequences</h2><p>Not configured &mdash; set APOLLO_API_KEY to enable</p></div>
+  <div id="tab-emailseq" class="tab-panel" role="tabpanel">
+  <div class="section-header" style="border-left-color:var(--cyan);"><h2>Email Sequences</h2><p>Per-sequence breakdown from Apollo</p></div>
+  <div style="text-align:center;padding:60px 20px;">
+    <div style="font-size:48px;margin-bottom:16px;opacity:0.3;">&#9993;</div>
+    <h3 style="color:var(--text);margin-bottom:8px;">Email tracking not connected</h3>
+    <p style="color:var(--muted);max-width:400px;margin:0 auto;line-height:1.6;">
+      Connect Apollo email sequences to track open rates, reply rates, and sequence performance alongside your other outreach channels.
+    </p>
+  </div>
 </div>
-  <div id="tab-inmails" class="tab-panel">
+  <div id="tab-inmails" class="tab-panel" role="tabpanel">
   <div class="section-header" style="border-left-color:var(--purple);"><h2>LinkedIn InMails</h2><p>Sales Navigator InMail outreach performance</p></div>
 
   <div class="hero" style="grid-template-columns: repeat(4, 1fr);">
@@ -852,7 +891,7 @@ Hola Jobanna, muchas gracias por su respuesta. Me da gusto que le interese.     
             </div></div>
   </div>
 </div>
-  <div id="tab-intel" class="tab-panel">
+  <div id="tab-intel" class="tab-panel" role="tabpanel">
   <div class="section-header" style="border-left-color:var(--cyan);"><h2>Call Intelligence</h2><p>AI-extracted insights from call transcripts</p></div>
 
   <div class="hero" style="grid-template-columns: repeat(4, 1fr);">
@@ -880,8 +919,8 @@ Hola Jobanna, muchas gracias por su respuesta. Me da gusto que le interese.     
     <div>
       <div class="section-header" style="border-left-color:var(--blue);"><h2>Action Items</h2><p>Calls with defined next steps</p></div>
       <div class="calllog-controls" style="margin-bottom:16px;">
-        <input type="text" id="intel-search" placeholder="Search by contact, company, or action..." />
-        <select id="intel-filter">
+        <input type="text" id="intel-search" placeholder="Search by contact, company, or action..." aria-label="Search intelligence" />
+        <select id="intel-filter" aria-label="Filter by interest level">
           <option value="">All Interest Levels</option>
           <option value="high">High</option>
           <option value="medium">Medium</option>
@@ -889,7 +928,7 @@ Hola Jobanna, muchas gracias por su respuesta. Me da gusto que le interese.     
           <option value="none">None</option>
         </select>
       </div>
-      <div class="calllog-stats" id="intel-stats"></div>
+      <div class="calllog-stats" id="intel-stats" aria-live="polite"></div>
       <div class="table-wrap">
         <table id="intel-table">
           <thead><tr>
@@ -924,10 +963,11 @@ Hola Jobanna, muchas gracias por su respuesta. Me da gusto que le interese.     
     <div class="intel-list-card"><div class="intel-referral-row"><span class="intel-referral-name">Van G.</span><span class="intel-referral-role">rail manager</span><span class="intel-referral-at">at Oil-Dri of America</span></div><div class="intel-referral-row"><span class="intel-referral-name">Gill</span><span class="intel-referral-role">Unknown, works at Rome</span><span class="intel-referral-at">at Allnex</span></div><div class="intel-referral-row"><span class="intel-referral-name">Logan</span><span class="intel-referral-role">IT</span><span class="intel-referral-at">at Evonik</span></div><div class="intel-referral-row"><span class="intel-referral-name">Daniel Rivera</span><span class="intel-referral-role">rail operations contact</span><span class="intel-referral-at">at Performance Materials</span></div><div class="intel-referral-row"><span class="intel-referral-name">Jeff</span><span class="intel-referral-role">Unknown</span><span class="intel-referral-at">at GROWMARK</span></div><div class="intel-referral-row"><span class="intel-referral-name">Christian Bale</span><span class="intel-referral-role">Person in charge of software decisions</span><span class="intel-referral-at">at Advansix</span></div><div class="intel-referral-row"><span class="intel-referral-name">Brian Barber</span><span class="intel-referral-role">unknown</span><span class="intel-referral-at">at Advansix</span></div><div class="intel-referral-row"><span class="intel-referral-name">Casey Angelo</span><span class="intel-referral-role">DM Jose</span><span class="intel-referral-at">at Evonik</span></div><div class="intel-referral-row"><span class="intel-referral-name">Ben Grimm</span><span class="intel-referral-at">at Oil-Dri of America</span></div><div class="intel-referral-row"><span class="intel-referral-name">Susan Vidovic</span><span class="intel-referral-role">Unknown</span><span class="intel-referral-at">at Sherwin-Williams</span></div><div class="intel-referral-row"><span class="intel-referral-name">Brad Glasson</span><span class="intel-referral-role">colleague</span><span class="intel-referral-at">at Sherwin-Williams</span></div><div class="intel-referral-row"><span class="intel-referral-name">Karsten Schumaker</span><span class="intel-referral-role">not specified</span><span class="intel-referral-at">at Archer Daniels Midland</span></div><div class="intel-referral-row"><span class="intel-referral-name">Leah Wilson</span><span class="intel-referral-role">decision-maker</span><span class="intel-referral-at">at Heritage Environmental Services</span></div><div class="intel-referral-row"><span class="intel-referral-name">Lee Door</span><span class="intel-referral-role">Director of Operations</span><span class="intel-referral-at">at Stella-Jones</span></div><div class="intel-referral-row"><span class="intel-referral-name">Monica Smith</span><span class="intel-referral-role">Director</span><span class="intel-referral-at">at Weyerhaeuser Company</span></div><div class="intel-referral-row"><span class="intel-referral-name">Tangie Parks</span><span class="intel-referral-role">person handling real operations</span><span class="intel-referral-at">at Interoceanic Corporation</span></div><div class="intel-referral-row"><span class="intel-referral-name">Chris Fry</span><span class="intel-referral-role">Decision Maker</span><span class="intel-referral-at">at NOVA Chemicals</span></div><div class="intel-referral-row"><span class="intel-referral-name">Shawn Anderson</span><span class="intel-referral-role">Sr Manager of Inbound Logistics</span><span class="intel-referral-at">at US Foods</span></div><div class="intel-referral-row"><span class="intel-referral-name">James Dunbar</span><span class="intel-referral-role">runs the rail team</span><span class="intel-referral-at">at Axalta Coating Systems</span></div><div class="intel-referral-row"><span class="intel-referral-name">Oliver</span><span class="intel-referral-role">Decision Maker</span><span class="intel-referral-at">at Chemtrade</span></div><div class="intel-referral-row"><span class="intel-referral-name">Oliver Bowser</span><span class="intel-referral-role">In charge of the locomotive side</span><span class="intel-referral-at">at Chemtrade</span></div><div class="intel-referral-row"><span class="intel-referral-name">Teresa Solis</span><span class="intel-referral-role">logistics manager</span><span class="intel-referral-at">at Heidelberg Materials</span></div><div class="intel-referral-row"><span class="intel-referral-name">Kate Hopkins</span><span class="intel-referral-role">Unknown</span><span class="intel-referral-at">at Vulcan Materials</span></div><div class="intel-referral-row"><span class="intel-referral-name">Ross</span><span class="intel-referral-role">Transportation or Rail Logistics Department</span><span class="intel-referral-at">at West Central Cooperative</span></div><div class="intel-referral-row"><span class="intel-referral-name">Jamie Padilla</span><span class="intel-referral-role">Decision Maker</span><span class="intel-referral-at">at CalPortland Company</span></div><div class="intel-referral-row"><span class="intel-referral-name">Ross Wiederin</span><span class="intel-referral-at">at West Central Cooperative</span></div><div class="intel-referral-row"><span class="intel-referral-name">Jamie</span><span class="intel-referral-role">DM</span><span class="intel-referral-at">at CalPortland Company</span></div><div class="intel-referral-row"><span class="intel-referral-name">Bo Pierce</span><span class="intel-referral-at">at Smurfit Westrock</span></div><div class="intel-referral-row"><span class="intel-referral-name">Ariana Garcia</span><span class="intel-referral-role">Unknown</span><span class="intel-referral-at">at Nutrien</span></div><div class="intel-referral-row"><span class="intel-referral-name">Monty</span><span class="intel-referral-role">logistics contact</span><span class="intel-referral-at">at Rubicon LLC</span></div><div class="intel-referral-row"><span class="intel-referral-name">Travis Vedral</span><span class="intel-referral-at">at ITW Food Equipment Group</span></div><div class="intel-referral-row"><span class="intel-referral-name">Ben Clark</span><span class="intel-referral-role">head of global supply chain</span><span class="intel-referral-at">at Ecolab</span></div><div class="intel-referral-row"><span class="intel-referral-name">Mensur&#x27;s uncle</span><span class="intel-referral-role">Unknown</span><span class="intel-referral-at">at Simply Motivated</span></div><div class="intel-referral-row"><span class="intel-referral-name">Ricardo</span><span class="intel-referral-role">procurement</span><span class="intel-referral-at">at Praxair, Inc - a Linde Company</span></div><div class="intel-referral-row"><span class="intel-referral-name">Joe</span><span class="intel-referral-role">Unknown</span><span class="intel-referral-at">at GROWMARK</span></div></div>
   </div>
 </div>
+  </main>
 
   <footer>
     <strong>Outbound Central</strong><br>
-    Generated February 25, 2026 at 01:40 PM PT
+    Generated February 25, 2026 at 01:59 PM PT
   </footer>
 
 </div>
@@ -1121,13 +1161,15 @@ Hola Jobanna, muchas gracias por su respuesta. Me da gusto que le interese.     
 
   // ═══════════════ TAB SWITCHING ═══════════════
   function switchTab(tabId) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     const btn = document.querySelector('.tab-btn[data-tab="' + tabId + '"]');
     const panel = document.getElementById('tab-' + tabId);
     if (btn && panel) {
       btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
       panel.classList.add('active');
+      if (tabId === 'trends') renderTrendsCharts();
       if (tabId === 'calllog') renderCallLog();
       if (tabId === 'companies') renderCompaniesTab();
       if (tabId === 'analysis') renderAnalysisCharts();
@@ -1142,76 +1184,77 @@ Hola Jobanna, muchas gracias por su respuesta. Me da gusto que le interese.     
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
 
-  // Restore tab from URL hash on load
-  (function() {
-    const hash = location.hash.replace('#', '');
-    if (hash && document.getElementById('tab-' + hash)) switchTab(hash);
-  })();
+  // ═══════════════ TAB 2: WEEKLY CHARTS (lazy init) ═══════════════
+  let trendsChartsRendered = false;
 
-  // ═══════════════ TAB 2: WEEKLY CHARTS ═══════════════
-  const wkLabels = weeklyData.map(w => 'Wk ' + w.week_num);
-  const wkDials = weeklyData.map(w => w.total_dials);
-  const wkHCRate = weeklyData.map(w => w.human_contact_rate);
+  function renderTrendsCharts() {
+    if (trendsChartsRendered) return;
+    trendsChartsRendered = true;
 
-  new Chart(document.getElementById('weeklyDialsChart'), {
-    type: 'bar',
-    data: {
-      labels: wkLabels,
-      datasets: [
-        {
-          label: 'Dials', data: wkDials,
-          backgroundColor: 'rgba(59,130,246,0.28)', borderColor: 'rgba(59,130,246,0.70)',
-          borderWidth: 1.5, borderRadius: 5, yAxisID: 'y', order: 2,
+    const wkLabels = weeklyData.map(w => 'Wk ' + w.week_num);
+    const wkDials = weeklyData.map(w => w.total_dials);
+    const wkHCRate = weeklyData.map(w => w.human_contact_rate);
+
+    new Chart(document.getElementById('weeklyDialsChart'), {
+      type: 'bar',
+      data: {
+        labels: wkLabels,
+        datasets: [
+          {
+            label: 'Dials', data: wkDials,
+            backgroundColor: 'rgba(59,130,246,0.28)', borderColor: 'rgba(59,130,246,0.70)',
+            borderWidth: 1.5, borderRadius: 5, yAxisID: 'y', order: 2,
+          },
+          {
+            label: 'Human Contact %', data: wkHCRate, type: 'line',
+            borderColor: '#10B981', backgroundColor: 'rgba(16,185,129,0.07)',
+            borderWidth: 2.5, pointBackgroundColor: '#10B981', pointRadius: 5,
+            pointHoverRadius: 7, fill: true, tension: 0.35, yAxisID: 'y1', order: 0,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { labels: { color: '#8BA3C7', font: { size: 11, family: 'Inter', weight: '600' }, padding: 16, boxWidth: 12, boxHeight: 12 } },
+          tooltip: { ...tooltipStyle, callbacks: { label: ctx => ctx.dataset.yAxisID === 'y1' ? ' HC Rate: ' + ctx.raw + '%' : ' Dials: ' + ctx.raw } },
         },
-        {
-          label: 'Human Contact %', data: wkHCRate, type: 'line',
-          borderColor: '#10B981', backgroundColor: 'rgba(16,185,129,0.07)',
-          borderWidth: 2.5, pointBackgroundColor: '#10B981', pointRadius: 5,
-          pointHoverRadius: 7, fill: true, tension: 0.35, yAxisID: 'y1', order: 0,
+        scales: {
+          x: { ticks: { color: '#8BA3C7', font: { size: 11, family: 'Inter' } }, grid: gridStyle },
+          y: { beginAtZero: true, title: { display: true, text: 'Dials', color: '#8BA3C7', font: { size: 11 } }, ticks: { color: '#8BA3C7' }, grid: gridStyle },
+          y1: { beginAtZero: true, position: 'right', max: 25, title: { display: true, text: 'HC Rate %', color: '#8BA3C7', font: { size: 11 } }, ticks: { color: '#8BA3C7', callback: v => v + '%' }, grid: { drawOnChartArea: false } },
         }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: { labels: { color: '#8BA3C7', font: { size: 11, family: 'Inter', weight: '600' }, padding: 16, boxWidth: 12, boxHeight: 12 } },
-        tooltip: { ...tooltipStyle, callbacks: { label: ctx => ctx.dataset.yAxisID === 'y1' ? ' HC Rate: ' + ctx.raw + '%' : ' Dials: ' + ctx.raw } },
-      },
-      scales: {
-        x: { ticks: { color: '#8BA3C7', font: { size: 11, family: 'Inter' } }, grid: gridStyle },
-        y: { beginAtZero: true, title: { display: true, text: 'Dials', color: '#8BA3C7', font: { size: 11 } }, ticks: { color: '#8BA3C7' }, grid: gridStyle },
-        y1: { beginAtZero: true, position: 'right', max: 25, title: { display: true, text: 'HC Rate %', color: '#8BA3C7', font: { size: 11 } }, ticks: { color: '#8BA3C7', callback: v => v + '%' }, grid: { drawOnChartArea: false } },
       }
-    }
-  });
+    });
 
-  // Stacked conversation outcomes
-  const convCats = ['Interested', 'Meeting Booked', 'Referral Given', 'Not Interested', 'No Rail', 'Wrong Person', 'Wrong Number', 'Gatekeeper', 'Left Voicemail', 'No Answer'];
-  const stackDatasets = convCats.map(cat => ({
-    label: cat,
-    data: weeklyData.map(w => (w.categories && w.categories[cat]) || 0),
-    backgroundColor: catColors[cat] + 'CC', borderColor: catColors[cat],
-    borderWidth: 1, borderRadius: 2,
-  }));
+    // Stacked conversation outcomes
+    const convCats = ['Interested', 'Meeting Booked', 'Referral Given', 'Not Interested', 'No Rail', 'Wrong Person', 'Wrong Number', 'Gatekeeper', 'Left Voicemail', 'No Answer'];
+    const stackDatasets = convCats.map(cat => ({
+      label: cat,
+      data: weeklyData.map(w => (w.categories && w.categories[cat]) || 0),
+      backgroundColor: catColors[cat] + 'CC', borderColor: catColors[cat],
+      borderWidth: 1, borderRadius: 2,
+    }));
 
-  new Chart(document.getElementById('stackedChart'), {
-    type: 'bar',
-    data: { labels: wkLabels, datasets: stackDatasets },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { labels: { color: '#8BA3C7', font: { size: 10, family: 'Inter', weight: '600' }, padding: 10, boxWidth: 10, boxHeight: 10 } },
-        tooltip: tooltipStyle,
-      },
-      scales: {
-        x: { stacked: true, ticks: { color: '#8BA3C7', font: { size: 11, family: 'Inter' } }, grid: gridStyle },
-        y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Conversations', color: '#8BA3C7', font: { size: 11 } }, ticks: { color: '#8BA3C7' }, grid: gridStyle },
+    new Chart(document.getElementById('stackedChart'), {
+      type: 'bar',
+      data: { labels: wkLabels, datasets: stackDatasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#8BA3C7', font: { size: 10, family: 'Inter', weight: '600' }, padding: 10, boxWidth: 10, boxHeight: 10 } },
+          tooltip: tooltipStyle,
+        },
+        scales: {
+          x: { stacked: true, ticks: { color: '#8BA3C7', font: { size: 11, family: 'Inter' } }, grid: gridStyle },
+          y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Conversations', color: '#8BA3C7', font: { size: 11 } }, ticks: { color: '#8BA3C7' }, grid: gridStyle },
+        }
       }
-    }
-  });
+    });
+  }
 
   // ═══════════════ SHARED UTILS ═══════════════
   function formatDuration(s) {
@@ -1306,7 +1349,7 @@ Hola Jobanna, muchas gracias por su respuesta. Me da gusto que le interese.     
         const arrow = hasDetail ? '<span class="expand-arrow">&#x25B6;</span>' : '';
         const txBadge = c.has_transcript ? '<span class="transcript-badge">TRANSCRIPT</span>' : '';
 
-        html += '<tr class="' + expandClass + '" onclick="toggleNotes(\'' + rowId + '\')">';
+        html += '<tr class="' + expandClass + '"' + (hasDetail ? ' tabindex="0" onclick="toggleNotes(\'' + rowId + '\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();toggleNotes(\'' + rowId + '\')}"' : '') + '>';
         html += '<td class="muted" style="white-space:nowrap;">' + formatTimestamp(c.timestamp) + '</td>';
         html += '<td>' + escapeHtml(c.contact_name) + txBadge + '</td>';
         html += '<td style="color:var(--muted);font-size:12px;">' + escapeHtml(c.company_name || '') + '</td>';
@@ -1454,7 +1497,7 @@ Hola Jobanna, muchas gracias por su respuesta. Me da gusto que le interese.     
         });
 
         html += '<div class="company-card" id="' + coId + '">'
-          + '<div class="company-header" onclick="toggleCompany(\'' + coId + '\')">'
+          + '<div class="company-header" tabindex="0" onclick="toggleCompany(\'' + coId + '\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();toggleCompany(\'' + coId + '\')}">'
           + '<div class="company-name">' + escapeHtml(co.name) + '</div>'
           + '<div class="company-meta">'
           + '<div class="company-stat"><span class="cs-num blue">' + co.totalCalls + '</span><span class="cs-label">Calls</span></div>'
@@ -1611,7 +1654,7 @@ Hola Jobanna, muchas gracias por su respuesta. Me da gusto que le interese.     
 
         const hasDetail = r.objection || r.commodities || r.key_quote || r.category;
 
-        html += '<tr class="expandable" onclick="toggleIntelRow(\'' + rowId + '\')">';
+        html += '<tr class="expandable" tabindex="0" onclick="toggleIntelRow(\'' + rowId + '\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();toggleIntelRow(\'' + rowId + '\')}">';
         html += '<td style="font-weight:600;">' + escapeHtml(r.contact_name || '') + '<span class="expand-arrow">&#x25B6;</span></td>';
         html += '<td style="color:var(--muted);font-size:12px;">' + escapeHtml(r.company_name || '') + '</td>';
         html += '<td style="text-align:center;">' + pill + '</td>';
@@ -1670,6 +1713,18 @@ Hola Jobanna, muchas gracias por su respuesta. Me da gusto que le interese.     
 
     applyIntelFilters();
   }
+
+  // Restore tab from URL hash on load (deferred to ensure all init is complete)
+  setTimeout(function() {
+    const hash = location.hash.replace('#', '');
+    if (hash && document.getElementById('tab-' + hash)) switchTab(hash);
+  }, 0);
+
+  // Support browser back/forward between tabs
+  window.addEventListener('hashchange', function() {
+    const hash = location.hash.replace('#', '');
+    if (hash && document.getElementById('tab-' + hash)) switchTab(hash);
+  });
 </script>
 </body>
 </html>
