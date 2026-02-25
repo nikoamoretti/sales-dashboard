@@ -95,7 +95,7 @@ def _summarize_tasks(tasks: List[Dict]) -> Dict:
     total = len(tasks)
     oldest_days = 0
     if oldest_ts:
-        oldest_days = (datetime.now(timezone.utc) - oldest_ts).days
+        oldest_days = max(0, (datetime.now(timezone.utc) - oldest_ts).days)
 
     # Alert: green >50, yellow 20-50, red <20
     if total > 50:

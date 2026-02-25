@@ -36,7 +36,6 @@ from hubspot import (
 )
 from hubspot_tasks import fetch_open_tasks
 from apollo_stats import fetch_apollo_stats
-from sheets_reader import fetch_linkedin_stats
 
 HERE = Path(__file__).parent
 CAMPAIGN_START = date(2026, 1, 19)
@@ -182,6 +181,7 @@ def _tab_bar() -> str:
         ("analysis", "Analysis"),
         ("companies", "Companies"),
         ("emailseq", "Email Sequences"),
+        ("inmails", "LinkedIn InMails"),
     ]
     btns = []
     for tid, label in tabs:
@@ -229,7 +229,6 @@ def _build_channels_grid(data: dict) -> str:
     """Build outbound channels 3-column grid."""
     t = data["totals"]
     apollo = data.get("apollo_stats")
-    linkedin = data.get("linkedin_stats")
 
     # Cold Calling column
     calls_html = f"""
@@ -261,22 +260,24 @@ def _build_channels_grid(data: dict) -> str:
       <div class="channel-not-configured">Not configured &mdash; set APOLLO_API_KEY</div>
     </div>"""
 
-    # LinkedIn column
-    if linkedin:
+    # LinkedIn InMails column
+    inmail = data.get("inmail_stats")
+    if inmail:
+        it = inmail["totals"]
         li_html = f"""
     <div class="channel-card ch-linkedin">
-      <div class="channel-title">LinkedIn Outreach</div>
+      <div class="channel-title">LinkedIn InMails</div>
       <div class="channel-stats">
-        <div class="channel-stat"><span class="channel-stat-label">Requests</span><span class="channel-stat-val highlight">{linkedin['requests_sent']}</span></div>
-        <div class="channel-stat"><span class="channel-stat-label">Connected</span><span class="channel-stat-val">{linkedin['connected']}</span></div>
-        <div class="channel-stat"><span class="channel-stat-label">Accept Rate</span><span class="channel-stat-val">{linkedin['accept_rate']}%</span></div>
+        <div class="channel-stat"><span class="channel-stat-label">Sent</span><span class="channel-stat-val highlight">{it['sent']}</span></div>
+        <div class="channel-stat"><span class="channel-stat-label">Reply Rate</span><span class="channel-stat-val">{it['reply_rate']}%</span></div>
+        <div class="channel-stat"><span class="channel-stat-label">Interested</span><span class="channel-stat-val">{it['interested']}</span></div>
       </div>
     </div>"""
     else:
         li_html = """
     <div class="channel-card ch-linkedin">
-      <div class="channel-title">LinkedIn Outreach</div>
-      <div class="channel-not-configured">Not configured &mdash; set GOOGLE_SHEET_ID</div>
+      <div class="channel-title">LinkedIn InMails</div>
+      <div class="channel-not-configured">No data &mdash; run inmail_pipeline.py</div>
     </div>"""
 
     return f"""
@@ -413,9 +414,9 @@ def _build_trends_tab(data: dict) -> str:
         else:
             mtg_cell = '<td class="num-col muted-num">&mdash;</td>'
 
-        # Week-over-week delta
+        # Week-over-week delta (skip for current/incomplete week)
         delta_html = ""
-        if idx > 0:
+        if idx > 0 and not w["is_current"]:
             prev_rate = weekly[idx - 1]["human_contact_rate"]
             curr_rate = w["human_contact_rate"]
             diff = round(curr_rate - prev_rate, 1)
@@ -424,8 +425,9 @@ def _build_trends_tab(data: dict) -> str:
             elif diff < 0:
                 delta_html = f' <span class="delta-down">{diff}</span>'
 
+        in_progress = ' <span class="week-in-progress">(in progress)</span>' if w["is_current"] else ""
         rows += f"""<tr{rc}>
-            <td class="muted">Wk {w['week_num']}{marker}</td>
+            <td class="muted">Wk {w['week_num']}{marker}{in_progress}</td>
             <td class="muted">{w['dates']}</td>
             <td class="num-col">{w['total_dials']}</td>
             {cat_cells}
@@ -682,6 +684,118 @@ def _build_emailseq_tab(data: dict) -> str:
 </div>"""
 
 
+def _build_inmails_tab(data: dict) -> str:
+    """Tab 7: LinkedIn InMails — weekly breakdown, sentiment charts, interested leads."""
+    inmail = data.get("inmail_stats")
+    if not inmail:
+        return """<div id="tab-inmails" class="tab-panel">
+  <div class="section-header" style="border-left-color:var(--purple);"><h2>LinkedIn InMails</h2><p>No data &mdash; run inmail_pipeline.py to generate</p></div>
+</div>"""
+
+    t = inmail["totals"]
+    weekly = inmail["weekly_data"]
+    inmails = inmail["inmails"]
+    num_companies = len(t.get("companies_contacted", []))
+
+    # Hero cards
+    interest_pct = f"{t['interest_rate']}%" if t['replied'] > 0 else "0%"
+    hero = f"""
+  <div class="hero" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="hero-card accent-purple">
+      <span class="num">{t['sent']}</span>
+      <div class="label">InMails Sent</div>
+    </div>
+    <div class="hero-card accent-purple">
+      <span class="num">{t['reply_rate']}%</span>
+      <div class="label">Reply Rate</div>
+      <div class="sub">{t['replied']} replies</div>
+    </div>
+    <div class="hero-card accent-green">
+      <span class="num">{t['interested']}</span>
+      <div class="label">Interested</div>
+      <div class="sub">{interest_pct} of replies</div>
+    </div>
+    <div class="hero-card accent-purple">
+      <span class="num">{num_companies}</span>
+      <div class="label">Companies</div>
+    </div>
+  </div>"""
+
+    # Weekly table
+    rows = ""
+    for w in weekly:
+        rows += f"""<tr>
+            <td class="muted">Wk {w['week_num']}</td>
+            <td class="muted">{w['monday']}</td>
+            <td class="num-col">{w['sent']}</td>
+            <td class="num-col">{w['replied']}</td>
+            <td class="pct-col">{w['reply_rate']}%</td>
+            <td class="num-col">{w['interested']}</td>
+            <td class="pct-col">{w['interest_rate']}%</td>
+            <td class="num-col">{w['not_interested']}</td>
+            <td class="num-col">{w['neutral']}</td>
+            <td class="num-col">{w['ooo']}</td>
+          </tr>"""
+
+    # Footer
+    total_interest_rate = f"{t['interest_rate']}%"
+    footer = f"""<tr>
+          <td colspan="2" style="color:var(--muted);font-weight:600;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;">Total</td>
+          <td class="num-col">{t['sent']}</td>
+          <td class="num-col">{t['replied']}</td>
+          <td class="pct-col">{t['reply_rate']}%</td>
+          <td class="num-col">{t['interested']}</td>
+          <td class="pct-col">{total_interest_rate}</td>
+          <td class="num-col">{t['not_interested']}</td>
+          <td class="num-col">{t['neutral']}</td>
+          <td class="num-col">{t['ooo']}</td>
+        </tr>"""
+
+    # Interested leads cards
+    interested_leads = [m for m in inmails if m.get("sentiment") == "Interested"]
+    leads_html = ""
+    if interested_leads:
+        items = ""
+        for lead in interested_leads:
+            company = f'<span class="inmail-lead-company">{_h(lead["company"])}</span>' if lead.get("company") else ""
+            reply_preview = _h(lead.get("reply_text", "")[:200])
+            items += f"""<div class="inmail-lead-card">
+              <div class="inmail-lead-header">
+                <strong>{_h(lead['recipient_name'])}</strong>{company}
+              </div>
+              <div class="inmail-lead-title">{_h(lead['recipient_title'])}</div>
+              <div class="inmail-lead-reply">&ldquo;{reply_preview}&rdquo;</div>
+            </div>"""
+        leads_html = f"""
+  <div style="margin-top:48px;">
+    <div class="section-header" style="border-left-color:var(--green);"><h2>Interested Leads</h2><p>{len(interested_leads)} prospects showed interest</p></div>
+    <div class="inmail-leads-grid">{items}</div>
+  </div>"""
+
+    return f"""<div id="tab-inmails" class="tab-panel">
+  <div class="section-header" style="border-left-color:var(--purple);"><h2>LinkedIn InMails</h2><p>Sales Navigator InMail outreach performance</p></div>
+{hero}
+  <section style="margin-bottom:48px;">
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th style="text-align:left;">Week</th><th style="text-align:left;">Monday</th>
+          <th>Sent</th><th>Replied</th><th>Reply %</th>
+          <th>Interested</th><th>Interest %</th><th>Not Int.</th><th>Neutral</th><th>OOO</th>
+        </tr></thead>
+        <tbody>{rows}</tbody>
+        <tfoot>{footer}</tfoot>
+      </table>
+    </div>
+  </section>
+  <div class="charts-row">
+    <div class="chart-wrap accent-purple"><h3>Weekly Sent + Reply Rate</h3><canvas id="inmailWeeklyChart" height="200"></canvas></div>
+    <div class="chart-wrap accent-purple"><h3>Reply Sentiment Breakdown</h3><canvas id="inmailSentimentChart" height="200"></canvas></div>
+  </div>
+{leads_html}
+</div>"""
+
+
 def build_html(data: dict) -> str:
     """Build the complete self-contained HTML dashboard."""
     now = datetime.fromisoformat(data["generated_at"])
@@ -696,6 +810,7 @@ def build_html(data: dict) -> str:
     totals_json = json.dumps(data["totals"], default=str).replace("</", "<\\/")
     task_queue_json = json.dumps(data.get("task_queue"), default=str).replace("</", "<\\/")
     apollo_json = json.dumps(data.get("apollo_stats"), default=str).replace("</", "<\\/")
+    inmail_json = json.dumps(data.get("inmail_stats"), default=str).replace("</", "<\\/")
 
     tab_bar = _tab_bar()
     overview = _build_overview_tab(data)
@@ -704,6 +819,7 @@ def build_html(data: dict) -> str:
     analysis = _build_analysis_tab()
     companies = _build_companies_tab()
     emailseq = _build_emailseq_tab(data)
+    inmails_tab = _build_inmails_tab(data)
 
     # Analysis chart data for lazy init (set by _build_analysis_tab if forensic data exists)
     analysis_chart_data = getattr(_build_analysis_tab, "_data", None)
@@ -870,6 +986,7 @@ def build_html(data: dict) -> str:
     /* DELTA INDICATORS */
     .delta-up {{ color: var(--green); font-size: 11px; font-weight: 700; }}
     .delta-down {{ color: var(--red); font-size: 11px; font-weight: 700; }}
+    .week-in-progress {{ color: var(--muted); font-size: 10px; font-weight: 500; font-style: italic; }}
 
     /* CHARTS */
     .charts-row {{ display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 48px; }}
@@ -881,6 +998,7 @@ def build_html(data: dict) -> str:
     .chart-wrap::before {{ content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--blue); }}
     .chart-wrap.accent-green::before {{ background: var(--green); }}
     .chart-wrap.accent-cyan::before {{ background: var(--cyan); }}
+    .chart-wrap.accent-purple::before {{ background: var(--purple); }}
     .chart-wrap:hover {{ border-color: var(--border-hover); box-shadow: var(--shadow-hover); transform: translateY(-1px); }}
     .chart-wrap h3 {{ font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; }}
 
@@ -1041,6 +1159,24 @@ def build_html(data: dict) -> str:
     .hero-card.accent-muted::before {{ background: var(--muted); }}
     .hero-card.accent-muted .num {{ color: var(--muted); }}
 
+    /* HERO CARD — PURPLE ACCENT */
+    .hero-card.accent-purple::before {{ background: var(--purple); }}
+    .hero-card.accent-purple .num {{ color: var(--purple); text-shadow: 0 0 28px rgba(139,92,246,0.35); }}
+
+    /* INMAIL LEAD CARDS */
+    .inmail-leads-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }}
+    .inmail-lead-card {{
+      background: var(--card); border: 1px solid var(--border); border-left: 3px solid var(--green);
+      border-radius: var(--r); padding: 20px 22px; box-shadow: var(--shadow);
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }}
+    .inmail-lead-card:hover {{ border-color: var(--border-hover); box-shadow: var(--shadow-hover); transform: translateY(-1px); }}
+    .inmail-lead-header {{ display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }}
+    .inmail-lead-header strong {{ color: var(--text); font-size: 15px; }}
+    .inmail-lead-company {{ color: var(--purple); font-size: 13px; font-weight: 600; }}
+    .inmail-lead-title {{ color: var(--muted); font-size: 12px; margin-bottom: 10px; }}
+    .inmail-lead-reply {{ color: var(--text); font-size: 13px; line-height: 1.5; opacity: 0.85; font-style: italic; }}
+
     /* TASK QUEUE BANNER */
     .task-banner {{
       border-radius: var(--r); padding: 20px 28px; margin-bottom: 32px;
@@ -1168,6 +1304,7 @@ def build_html(data: dict) -> str:
   {analysis}
   {companies}
   {emailseq}
+  {inmails_tab}
 
   <footer>
     <strong>Outbound Central</strong><br>
@@ -1183,6 +1320,7 @@ def build_html(data: dict) -> str:
   const totals = {totals_json};
   const taskQueue = {task_queue_json};
   const apolloData = {apollo_json};
+  const inmailData = {inmail_json};
 
   // ═══════════════ TASK LIST RENDER ═══════════════
   (function() {{
@@ -1290,6 +1428,77 @@ def build_html(data: dict) -> str:
     }});
   }}
 
+  // ═══════════════ INMAIL CHARTS (lazy init) ═══════════════
+  let inmailChartsRendered = false;
+
+  function renderInmailCharts() {{
+    if (inmailChartsRendered || !inmailData) return;
+    inmailChartsRendered = true;
+
+    const wd = inmailData.weekly_data || [];
+    const labels = wd.map(w => 'Wk ' + w.week_num);
+    const sent = wd.map(w => w.sent);
+    const replyRate = wd.map(w => w.reply_rate);
+
+    // Weekly Sent + Reply Rate (bar + line combo)
+    const weeklyCanvas = document.getElementById('inmailWeeklyChart');
+    if (weeklyCanvas) {{
+      new Chart(weeklyCanvas, {{
+        type: 'bar',
+        data: {{
+          labels: labels,
+          datasets: [
+            {{ label: 'Sent', data: sent, backgroundColor: 'rgba(139,92,246,0.45)', borderColor: 'rgba(139,92,246,0.85)', borderWidth: 1.5, borderRadius: 4, yAxisID: 'y', order: 2 }},
+            {{ label: 'Reply Rate %', data: replyRate, type: 'line', borderColor: '#10B981', backgroundColor: 'rgba(16,185,129,0.10)', borderWidth: 2.5, pointBackgroundColor: '#10B981', pointRadius: 5, tension: 0.3, fill: true, yAxisID: 'y1', order: 1 }},
+          ]
+        }},
+        options: {{
+          responsive: true, maintainAspectRatio: false,
+          interaction: {{ mode: 'index', intersect: false }},
+          plugins: {{
+            legend: {{ labels: {{ color: '#8BA3C7', font: {{ size: 11, family: 'Inter', weight: '600' }}, padding: 16, boxWidth: 12, boxHeight: 12 }} }},
+            tooltip: {{ ...tooltipStyle, callbacks: {{ label: ctx => ctx.dataset.yAxisID === 'y1' ? ' Reply Rate: ' + ctx.raw + '%' : ' Sent: ' + ctx.raw }} }},
+          }},
+          scales: {{
+            x: {{ ticks: {{ color: '#8BA3C7', font: {{ size: 11, family: 'Inter' }} }}, grid: gridStyle }},
+            y: {{ beginAtZero: true, title: {{ display: true, text: 'Sent', color: '#8BA3C7', font: {{ size: 11 }} }}, ticks: {{ color: '#8BA3C7' }}, grid: gridStyle }},
+            y1: {{ beginAtZero: true, position: 'right', max: 40, title: {{ display: true, text: 'Reply Rate %', color: '#8BA3C7', font: {{ size: 11 }} }}, ticks: {{ color: '#8BA3C7', callback: v => v + '%' }}, grid: {{ drawOnChartArea: false }} }},
+          }}
+        }}
+      }});
+    }}
+
+    // Sentiment doughnut
+    const sentCanvas = document.getElementById('inmailSentimentChart');
+    if (sentCanvas) {{
+      const t = inmailData.totals;
+      const sentimentData = [t.interested, t.not_interested, t.neutral, t.ooo];
+      const hasData = sentimentData.some(v => v > 0);
+      if (hasData) {{
+        new Chart(sentCanvas, {{
+          type: 'doughnut',
+          data: {{
+            labels: ['Interested', 'Not Interested', 'Neutral', 'OOO'],
+            datasets: [{{
+              data: sentimentData,
+              backgroundColor: ['rgba(16,185,129,0.75)', 'rgba(239,68,68,0.65)', 'rgba(139,163,199,0.50)', 'rgba(245,158,11,0.50)'],
+              borderColor: ['#10B981', '#EF4444', '#8BA3C7', '#F59E0B'],
+              borderWidth: 2,
+            }}]
+          }},
+          options: {{
+            responsive: true, maintainAspectRatio: false,
+            cutout: '55%',
+            plugins: {{
+              legend: {{ position: 'bottom', labels: {{ color: '#8BA3C7', font: {{ size: 12, family: 'Inter', weight: '600' }}, padding: 16, boxWidth: 14, boxHeight: 14 }} }},
+              tooltip: {{ ...tooltipStyle }},
+            }}
+          }}
+        }});
+      }}
+    }}
+  }}
+
   // ═══════════════ TAB SWITCHING ═══════════════
   document.querySelectorAll('.tab-btn').forEach(btn => {{
     btn.addEventListener('click', () => {{
@@ -1299,6 +1508,7 @@ def build_html(data: dict) -> str:
       document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
       if (btn.dataset.tab === 'analysis') renderAnalysisCharts();
       if (btn.dataset.tab === 'emailseq') renderEmailSeqChart();
+      if (btn.dataset.tab === 'inmails') renderInmailCharts();
     }});
   }});
 
@@ -1341,7 +1551,7 @@ def build_html(data: dict) -> str:
   }});
 
   // Stacked conversation outcomes
-  const convCats = ['Interested', 'Meeting Booked', 'Referral Given', 'Not Interested', 'No Rail', 'Wrong Person', 'Gatekeeper'];
+  const convCats = ['Interested', 'Meeting Booked', 'Referral Given', 'Not Interested', 'No Rail', 'Wrong Person', 'Wrong Number', 'Gatekeeper', 'Left Voicemail', 'No Answer'];
   const stackDatasets = convCats.map(cat => ({{
     label: cat,
     data: weeklyData.map(w => (w.categories && w.categories[cat]) || 0),
@@ -1650,18 +1860,6 @@ def _fetch_apollo(api_key: str) -> Optional[dict]:
         return None
 
 
-def _fetch_linkedin(sheet_id: str, creds_json: str) -> Optional[dict]:
-    """Fetch LinkedIn stats from Google Sheet. Returns None on failure."""
-    try:
-        print("Fetching LinkedIn stats from Google Sheet...")
-        result = fetch_linkedin_stats(sheet_id, creds_json)
-        print(f"  LinkedIn: {result['requests_sent']} sent, {result['connected']} connected ({result['accept_rate']}%)")
-        return result
-    except Exception as e:
-        print(f"  Warning: LinkedIn stats fetch failed: {e}")
-        return None
-
-
 def main():
     print("Outbound Central — Dashboard Generator")
     print("=" * 45)
@@ -1679,13 +1877,16 @@ def main():
     if not apollo_key:
         print("  Apollo: APOLLO_API_KEY not set, skipping")
 
-    sheet_id = os.getenv("GOOGLE_SHEET_ID")
-    creds_json = os.getenv("GOOGLE_CREDENTIALS_JSON")
-    if sheet_id and creds_json:
-        data["linkedin_stats"] = _fetch_linkedin(sheet_id, creds_json)
+    # InMail stats (from inmail_data.json)
+    inmail_path = HERE / "inmail_data.json"
+    if inmail_path.exists():
+        inmail_data = json.loads(inmail_path.read_text())
+        data["inmail_stats"] = inmail_data
+        t = inmail_data["totals"]
+        print(f"  InMails: {t['sent']} sent, {t['replied']} replied ({t['reply_rate']}%), {t['interested']} interested")
     else:
-        data["linkedin_stats"] = None
-        print("  LinkedIn: GOOGLE_SHEET_ID/GOOGLE_CREDENTIALS_JSON not set, skipping")
+        data["inmail_stats"] = None
+        print("  InMails: inmail_data.json not found, skipping")
 
     # 3. Write call_data.json
     json_path = HERE / "call_data.json"
