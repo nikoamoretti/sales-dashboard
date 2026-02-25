@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-25T10:19:21.377006-08:00",
+  "generated_at": "2026-02-25T11:11:06.487064-08:00",
   "calls": [
     {
       "id": "101907888950",
@@ -14434,6 +14434,104 @@
       "has_transcript": true,
       "week_num": 6,
       "hour_pt": 8
+    },
+    {
+      "id": "105117371733",
+      "timestamp": "2026-02-25T10:37:15.823000-08:00",
+      "contact_name": "Tim Kliewer",
+      "company_name": "Dakota Gasification Company",
+      "company_id": "50450652993",
+      "category": "No Answer",
+      "duration_s": 16,
+      "notes": "",
+      "engagement_notes": [],
+      "has_transcript": true,
+      "week_num": 6,
+      "hour_pt": 10
+    },
+    {
+      "id": "105122143766",
+      "timestamp": "2026-02-25T10:38:18.606000-08:00",
+      "contact_name": "Dan Parker",
+      "company_name": "GEO Specialty Chemicals",
+      "company_id": "43924194099",
+      "category": "Left Voicemail",
+      "duration_s": 36,
+      "notes": "",
+      "engagement_notes": [],
+      "has_transcript": true,
+      "week_num": 6,
+      "hour_pt": 10
+    },
+    {
+      "id": "105117426837",
+      "timestamp": "2026-02-25T10:39:33.665000-08:00",
+      "contact_name": "Eric Powers",
+      "company_name": "Marathon Petroleum",
+      "company_id": "21820248737",
+      "category": "Left Voicemail",
+      "duration_s": 40,
+      "notes": "",
+      "engagement_notes": [],
+      "has_transcript": false,
+      "week_num": 6,
+      "hour_pt": 10
+    },
+    {
+      "id": "105121524898",
+      "timestamp": "2026-02-25T10:41:13.363000-08:00",
+      "contact_name": "Eric Powers",
+      "company_name": "Marathon Petroleum",
+      "company_id": "21820248737",
+      "category": "Left Voicemail",
+      "duration_s": 35,
+      "notes": "",
+      "engagement_notes": [],
+      "has_transcript": false,
+      "week_num": 6,
+      "hour_pt": 10
+    },
+    {
+      "id": "105117435425",
+      "timestamp": "2026-02-25T10:47:07.574000-08:00",
+      "contact_name": "Daniel Kleeman",
+      "company_name": "Hampton Lumber",
+      "company_id": "50533560681",
+      "category": "Left Voicemail",
+      "duration_s": 40,
+      "notes": "Mary Kleeman via VM",
+      "engagement_notes": [],
+      "has_transcript": false,
+      "week_num": 6,
+      "hour_pt": 10
+    },
+    {
+      "id": "105121534060",
+      "timestamp": "2026-02-25T10:49:21.574000-08:00",
+      "contact_name": "Kostas Papazoglou",
+      "company_name": "L. B. Foster",
+      "company_id": "43924813237",
+      "category": "No Answer",
+      "duration_s": 0,
+      "notes": "",
+      "engagement_notes": [],
+      "has_transcript": false,
+      "week_num": 6,
+      "hour_pt": 10
+    },
+    {
+      "id": "105121584300",
+      "timestamp": "2026-02-25T10:49:52.332000-08:00",
+      "contact_name": "Tiffany Redd",
+      "company_name": "Oil-Dri of America",
+      "company_id": "43921917295",
+      "category": "Left Voicemail",
+      "duration_s": 83,
+      "notes": "",
+      "engagement_notes": [],
+      "has_transcript": false,
+      "week_num": 6,
+      "hour_pt": 10
     }
   ],
   "weekly_data": [
@@ -14548,18 +14646,18 @@
       "week_num": 6,
       "monday": "2026-02-23",
       "dates": "Feb 23\u201327",
-      "total_dials": 127,
+      "total_dials": 134,
       "categories": {
-        "Left Voicemail": 76,
+        "Left Voicemail": 81,
         "Wrong Number": 10,
-        "No Answer": 34,
+        "No Answer": 36,
         "Wrong Person": 4,
         "Referral Given": 2,
         "Not Interested": 1
       },
       "human_contact": 7,
-      "human_contact_rate": 5.5,
-      "pitch_rate": 0.8,
+      "human_contact_rate": 5.2,
+      "pitch_rate": 0.7,
       "meetings_booked": 0,
       "is_current": true
     }
@@ -14592,9 +14690,9 @@
     }
   ],
   "totals": {
-    "dials": 1031,
+    "dials": 1038,
     "hc": 116,
-    "hc_rate": 11.3,
+    "hc_rate": 11.2,
     "meetings": 5,
     "categories": {
       "Interested": 20,
@@ -14605,18 +14703,18 @@
       "Wrong Person": 28,
       "Wrong Number": 32,
       "Gatekeeper": 7,
-      "Left Voicemail": 585,
-      "No Answer": 298
+      "Left Voicemail": 590,
+      "No Answer": 300
     }
   },
   "today": {
-    "dials": 26,
+    "dials": 33,
     "hc": 1,
-    "rate": 3.8,
+    "rate": 3.0,
     "categories": {
-      "Left Voicemail": 15,
+      "Left Voicemail": 20,
       "Wrong Number": 4,
-      "No Answer": 6,
+      "No Answer": 8,
       "Referral Given": 1
     }
   },
@@ -18641,7 +18739,7 @@
     ]
   },
   "inmail_stats": {
-    "generated_at": "2026-02-24T22:37:12.698427-08:00",
+    "generated_at": "2026-02-25T10:30:51.054057-08:00",
     "campaign_start": "2026-01-19",
     "inmails": [
       {
@@ -19162,6 +19260,28 @@
         "week_num": 4
       },
       {
+        "id": "5e3124db8512",
+        "recipient_name": "Mauricio Mart\u00ednez",
+        "recipient_title": "",
+        "company": "",
+        "date_sent": "2026-02-10",
+        "replied": false,
+        "reply_text": "",
+        "sentiment": null,
+        "week_num": 4
+      },
+      {
+        "id": "0db6a77d814b",
+        "recipient_name": "Emmanuel L\u00f3pez",
+        "recipient_title": "Continuous Improvement Lead / Supply Chain Management / Warehouse & log\u00edstics Head",
+        "company": "",
+        "date_sent": "2026-02-10",
+        "replied": false,
+        "reply_text": "",
+        "sentiment": null,
+        "week_num": 4
+      },
+      {
         "id": "5b94c7b38dea",
         "recipient_name": "Rachel Mendiola Cruz",
         "recipient_title": "Gerente de Cadena de Suministro",
@@ -19536,9 +19656,31 @@
         "week_num": 4
       },
       {
+        "id": "c24cf4f135c9",
+        "recipient_name": "Marlenne Monserrat Martinez Garcia",
+        "recipient_title": "Analista de log\u00edstica con experiencia en administraci\u00f3n y flujo de efectivo",
+        "company": "administraci\u00f3n y flujo de efectivo",
+        "date_sent": "2026-02-12",
+        "replied": false,
+        "reply_text": "",
+        "sentiment": null,
+        "week_num": 4
+      },
+      {
         "id": "67549cd77f90",
         "recipient_name": "Raul Del Pozo",
         "recipient_title": "SUPPLY CHAIN COUNTRY MANAGER, at GRUMA",
+        "company": "GRUMA",
+        "date_sent": "2026-02-12",
+        "replied": false,
+        "reply_text": "",
+        "sentiment": null,
+        "week_num": 4
+      },
+      {
+        "id": "2e22d3c765f4",
+        "recipient_name": "Miranda Leal Alanis",
+        "recipient_title": "Logistics Coordinator at GRUMA",
         "company": "GRUMA",
         "date_sent": "2026-02-12",
         "replied": false,
@@ -19679,6 +19821,17 @@
         "week_num": 4
       },
       {
+        "id": "6c38e1483da2",
+        "recipient_name": "EUNJU INNA S.",
+        "recipient_title": "Settlement Manager-Logistics Area at SAMSUNG SDS",
+        "company": "Samsung SDS",
+        "date_sent": "2026-02-12",
+        "replied": false,
+        "reply_text": "",
+        "sentiment": null,
+        "week_num": 4
+      },
+      {
         "id": "a2fb33aae2a9",
         "recipient_name": "Edher Valencia",
         "recipient_title": "Manager en SAMSUNG SDS",
@@ -19714,7 +19867,7 @@
       {
         "id": "c42b073cbfd1",
         "recipient_name": "Julio Kim",
-        "recipient_title": "Director \u2014 Samsung SDS (North America)",
+        "recipient_title": "",
         "company": "",
         "date_sent": "2026-02-12",
         "replied": false,
@@ -19817,9 +19970,9 @@
       {
         "week_num": 4,
         "monday": "2026-02-09",
-        "sent": 61,
+        "sent": 66,
         "replied": 6,
-        "reply_rate": 9.8,
+        "reply_rate": 9.1,
         "interested": 3,
         "interest_rate": 50.0,
         "not_interested": 3,
@@ -19828,9 +19981,9 @@
       }
     ],
     "totals": {
-      "sent": 104,
+      "sent": 109,
       "replied": 14,
-      "reply_rate": 13.5,
+      "reply_rate": 12.8,
       "interested": 3,
       "interest_rate": 21.4,
       "not_interested": 8,
@@ -19852,7 +20005,8 @@
         "Solistica",
         "TUBACERO",
         "Truper",
-        "Valero"
+        "Valero",
+        "administraci\u00f3n y flujo de efectivo"
       ]
     }
   }
