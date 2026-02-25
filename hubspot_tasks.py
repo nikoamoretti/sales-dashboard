@@ -60,7 +60,11 @@ def fetch_open_tasks(token: str, owner_id: str = ADAM_OWNER_ID) -> Dict:
 
 
 def _summarize_tasks(tasks: List[Dict]) -> Dict:
-    """Build summary from raw task list."""
+    """Build summary from raw task list, excluding auto-generated follow-ups."""
+    # Filter out HubSpot auto-generated follow-up tasks
+    tasks = [t for t in tasks
+             if "follow up" not in (t.get("properties", {}).get("hs_task_subject") or "").lower()]
+
     by_priority = {"HIGH": 0, "MEDIUM": 0, "LOW": 0, "NONE": 0}
     oldest_ts: Optional[datetime] = None
     task_list = []
