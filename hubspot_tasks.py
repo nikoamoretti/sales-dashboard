@@ -6,7 +6,7 @@ Alert thresholds: green (>50 remaining), yellow (20-50), red (<20).
 """
 
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 
 import requests
@@ -22,6 +22,12 @@ def fetch_open_tasks(token: str, owner_id: str = ADAM_OWNER_ID) -> Dict:
         "Content-Type": "application/json",
     }
 
+    # Only fetch tasks created since Monday of current week (UTC)
+    now_utc = datetime.now(timezone.utc)
+    monday = now_utc - timedelta(days=now_utc.weekday())
+    week_start = monday.replace(hour=0, minute=0, second=0, microsecond=0)
+    week_start_ms = str(int(week_start.timestamp() * 1000))
+
     all_tasks: List[Dict] = []
     after = None
 
@@ -31,6 +37,7 @@ def fetch_open_tasks(token: str, owner_id: str = ADAM_OWNER_ID) -> Dict:
                 "filters": [
                     {"propertyName": "hubspot_owner_id", "operator": "EQ", "value": owner_id},
                     {"propertyName": "hs_task_status", "operator": "NEQ", "value": "COMPLETED"},
+                    {"propertyName": "hs_createdate", "operator": "GTE", "value": week_start_ms},
                 ]
             }],
             "properties": [
