@@ -583,6 +583,16 @@ def upsert_weekly_snapshots(
     if not week_calls:
         return 0
 
+    # Fetch existing snapshots to avoid overwriting complete weeks with partial data
+    today = date.today()
+    current_monday = today - timedelta(days=today.weekday())
+    existing_snaps: dict[int, int] = {}  # week_num -> existing dials count
+    if not dry_run:
+        existing = sb.table("weekly_snapshots").select(
+            "week_num, dials"
+        ).eq("channel", CALLS_CHANNEL).execute()
+        existing_snaps = {r["week_num"]: r["dials"] or 0 for r in existing.data}
+
     records: list[dict] = []
     for monday, wk_calls in sorted(week_calls.items()):
         categories: Counter = Counter()
@@ -600,6 +610,13 @@ def upsert_weekly_snapshots(
         total = sum(categories.values())
         hcr = round(human_contacts / total * 100, 1) if total else 0.0
         week_num = campaign_week_num(monday)
+
+        # Skip past weeks where we have MORE data already (partial sync would corrupt)
+        if monday < current_monday:
+            existing_count = existing_snaps.get(week_num, 0)
+            if total < existing_count:
+                print(f"  Skipping Wk {week_num} ({monday}): sync has {total} dials but DB has {existing_count}")
+                continue
 
         records.append({
             "week_num": week_num,
