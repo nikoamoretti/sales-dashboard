@@ -29,6 +29,16 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).parent
 
+# Campaign week numbering: Wk 1 = Jan 19, 2026
+CAMPAIGN_START = date(2026, 1, 19)  # Monday of Week 1
+
+
+def campaign_week_num(d: date) -> int:
+    """Convert a date to campaign week number (1-based, Mon start)."""
+    monday = d - timedelta(days=d.weekday())
+    return ((monday - CAMPAIGN_START).days // 7) + 1
+
+
 # ---------------------------------------------------------------------------
 # Imports from project modules
 # ---------------------------------------------------------------------------
@@ -342,8 +352,8 @@ def build_call_record(
         or company_id_map.get(company_name.lower())
     )
 
-    # ISO week number (1-based, Monday start)
-    week_num = ts.isocalendar()[1]
+    # Campaign week number (Wk 1 = Jan 19, 2026)
+    week_num = campaign_week_num(ts.date())
 
     return {
         "hubspot_call_id": call_id,
@@ -589,7 +599,7 @@ def upsert_weekly_snapshots(
 
         total = sum(categories.values())
         hcr = round(human_contacts / total * 100, 1) if total else 0.0
-        week_num = monday.isocalendar()[1]
+        week_num = campaign_week_num(monday)
 
         records.append({
             "week_num": week_num,
