@@ -813,9 +813,11 @@ def fetch_all() -> dict:
         },
         "email": {
             "volume": total_email_sent,
-            "responses": total_email_replied,
-            "response_rate": round(total_email_replied / total_email_sent * 100, 1) if total_email_sent else 0,
-            "interested": total_email_replied,
+            # Apollo does not expose reply counts via API — mark as None so the
+            # dashboard renders "—" rather than a misleading "0".
+            "responses": None,
+            "response_rate": None,
+            "interested": None,
             "meetings": meetings_from_email,
         },
         "linkedin": {

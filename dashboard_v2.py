@@ -620,6 +620,46 @@ tr:hover td { background: var(--bg-hover); }
 .company-meta-line {
   font-size: .7rem; color: var(--text-muted); margin: .35rem 0;
 }
+
+/* ---- Conversion funnel ---- */
+.funnel-wrap {
+  display: flex; align-items: flex-start; justify-content: center; gap: 0;
+  padding: 1rem .5rem; background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+}
+.funnel-stage {
+  display: flex; align-items: center; flex: 1; min-width: 0;
+}
+.funnel-box {
+  flex: 1; min-width: 0; padding: .75rem .5rem; border-radius: var(--radius);
+  text-align: center; transition: transform .15s;
+}
+.funnel-box:hover { transform: translateY(-2px); }
+.funnel-value {
+  font-size: 1.35rem; font-weight: 700; line-height: 1.2;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.funnel-label {
+  font-size: .65rem; color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: .06em; margin-top: .2rem;
+}
+.funnel-arrow {
+  display: flex; flex-direction: column; align-items: center; gap: .1rem;
+  padding: 0 .15rem; flex-shrink: 0;
+}
+.funnel-arrow-svg { width: 18px; height: 18px; opacity: .4; }
+.funnel-cvr {
+  font-size: .6rem; color: var(--text-muted); white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 700px) {
+  .funnel-wrap { flex-direction: column; align-items: stretch; gap: .25rem; }
+  .funnel-stage { flex-direction: column; }
+  .funnel-box { padding: .5rem .75rem; display: flex; align-items: center; gap: .5rem; text-align: left; }
+  .funnel-value { font-size: 1.1rem; }
+  .funnel-arrow { flex-direction: row; padding: .15rem 0; }
+  .funnel-arrow-svg { transform: rotate(90deg); width: 14px; height: 14px; }
+}
 </style>"""
 
 
@@ -688,76 +728,91 @@ def _tab_home(data: dict) -> str:
     ov = data.get("overview", {})
     tw = ov.get("this_week", {})
     lw = ov.get("last_week", {})
-    wow = ov.get("wow_deltas", {})
     insights = data.get("insights", [])
     companies = data.get("companies", [])
-    pipeline_counts = ov.get("pipeline", {})
 
     # Week label
     wk_num = tw.get("week_num")
     wk_label = f"Week {wk_num}" if wk_num else "This Week"
 
-    # Keep kpi() helper for potential reuse elsewhere
-    def kpi(value, label, delta_key, prev_value=None, suffix="", no_delta=False):
-        display = str(value) if value is not None else "\u2014"
-        is_none = value is None
-        muted_class = " kpi-card-muted" if is_none else ""
+    # ------------------------------------------------------------------
+    # Helper: WoW delta arrow
+    # ------------------------------------------------------------------
+    def _wow_delta(current, previous, is_pct=False):
+        """Return HTML span with green up-arrow, red down-arrow, or muted dash."""
+        try:
+            c = float(current or 0)
+            p = float(previous or 0)
+        except (ValueError, TypeError):
+            return ""
+        diff = c - p
+        if is_pct:
+            diff_display = f"{abs(diff):.1f}%"
+        else:
+            diff_display = f"{abs(diff):g}"
+        if diff > 0:
+            return f'<span style="color:#34a853;font-size:.75rem;">\u25b2 +{diff_display}</span>'
+        elif diff < 0:
+            return f'<span style="color:#ea4335;font-size:.75rem;">\u25bc -{diff_display}</span>'
+        else:
+            return f'<span style="color:var(--text-muted);font-size:.75rem;">\u2014 0</span>'
 
-        delta_html = ""
-        if not no_delta and delta_key:
-            raw_delta = wow.get(delta_key, 0)
-            try:
-                dv = float(str(raw_delta).replace("+", ""))
-            except (ValueError, TypeError):
-                dv = 0
-            if dv != 0:
-                cls = "delta-up" if dv > 0 else "delta-down"
-                sign = "+" if dv > 0 else ""
-                delta_html = f'<span class="{cls}">{sign}{dv:g}{suffix}</span>'
-
-        context_html = ""
-        if prev_value is not None and not is_none:
-            context_html = f'<span class="delta-context"> (was {_h(str(prev_value))} last wk)</span>'
-        elif is_none:
-            context_html = '<span class="delta-context">No data this week</span>'
-
+    def _scorecard_card(label, current_display, prev_display=None, delta_html=""):
+        """Single metric card for the WoW scorecard grid."""
+        prev_line = f'<div style="font-size:.75rem;color:var(--text-muted);margin-top:2px;">{_h(str(prev_display))} last wk</div>' if prev_display is not None else ""
+        delta_line = f'<div style="margin-top:2px;">{delta_html}</div>' if delta_html else ""
         return f"""
-    <div class="kpi-card{muted_class}" role="article" aria-label="{_h(label)}: {_h(display)}">
-      <div class="kpi-value">{_h(display)}</div>
-      <div class="kpi-label">{_h(label)}</div>
-      <div class="kpi-delta">{delta_html}{context_html}</div>
-    </div>"""
+      <div class="kpi-card" role="article" aria-label="{_h(label)}: {_h(str(current_display))}">
+        <div class="kpi-value">{_h(str(current_display))}</div>
+        <div class="kpi-label">{_h(label)}</div>
+        {prev_line}
+        {delta_line}
+      </div>"""
 
     # ------------------------------------------------------------------
-    # 1. Pipeline bar
+    # 1. WoW Scorecard — replaces funnel bar + week summary
     # ------------------------------------------------------------------
-    p_prospect = pipeline_counts.get("prospect", 0)
-    p_contacted = pipeline_counts.get("contacted", 0)
-    p_interested = pipeline_counts.get("interested", 0)
-    p_meeting = pipeline_counts.get("meeting_booked", 0)
+    dials       = tw.get("dials", 0)
+    cr          = tw.get("contact_rate", 0)
+    meetings    = tw.get("meetings_booked", 0)
+    inmails_sent = tw.get("inmails_sent", 0)
+    inmail_rr   = tw.get("inmail_reply_rate", 0)
 
-    pipeline_html = f"""
-  <section aria-labelledby="home-pipeline-heading">
-    <div class="pipeline-bar" role="img" aria-label="Sales pipeline: {p_prospect} prospect, {p_contacted} contacted, {p_interested} interested, {p_meeting} meetings booked">
-      <div class="pipeline-segment ps-prospect">
-        <span class="pipe-count">{p_prospect}</span>
-        <span class="pipe-label">Prospect</span>
-        <span class="pipe-arrow" aria-hidden="true">&rsaquo;</span>
-      </div>
-      <div class="pipeline-segment ps-contacted">
-        <span class="pipe-count">{p_contacted}</span>
-        <span class="pipe-label">Contacted</span>
-        <span class="pipe-arrow" aria-hidden="true">&rsaquo;</span>
-      </div>
-      <div class="pipeline-segment ps-interested">
-        <span class="pipe-count">{p_interested}</span>
-        <span class="pipe-label">Interested</span>
-        <span class="pipe-arrow" aria-hidden="true">&rsaquo;</span>
-      </div>
-      <div class="pipeline-segment ps-meeting">
-        <span class="pipe-count">{p_meeting}</span>
-        <span class="pipe-label">Meetings</span>
-      </div>
+    lw_dials    = lw.get("dials", 0)
+    lw_cr       = lw.get("contact_rate", 0)
+    lw_meetings = lw.get("meetings_booked", 0)
+    lw_inmails  = lw.get("inmails_sent", 0)
+    lw_rr       = lw.get("inmail_reply_rate", 0)
+
+    deal_pipe = data.get("deal_pipeline", {}).get("metrics", {})
+    pipe_value = deal_pipe.get("total_value", 0)
+    pipe_meetings = deal_pipe.get("meetings_booked_count", 0)
+    pipe_deals = deal_pipe.get("deal_count", 0)
+
+    # Format pipeline value as $XXk or $X.Xm
+    if pipe_value >= 1_000_000:
+        pipe_value_display = f"${pipe_value / 1_000_000:.1f}m"
+    elif pipe_value >= 1_000:
+        pipe_value_display = f"${pipe_value / 1_000:.0f}k"
+    elif pipe_value > 0:
+        pipe_value_display = f"${pipe_value:,.0f}"
+    else:
+        pipe_value_display = "$0"
+
+    scorecard_html = f"""
+  <section aria-labelledby="home-scorecard-heading">
+    <h2 class="section-heading" id="home-scorecard-heading">
+      <span class="sh-icon" aria-hidden="true">📊</span> {_h(wk_label)}
+    </h2>
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+      {_scorecard_card("Dials", dials, lw_dials, _wow_delta(dials, lw_dials))}
+      {_scorecard_card("Contact Rate", f"{cr:.1f}%", f"{lw_cr:.1f}%", _wow_delta(cr, lw_cr, is_pct=True))}
+      {_scorecard_card("Meetings", meetings, lw_meetings, _wow_delta(meetings, lw_meetings))}
+      {_scorecard_card("InMails Sent", inmails_sent, lw_inmails, _wow_delta(inmails_sent, lw_inmails))}
+      {_scorecard_card("InMail Reply Rate", f"{inmail_rr:.1f}%", f"{lw_rr:.1f}%", _wow_delta(inmail_rr, lw_rr, is_pct=True))}
+      {_scorecard_card("Pipeline Value", pipe_value_display)}
+      {_scorecard_card("Meetings Booked Total", pipe_meetings)}
+      {_scorecard_card("Deals Created", pipe_deals)}
     </div>
   </section>"""
 
@@ -834,40 +889,7 @@ def _tab_home(data: dict) -> str:
         action_queue_html = ""
 
     # ------------------------------------------------------------------
-    # 3. Week summary — compact single line
-    # ------------------------------------------------------------------
-    dials       = tw.get("dials", 0)
-    cr          = tw.get("contact_rate", 0)
-    meetings    = tw.get("meetings_booked", 0)
-    inmails_sent = tw.get("inmails_sent", 0)
-    inmail_rr   = tw.get("inmail_reply_rate", 0)
-
-    lw_dials    = lw.get("dials", 0)
-    lw_cr       = lw.get("contact_rate", 0)
-    lw_meetings = lw.get("meetings_booked", 0)
-    lw_inmails  = lw.get("inmails_sent", 0)
-    lw_rr       = lw.get("inmail_reply_rate", 0)
-
-    # Build compact metric spans
-    parts = []
-    if dials or lw_dials:
-        parts.append(f'<strong class="ws-metric">{dials}</strong> dials <span class="ws-prev">(was {lw_dials})</span>')
-        parts.append(f'<strong class="ws-metric">{cr:.1f}%</strong> contact rate <span class="ws-prev">(was {lw_cr:.1f}%)</span>')
-        parts.append(f'<strong class="ws-metric">{meetings}</strong> {"meeting" if meetings == 1 else "meetings"} <span class="ws-prev">(was {lw_meetings})</span>')
-    if inmails_sent or lw_inmails:
-        parts.append(f'<strong class="ws-metric">{inmails_sent}</strong> inmails <span class="ws-prev">(was {lw_inmails})</span>')
-
-    week_summary_inner = " &middot; ".join(parts)
-    week_summary_html = f"""
-  <section aria-labelledby="home-week-heading">
-    <h2 class="section-heading" id="home-week-heading">
-      <span class="sh-icon" aria-hidden="true">📊</span> {_h(wk_label)}
-    </h2>
-    <div class="week-summary" role="status">{week_summary_inner if week_summary_inner else "No activity data this week."}</div>
-  </section>"""
-
-    # ------------------------------------------------------------------
-    # 4. Advisor Insights — keep as-is
+    # 3. Advisor Insights
     # ------------------------------------------------------------------
     type_icons = {
         "action_required": "🔔",
@@ -920,7 +942,7 @@ def _tab_home(data: dict) -> str:
   </section>"""
 
     # ------------------------------------------------------------------
-    # 5. Channels This Week — keep as-is
+    # 4. Channels This Week
     # ------------------------------------------------------------------
     call_trends = data.get("call_trends", [])
     inmail_trends = data.get("inmail_trends", [])
@@ -971,10 +993,9 @@ def _tab_home(data: dict) -> str:
          role="tabpanel"
          aria-labelledby="tab-btn-home"
          aria-hidden="false">
-  {pipeline_html}
-  {action_queue_html}
-  {week_summary_html}
   {insights_html}
+  {scorecard_html}
+  {action_queue_html}
   {channel_html}
 </section>"""
 
@@ -1337,7 +1358,7 @@ def _tab_outreach(data: dict) -> str:
             rr_ = seq.get("reply_rate", 0)
             seq_rows += f"""
         <tr>
-          <td>{_h(seq.get("name",""))}</td>
+          <td>{_h(seq.get("sequence_name",""))}</td>
           <td>{_h(seq.get("status",""))}</td>
           <td style="font-variant-numeric:tabular-nums">{_h(seq.get("sent",0))}</td>
           <td style="font-variant-numeric:tabular-nums">{_h(seq.get("opened",0))} <span style="color:var(--text-muted)">({or_:.1f}%)</span></td>
@@ -1635,6 +1656,42 @@ def _tab_pipeline(data: dict) -> str:
     cold_count = sum(1 for d in deals if d.get("channel") == "Cold Call")
 
     # ------------------------------------------------------------------
+    # Funnel data extraction
+    # ------------------------------------------------------------------
+    _cc = data.get("channel_comparison", {})
+    _calls_cc = _cc.get("calls", {})
+    _email_cc = _cc.get("email", {})
+    _li_cc = _cc.get("linkedin", {})
+
+    funnel_touches = ((_calls_cc.get("volume") or 0)
+                      + (_email_cc.get("volume") or 0)
+                      + (_li_cc.get("volume") or 0))
+    funnel_responses = ((_calls_cc.get("responses") or 0)
+                        + (_email_cc.get("responses") or 0)
+                        + (_li_cc.get("responses") or 0))
+    funnel_interested = ((_calls_cc.get("interested") or 0)
+                         + (_li_cc.get("interested") or 0))
+    funnel_meetings = mtg_count
+    funnel_deals = deal_count
+    funnel_pipeline = total_value
+
+    def _cvr(num, denom):
+        return round(num / denom * 100, 1) if denom else 0
+
+    cvr_1 = _cvr(funnel_responses, funnel_touches)
+    cvr_2 = _cvr(funnel_interested, funnel_responses)
+    cvr_3 = _cvr(funnel_meetings, funnel_interested)
+    cvr_4 = _cvr(funnel_deals, funnel_meetings)
+    cvr_5 = _cvr(funnel_deals, funnel_touches)
+
+    if funnel_pipeline >= 1_000_000:
+        pipeline_str = f"${funnel_pipeline / 1_000_000:.1f}M"
+    elif funnel_pipeline >= 1_000:
+        pipeline_str = f"${funnel_pipeline / 1_000:.0f}K"
+    else:
+        pipeline_str = f"${funnel_pipeline:,.0f}"
+
+    # ------------------------------------------------------------------
     # 1. KPI row
     # ------------------------------------------------------------------
     kpi_html = f"""
@@ -1667,6 +1724,47 @@ def _tab_pipeline(data: dict) -> str:
         </div>
         <div class="kpi-label">Source Split</div>
       </div>
+    </div>
+  </section>"""
+
+    # ------------------------------------------------------------------
+    # 1b. Conversion funnel
+    # ------------------------------------------------------------------
+    # (value, label, css-color, bg-rgba, border-rgba)
+    funnel_stages = [
+        (f"{funnel_touches:,}", "Touches", "var(--accent-blue)", "rgba(66,133,244,.10)", "rgba(66,133,244,.25)"),
+        (f"{funnel_responses:,}", "Responses", "var(--accent-teal)", "rgba(0,196,204,.10)", "rgba(0,196,204,.25)"),
+        (f"{funnel_interested:,}", "Interested", "var(--accent-purple)", "rgba(168,85,247,.10)", "rgba(168,85,247,.25)"),
+        (f"{funnel_meetings}", "Meetings", "var(--accent-orange)", "rgba(249,115,22,.10)", "rgba(249,115,22,.25)"),
+        (f"{funnel_deals}", "Deals", "var(--accent-green)", "rgba(52,168,83,.10)", "rgba(52,168,83,.25)"),
+        (pipeline_str, "Pipeline", "var(--accent-yellow)", "rgba(251,188,4,.10)", "rgba(251,188,4,.25)"),
+    ]
+    cvr_vals = [cvr_1, cvr_2, cvr_3, cvr_4, cvr_5]
+
+    stage_cards = ""
+    for i, (value, label, color, bg, border) in enumerate(funnel_stages):
+        stage_cards += f"""
+        <div class="funnel-stage">
+          <div class="funnel-box" style="background:{bg};border:1px solid {border};">
+            <div class="funnel-value" style="color:{color};">{value}</div>
+            <div class="funnel-label">{label}</div>
+          </div>"""
+        if i < len(funnel_stages) - 1:
+            stage_cards += f"""
+          <div class="funnel-arrow">
+            <svg class="funnel-arrow-svg" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>
+            <span class="funnel-cvr">{cvr_vals[i]}%</span>
+          </div>"""
+        stage_cards += "\n        </div>"
+
+    funnel_html = f"""
+  <section aria-labelledby="pipeline-funnel-heading" style="margin-bottom:1.5rem;">
+    <h2 class="section-heading" id="pipeline-funnel-heading">
+      <span class="sh-icon" aria-hidden="true">&#x1F50D;</span> Full-Funnel Conversion
+      <span style="margin-left:auto;font-size:.7rem;color:var(--text-muted);font-weight:400;">{cvr_5}% touches-to-deal</span>
+    </h2>
+    <div class="funnel-wrap">
+      {stage_cards}
     </div>
   </section>"""
 
@@ -1747,6 +1845,7 @@ def _tab_pipeline(data: dict) -> str:
          aria-labelledby="tab-btn-pipeline"
          aria-hidden="true">
   {kpi_html}
+  {funnel_html}
   {pipeline_html}
 </section>"""
 
