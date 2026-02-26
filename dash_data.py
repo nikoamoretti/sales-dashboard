@@ -482,23 +482,22 @@ def _build_experiments(raw_experiments: list[dict]) -> list[dict]:
 
 
 def _build_deals(raw_deals: list[dict], raw_companies: list[dict]) -> dict:
-    """Build deal pipeline filtered to outbound-sourced companies only.
+    """Build deal pipeline filtered to outbound-sourced companies with real amounts.
 
-    Includes real HubSpot deals that match a company in our companies table,
-    plus synthetic "No Deal Yet" entries for active pipeline companies
-    (meeting_booked / interested) that don't have a HubSpot deal.
+    Only includes HubSpot deals that match a company in our companies table
+    AND have amount > 0. Also builds a meetings_booked list separately.
 
     Returns a dict with:
-      - deals: list of deal dicts ordered by stage
+      - deals: list of deal dicts ordered by stage (amount > 0 only)
       - by_stage: dict of stage_label -> list of deals
+      - meetings_booked: list of companies with meeting_booked status
       - metrics: pipeline summary metrics
     """
     STAGE_ORDER = [
-        "No Deal Yet", "Demo", "Introductory Call", "Qualified", "Pilot",
-        "Proposal", "Nurture", "Backlog", "Closed Won", "Blocked / Stale",
+        "Demo", "Introductory Call", "Qualified", "Pilot",
+        "Proposal", "Nurture", "Backlog",
     ]
     STAGE_WEIGHT = {
-        "No Deal Yet": 0.0,
         "Demo": 0.40,
         "Introductory Call": 0.20,
         "Qualified": 0.50,
@@ -506,8 +505,6 @@ def _build_deals(raw_deals: list[dict], raw_companies: list[dict]) -> dict:
         "Proposal": 0.80,
         "Nurture": 0.10,
         "Backlog": 0.05,
-        "Closed Won": 1.0,
-        "Blocked / Stale": 0.0,
     }
 
     stage_rank = {s: i for i, s in enumerate(STAGE_ORDER)}
@@ -524,19 +521,19 @@ def _build_deals(raw_deals: list[dict], raw_companies: list[dict]) -> dict:
                 "next_action": c.get("next_action"),
             }
 
-    # Filter deals to outbound-sourced only (must match a company in our table)
+    # Filter deals: outbound-sourced AND amount > 0
     deals: list[dict] = []
-    matched_company_names: set[str] = set()
     for d in raw_deals:
         co_name = d.get("company_name") or ""
         if co_name not in co_lookup:
-            continue  # skip non-outbound deals
+            continue
+        amount = float(d.get("amount") or 0)
+        if amount <= 0:
+            continue
         co_info = co_lookup[co_name]
         source = co_info["source"]
         channel = "MARS" if source == "mars" else "Cold Call"
         stage_label = d.get("stage_label") or d.get("stage") or "Unknown"
-        amount = float(d.get("amount") or 0)
-        matched_company_names.add(co_name)
         deals.append({
             "id": d.get("id"),
             "hubspot_deal_id": d.get("hubspot_deal_id"),
@@ -552,35 +549,6 @@ def _build_deals(raw_deals: list[dict], raw_companies: list[dict]) -> dict:
             "pipeline": d.get("pipeline", ""),
         })
 
-    # Add active pipeline companies that don't have deals yet
-    active_statuses = {"meeting_booked", "interested"}
-    for c in raw_companies:
-        name = c.get("name")
-        status = (c.get("status") or "").lower()
-        if not name or status not in active_statuses:
-            continue
-        if name in matched_company_names:
-            continue  # already has a deal
-        source = c.get("source") or "cold_call"
-        channel = "MARS" if source == "mars" else "Cold Call"
-        deals.append({
-            "id": None,
-            "hubspot_deal_id": None,
-            "name": name,  # use company name as deal name
-            "amount": 0,
-            "stage": "",
-            "stage_label": "No Deal Yet",
-            "close_date": "",
-            "company_name": name,
-            "company_id": c.get("id"),
-            "source": source,
-            "channel": channel,
-            "pipeline": "",
-            "contact_name": c.get("contact_name"),
-            "next_action": c.get("next_action"),
-            "status": status,
-        })
-
     # Sort by stage order, then amount desc within stage
     deals.sort(key=lambda x: (
         stage_rank.get(x["stage_label"], 99),
@@ -593,8 +561,8 @@ def _build_deals(raw_deals: list[dict], raw_companies: list[dict]) -> dict:
         sl = d["stage_label"]
         by_stage.setdefault(sl, []).append(d)
 
-    # Metrics — exclude No Deal Yet, Closed Won, Blocked/Stale from active pipeline
-    active_stages = {"Demo", "Introductory Call", "Qualified", "Pilot", "Proposal", "Nurture", "Backlog"}
+    # Metrics
+    active_stages = set(STAGE_ORDER)
     active_deals = [d for d in deals if d["stage_label"] in active_stages]
     total_value = sum(d["amount"] for d in active_deals)
     weighted_value = sum(
@@ -604,30 +572,34 @@ def _build_deals(raw_deals: list[dict], raw_companies: list[dict]) -> dict:
     deal_count = len(active_deals)
     avg_deal = total_value / deal_count if deal_count else 0
 
-    won = [d for d in deals if d["stage_label"] == "Closed Won"]
-    lost = [d for d in deals if d["stage_label"] == "Blocked / Stale"]
-    win_count = len(won)
-    total_closed = win_count + len(lost)
-    win_rate = round(win_count / total_closed * 100, 1) if total_closed else 0
-
-    # Channel attribution counts
-    mars_count = sum(1 for d in deals if d.get("channel") == "MARS")
-    cold_call_count = sum(1 for d in deals if d.get("channel") == "Cold Call")
+    # Meetings booked — all companies with meeting_booked status
+    meetings_booked = []
+    for c in raw_companies:
+        if (c.get("status") or "").lower() != "meeting_booked":
+            continue
+        source = c.get("source") or "cold_call"
+        meetings_booked.append({
+            "name": c.get("name"),
+            "source": source,
+            "channel": "MARS" if source == "mars" else "Cold Call",
+            "contact_name": c.get("contact_name"),
+            "industry": c.get("industry"),
+            "next_action": c.get("next_action"),
+        })
+    # Sort: MARS first, then cold call
+    meetings_booked.sort(key=lambda x: (0 if x["channel"] == "MARS" else 1, x.get("name", "")))
 
     return {
         "deals": deals,
         "by_stage": by_stage,
         "stage_order": STAGE_ORDER,
+        "meetings_booked": meetings_booked,
         "metrics": {
             "total_value": total_value,
             "weighted_value": weighted_value,
             "deal_count": deal_count,
             "avg_deal": avg_deal,
-            "win_rate": win_rate,
-            "won_count": win_count,
-            "total_closed": total_closed,
-            "mars_count": mars_count,
-            "cold_call_count": cold_call_count,
+            "meetings_booked_count": len(meetings_booked),
         },
     }
 

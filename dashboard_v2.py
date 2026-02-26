@@ -1622,14 +1622,14 @@ def _tab_pipeline(data: dict) -> str:
     deals = dp.get("deals", [])
     by_stage = dp.get("by_stage", {})
     stage_order = dp.get("stage_order", [])
+    meetings_booked = dp.get("meetings_booked", [])
     metrics = dp.get("metrics", {})
 
     total_value = metrics.get("total_value", 0)
     weighted_value = metrics.get("weighted_value", 0)
     deal_count = metrics.get("deal_count", 0)
     avg_deal = metrics.get("avg_deal", 0)
-    mars_count = metrics.get("mars_count", 0)
-    cold_call_count = metrics.get("cold_call_count", 0)
+    mtg_count = metrics.get("meetings_booked_count", 0)
 
     # ------------------------------------------------------------------
     # 1. KPI row
@@ -1657,18 +1657,52 @@ def _tab_pipeline(data: dict) -> str:
         <div class="kpi-label">Avg Deal Size</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-value" style="font-size:1.3rem;">
-          <span style="color:#a855f7;">{mars_count} MARS</span>
-          <span style="color:var(--text-muted);font-size:.85rem;margin:0 .25rem;">/</span>
-          <span style="color:#4285f4;">{cold_call_count} Cold</span>
-        </div>
-        <div class="kpi-label">Channel Split</div>
+        <div class="kpi-value">{mtg_count}</div>
+        <div class="kpi-label">Meetings Booked</div>
       </div>
     </div>
   </section>"""
 
     # ------------------------------------------------------------------
-    # 2. Stage value bar chart (horizontal stacked)
+    # 2. Meetings Booked table
+    # ------------------------------------------------------------------
+    mtg_rows = ""
+    for m in meetings_booked:
+        channel = m.get("channel", "Cold Call")
+        if channel == "MARS":
+            ch_badge = '<span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.6rem;font-weight:600;background:rgba(168,85,247,.15);color:#a855f7;">MARS</span>'
+        else:
+            ch_badge = '<span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.6rem;font-weight:600;background:rgba(66,133,244,.15);color:#4285f4;">Cold Call</span>'
+        contact = _h(m.get("contact_name") or "\u2014")
+        next_act = _h(m.get("next_action") or "\u2014")
+        mtg_rows += f"""
+          <tr class="pipe-deal-row" style="cursor:default;">
+            <td style="font-weight:600;color:var(--text-primary);">{_h(m["name"])}</td>
+            <td>{ch_badge}</td>
+            <td style="color:var(--text-secondary);">{contact}</td>
+            <td style="color:var(--text-secondary);font-size:.8rem;">{next_act}</td>
+          </tr>"""
+
+    mtg_html = f"""
+  <section aria-labelledby="pipeline-mtg-heading">
+    <h2 class="section-heading" id="pipeline-mtg-heading">
+      <span class="sh-icon" aria-hidden="true">🤝</span> Meetings Booked ({mtg_count})
+    </h2>
+    <div class="table-wrap" style="margin-bottom:1.5rem;">
+      <table class="pipeline-table" aria-label="Meetings booked">
+        <thead><tr>
+          <th scope="col">Company</th>
+          <th scope="col">Channel</th>
+          <th scope="col">Contact</th>
+          <th scope="col">Next Action</th>
+        </tr></thead>
+        <tbody>{mtg_rows}</tbody>
+      </table>
+    </div>
+  </section>"""
+
+    # ------------------------------------------------------------------
+    # 3. Stage value bar chart
     # ------------------------------------------------------------------
     stage_bar_html = f"""
   <section aria-labelledby="pipeline-bar-heading">
@@ -1676,17 +1710,16 @@ def _tab_pipeline(data: dict) -> str:
       <span class="sh-icon" aria-hidden="true">📊</span> Value by Stage
     </h2>
     <div class="card chart-card" style="margin-bottom:1.5rem;">
-      <div class="chart-container" style="height:280px;">
+      <div class="chart-container" style="height:240px;">
         <canvas id="pipeline-stage-chart" aria-label="Pipeline value by stage" role="img"></canvas>
       </div>
     </div>
   </section>"""
 
     # ------------------------------------------------------------------
-    # 3. Deal table grouped by stage
+    # 4. Deal Pipeline table grouped by stage
     # ------------------------------------------------------------------
     stage_colors = {
-        "No Deal Yet": "var(--text-muted)",
         "Demo": "var(--accent-blue)",
         "Introductory Call": "var(--accent-teal)",
         "Qualified": "var(--accent-purple)",
@@ -1694,11 +1727,8 @@ def _tab_pipeline(data: dict) -> str:
         "Proposal": "var(--accent-orange)",
         "Nurture": "var(--accent-yellow)",
         "Backlog": "var(--text-muted)",
-        "Closed Won": "var(--accent-green)",
-        "Blocked / Stale": "var(--accent-red)",
     }
     stage_bg = {
-        "No Deal Yet": "rgba(90,96,120,.08)",
         "Demo": "rgba(66,133,244,.12)",
         "Introductory Call": "rgba(0,196,204,.12)",
         "Qualified": "rgba(168,85,247,.12)",
@@ -1706,8 +1736,6 @@ def _tab_pipeline(data: dict) -> str:
         "Proposal": "rgba(249,115,22,.12)",
         "Nurture": "rgba(251,188,4,.12)",
         "Backlog": "rgba(90,96,120,.12)",
-        "Closed Won": "rgba(52,168,83,.18)",
-        "Blocked / Stale": "rgba(234,67,53,.12)",
     }
 
     table_rows = ""
@@ -1720,22 +1748,15 @@ def _tab_pipeline(data: dict) -> str:
         color = stage_colors.get(stage_label, "var(--text-secondary)")
         bg = stage_bg.get(stage_label, "rgba(90,96,120,.08)")
 
-        # Stage header — show count label and subtotal
-        if stage_label == "No Deal Yet":
-            header_right = f'{len(stage_deals)} compan{"ies" if len(stage_deals) != 1 else "y"}'
-        else:
-            header_right = f'{len(stage_deals)} deal{"s" if len(stage_deals) != 1 else ""} &middot; ${subtotal:,.0f}'
-
         table_rows += f"""
           <tr class="pipe-stage-row">
-            <td colspan="6" style="padding:.6rem .9rem;font-weight:700;font-size:.82rem;color:{color};background:{bg};letter-spacing:.02em;">
+            <td colspan="5" style="padding:.6rem .9rem;font-weight:700;font-size:.82rem;color:{color};background:{bg};letter-spacing:.02em;">
               {_h(stage_label)}
-              <span style="float:right;font-weight:600;font-variant-numeric:tabular-nums;">{header_right}</span>
+              <span style="float:right;font-weight:600;font-variant-numeric:tabular-nums;">{len(stage_deals)} deal{"s" if len(stage_deals) != 1 else ""} &middot; ${subtotal:,.0f}</span>
             </td>
           </tr>"""
 
         for deal in stage_deals:
-            # Channel badge
             channel = deal.get("channel", "")
             if channel == "MARS":
                 channel_badge = '<span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.6rem;font-weight:600;background:rgba(168,85,247,.15);color:#a855f7;">MARS</span>'
@@ -1743,41 +1764,25 @@ def _tab_pipeline(data: dict) -> str:
                 channel_badge = '<span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.6rem;font-weight:600;background:rgba(66,133,244,.15);color:#4285f4;">Cold Call</span>'
 
             company = deal["company_name"] or deal["name"]
-
-            if stage_label == "No Deal Yet":
-                # Show status badge + contact name instead of amount/close date
-                status = deal.get("status", "")
-                if status == "meeting_booked":
-                    status_badge = '<span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.6rem;font-weight:600;background:rgba(52,168,83,.15);color:#34a853;">Meeting Booked</span>'
-                else:
-                    status_badge = '<span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.6rem;font-weight:600;background:rgba(251,188,4,.15);color:#d4a200;">Interested</span>'
-                contact = deal.get("contact_name") or "\u2014"
-                next_action = deal.get("next_action") or ""
-                amount_cell = status_badge
-                close_cell = _h(contact)
-                if next_action:
-                    close_cell += f'<div style="font-size:.7rem;color:var(--text-muted);margin-top:.15rem;">{_h(next_action)}</div>'
-            else:
-                amount = deal["amount"]
-                amount_cell = f"${amount:,.0f}" if amount else "\u2014"
-                close_cell = _h(deal["close_date"][:10]) if deal["close_date"] else "\u2014"
+            amount = deal["amount"]
+            amount_str = f"${amount:,.0f}"
+            close = _h(deal["close_date"][:10]) if deal["close_date"] else "\u2014"
 
             table_rows += f"""
           <tr class="pipe-deal-row" style="cursor:default;">
-            <td style="font-weight:600;color:var(--text-primary);white-space:nowrap;">{_h(deal["name"])}</td>
-            <td style="color:var(--text-secondary);">{_h(company)}</td>
+            <td style="font-weight:600;color:var(--text-primary);white-space:nowrap;">{_h(company)}</td>
             <td>{channel_badge}</td>
-            <td style="font-variant-numeric:tabular-nums;text-align:right;font-weight:500;color:var(--text-primary);">{amount_cell}</td>
+            <td style="font-variant-numeric:tabular-nums;text-align:right;font-weight:500;color:var(--text-primary);">{amount_str}</td>
             <td>
               <span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.65rem;font-weight:600;background:{bg};color:{color};">{_h(stage_label)}</span>
             </td>
-            <td style="font-variant-numeric:tabular-nums;color:var(--text-secondary);">{close_cell}</td>
+            <td style="font-variant-numeric:tabular-nums;color:var(--text-secondary);">{close}</td>
           </tr>"""
 
     deal_table_html = f"""
   <section aria-labelledby="pipeline-deals-heading">
     <h2 class="section-heading" id="pipeline-deals-heading">
-      <span class="sh-icon" aria-hidden="true">🏗️</span> Outbound Pipeline ({len(deals)})
+      <span class="sh-icon" aria-hidden="true">🏗️</span> Deal Pipeline ({len(deals)})
     </h2>
     <div class="filter-bar">
       <input type="search" id="deal-search" placeholder="Search deal or company..."
@@ -1793,10 +1798,9 @@ def _tab_pipeline(data: dict) -> str:
     deal_table_html += f"""
       </select>
     </div>
-    <div class="table-wrap" style="max-height:700px;overflow-y:auto;">
+    <div class="table-wrap" style="max-height:600px;overflow-y:auto;">
       <table class="pipeline-table" aria-label="Deal pipeline" id="deal-pipeline-table">
         <thead><tr>
-          <th scope="col">Deal Name</th>
           <th scope="col">Company</th>
           <th scope="col">Channel</th>
           <th scope="col" style="text-align:right">Amount</th>
@@ -1815,6 +1819,7 @@ def _tab_pipeline(data: dict) -> str:
          aria-labelledby="tab-btn-pipeline"
          aria-hidden="true">
   {kpi_html}
+  {mtg_html}
   {stage_bar_html}
   {deal_table_html}
 </section>"""
@@ -2261,7 +2266,6 @@ function initPipelineChart() {{
   var stageOrder = DEAL_PIPELINE.stage_order || [];
   var byStage = DEAL_PIPELINE.by_stage || {{}};
   var stageColors = {{
-    'No Deal Yet': '#5a6078',
     'Demo': '#4285f4',
     'Introductory Call': '#00c4cc',
     'Qualified': '#a855f7',
@@ -2269,18 +2273,14 @@ function initPipelineChart() {{
     'Proposal': '#f97316',
     'Nurture': '#fbbc04',
     'Backlog': '#5a6078',
-    'Closed Won': '#34a853',
-    'Blocked / Stale': '#ea4335',
   }};
 
-  // Only show stages with deals (exclude No Deal Yet — $0 entries)
   var labels = [];
   var values = [];
   var counts = [];
   var colors = [];
 
   stageOrder.forEach(function(stage) {{
-    if (stage === 'No Deal Yet') return;  // skip from chart
     var deals = byStage[stage];
     if (!deals || deals.length === 0) return;
     var total = deals.reduce(function(sum, d) {{ return sum + (d.amount || 0); }}, 0);
