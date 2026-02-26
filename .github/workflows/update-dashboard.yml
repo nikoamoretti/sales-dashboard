@@ -3,17 +3,17 @@ name: Update Dashboard
 on:
   workflow_dispatch:
   schedule:
-    # Every hour 7am-5pm PT Mon-Fri (= 15:00-01:00 UTC Tue-Sat)
-    # PT is UTC-8 (PST) / UTC-7 (PDT). Using UTC-8 (winter) as baseline.
-    - cron: '0 15,16,17,18,19,20,21,22,23 * * 1-5'  # 7am-3pm PT
-    - cron: '0 0,1 * * 2-6'                           # 4pm-5pm PT (next UTC day)
+    # Daily at 5 PM PT Mon-Fri (= 01:00 UTC Tue-Sat)
+    # Runs after calling day ends to capture full day's data
+    - cron: '0 1 * * 2-6'
 
 permissions:
   contents: write
 
 jobs:
-  build:
+  sync-and-build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository
@@ -27,18 +27,31 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Generate dashboard
+      - name: Sync HubSpot → Supabase
         env:
           HUBSPOT_TOKEN: ${{ secrets.HUBSPOT_TOKEN }}
-          APOLLO_API_KEY: ${{ secrets.APOLLO_API_KEY }}
-          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
-          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
-        run: python dashboard_gen.py
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python sync_hubspot.py --skip-intel
+
+      - name: Run AI advisor
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python advisor.py --clear-today
+
+      - name: Generate dashboard
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python dashboard_v2.py
 
       - name: Deploy to GitHub Pages
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add index.html call_data.json
-          git diff --staged --quiet || git commit -m "chore: update dashboard $(date +%Y-%m-%d-%H%M)"
+          git add index.html
+          git diff --staged --quiet || git commit -m "chore: update dashboard $(date +%Y-%m-%d)"
           git push
