@@ -822,7 +822,7 @@ def _tab_home(data: dict) -> str:
     action_candidates = []
     for co in companies:
         status = (co.get("status") or "").lower()
-        if status not in ("interested", "meeting_booked"):
+        if status != "interested":
             continue
         # Must have a next_action (from CRM field or latest intel)
         na = co.get("next_action") or ""
@@ -854,15 +854,8 @@ def _tab_home(data: dict) -> str:
                 "last_touch": str(co.get("last_touch_at") or "")[:10],
             })
 
-    # Sort: meeting_booked first, then interested, then by most recent touch
-    status_priority = {"meeting_booked": 0, "interested": 1}
-    action_candidates.sort(key=lambda a: (
-        status_priority.get(a["status"], 9),
-        "" if not a.get("last_touch") else a["last_touch"],
-    ), reverse=False)
-    # Secondary sort: most recent touch first within same priority
+    # Sort by most recent touch first
     action_candidates.sort(key=lambda a: a.get("last_touch") or "", reverse=True)
-    action_candidates.sort(key=lambda a: status_priority.get(a["status"], 9))
 
     action_items_html = ""
     for item in action_candidates[:8]:
@@ -879,7 +872,7 @@ def _tab_home(data: dict) -> str:
         action_queue_html = f"""
   <section aria-labelledby="home-actions-heading">
     <h2 class="section-heading" id="home-actions-heading">
-      <span class="sh-icon" aria-hidden="true">🎯</span> Action Queue
+      <span class="sh-icon" aria-hidden="true">🎯</span> Follow-Up Queue
     </h2>
     <div class="action-queue">
       {action_items_html}
