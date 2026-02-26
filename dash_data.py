@@ -521,19 +521,25 @@ def _build_deals(raw_deals: list[dict], raw_companies: list[dict]) -> dict:
                 "next_action": c.get("next_action"),
             }
 
-    # Filter deals: outbound-sourced AND amount > 0
+    # Only include companies with meeting_booked status
+    mtg_booked_names = {
+        c["name"] for c in raw_companies
+        if (c.get("status") or "").lower() == "meeting_booked" and c.get("name")
+    }
+
+    # Deals from meeting_booked companies (include $0)
     deals: list[dict] = []
+    matched_co_names: set[str] = set()
     for d in raw_deals:
         co_name = d.get("company_name") or ""
-        if co_name not in co_lookup:
+        if co_name not in mtg_booked_names:
             continue
-        amount = float(d.get("amount") or 0)
-        if amount <= 0:
-            continue
-        co_info = co_lookup[co_name]
-        source = co_info["source"]
+        co_info = co_lookup.get(co_name, {})
+        source = co_info.get("source") or "cold_call"
         channel = "MARS" if source == "mars" else "Cold Call"
         stage_label = d.get("stage_label") or d.get("stage") or "Unknown"
+        amount = float(d.get("amount") or 0)
+        matched_co_names.add(co_name)
         deals.append({
             "id": d.get("id"),
             "hubspot_deal_id": d.get("hubspot_deal_id"),
@@ -549,6 +555,25 @@ def _build_deals(raw_deals: list[dict], raw_companies: list[dict]) -> dict:
             "pipeline": d.get("pipeline", ""),
         })
 
+    # Add meeting_booked companies that have no deal yet
+    for name in mtg_booked_names - matched_co_names:
+        co_info = co_lookup.get(name, {})
+        source = co_info.get("source") or "cold_call"
+        deals.append({
+            "id": None,
+            "hubspot_deal_id": None,
+            "name": name,
+            "amount": 0,
+            "stage": "",
+            "stage_label": "\u2014",
+            "close_date": "",
+            "company_name": name,
+            "company_id": None,
+            "source": source,
+            "channel": "MARS" if source == "mars" else "Cold Call",
+            "pipeline": "",
+        })
+
     # Sort by stage order, then amount desc within stage
     deals.sort(key=lambda x: (
         stage_rank.get(x["stage_label"], 99),
@@ -561,15 +586,14 @@ def _build_deals(raw_deals: list[dict], raw_companies: list[dict]) -> dict:
         sl = d["stage_label"]
         by_stage.setdefault(sl, []).append(d)
 
-    # Metrics
-    active_stages = set(STAGE_ORDER)
-    active_deals = [d for d in deals if d["stage_label"] in active_stages]
-    total_value = sum(d["amount"] for d in active_deals)
+    # Metrics — only count deals with actual amounts
+    deals_with_value = [d for d in deals if d["amount"] > 0]
+    total_value = sum(d["amount"] for d in deals_with_value)
     weighted_value = sum(
         d["amount"] * STAGE_WEIGHT.get(d["stage_label"], 0)
-        for d in active_deals
+        for d in deals_with_value
     )
-    deal_count = len(active_deals)
+    deal_count = len(deals_with_value)
     avg_deal = total_value / deal_count if deal_count else 0
 
     # Meetings booked — all companies with meeting_booked status

@@ -1631,6 +1631,9 @@ def _tab_pipeline(data: dict) -> str:
     avg_deal = metrics.get("avg_deal", 0)
     mtg_count = metrics.get("meetings_booked_count", 0)
 
+    mars_count = sum(1 for d in deals if d.get("channel") == "MARS")
+    cold_count = sum(1 for d in deals if d.get("channel") == "Cold Call")
+
     # ------------------------------------------------------------------
     # 1. KPI row
     # ------------------------------------------------------------------
@@ -1642,82 +1645,33 @@ def _tab_pipeline(data: dict) -> str:
     <div class="kpi-grid" style="margin-bottom:1.5rem;">
       <div class="kpi-card">
         <div class="kpi-value" style="font-size:1.6rem">${total_value:,.0f}</div>
-        <div class="kpi-label">Active Pipeline</div>
+        <div class="kpi-label">Pipeline Value</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-value" style="font-size:1.6rem">${weighted_value:,.0f}</div>
-        <div class="kpi-label">Weighted Pipeline</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-value">{deal_count}</div>
-        <div class="kpi-label">Active Deals</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-value" style="font-size:1.6rem">${avg_deal:,.0f}</div>
-        <div class="kpi-label">Avg Deal Size</div>
+        <div class="kpi-label">Weighted</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-value">{mtg_count}</div>
         <div class="kpi-label">Meetings Booked</div>
       </div>
-    </div>
-  </section>"""
-
-    # ------------------------------------------------------------------
-    # 2. Meetings Booked table
-    # ------------------------------------------------------------------
-    mtg_rows = ""
-    for m in meetings_booked:
-        channel = m.get("channel", "Cold Call")
-        if channel == "MARS":
-            ch_badge = '<span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.6rem;font-weight:600;background:rgba(168,85,247,.15);color:#a855f7;">MARS</span>'
-        else:
-            ch_badge = '<span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.6rem;font-weight:600;background:rgba(66,133,244,.15);color:#4285f4;">Cold Call</span>'
-        contact = _h(m.get("contact_name") or "\u2014")
-        next_act = _h(m.get("next_action") or "\u2014")
-        mtg_rows += f"""
-          <tr class="pipe-deal-row" style="cursor:default;">
-            <td style="font-weight:600;color:var(--text-primary);">{_h(m["name"])}</td>
-            <td>{ch_badge}</td>
-            <td style="color:var(--text-secondary);">{contact}</td>
-            <td style="color:var(--text-secondary);font-size:.8rem;">{next_act}</td>
-          </tr>"""
-
-    mtg_html = f"""
-  <section aria-labelledby="pipeline-mtg-heading">
-    <h2 class="section-heading" id="pipeline-mtg-heading">
-      <span class="sh-icon" aria-hidden="true">🤝</span> Meetings Booked ({mtg_count})
-    </h2>
-    <div class="table-wrap" style="margin-bottom:1.5rem;">
-      <table class="pipeline-table" aria-label="Meetings booked">
-        <thead><tr>
-          <th scope="col">Company</th>
-          <th scope="col">Channel</th>
-          <th scope="col">Contact</th>
-          <th scope="col">Next Action</th>
-        </tr></thead>
-        <tbody>{mtg_rows}</tbody>
-      </table>
-    </div>
-  </section>"""
-
-    # ------------------------------------------------------------------
-    # 3. Stage value bar chart
-    # ------------------------------------------------------------------
-    stage_bar_html = f"""
-  <section aria-labelledby="pipeline-bar-heading">
-    <h2 class="section-heading" id="pipeline-bar-heading">
-      <span class="sh-icon" aria-hidden="true">📊</span> Value by Stage
-    </h2>
-    <div class="card chart-card" style="margin-bottom:1.5rem;">
-      <div class="chart-container" style="height:240px;">
-        <canvas id="pipeline-stage-chart" aria-label="Pipeline value by stage" role="img"></canvas>
+      <div class="kpi-card">
+        <div class="kpi-value">{deal_count}</div>
+        <div class="kpi-label">Deals Created</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value" style="font-size:1.3rem;">
+          <span style="color:#a855f7;">{mars_count} MARS</span>
+          <span style="color:var(--text-muted);font-size:.85rem;margin:0 .2rem;">/</span>
+          <span style="color:#4285f4;">{cold_count} Cold</span>
+        </div>
+        <div class="kpi-label">Source Split</div>
       </div>
     </div>
   </section>"""
 
     # ------------------------------------------------------------------
-    # 4. Deal Pipeline table grouped by stage
+    # 2. Pipeline table — one flat table sorted by amount desc
     # ------------------------------------------------------------------
     stage_colors = {
         "Demo": "var(--accent-blue)",
@@ -1738,71 +1692,45 @@ def _tab_pipeline(data: dict) -> str:
         "Backlog": "rgba(90,96,120,.12)",
     }
 
-    table_rows = ""
-    for stage_label in stage_order:
-        stage_deals = by_stage.get(stage_label, [])
-        if not stage_deals:
-            continue
+    # Sort deals: amount desc (no-deal entries last)
+    sorted_deals = sorted(deals, key=lambda d: -(d["amount"] or 0))
 
-        subtotal = sum(d["amount"] for d in stage_deals)
-        color = stage_colors.get(stage_label, "var(--text-secondary)")
+    table_rows = ""
+    for deal in sorted_deals:
+        channel = deal.get("channel", "Cold Call")
+        if channel == "MARS":
+            src_badge = '<span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.6rem;font-weight:600;background:rgba(168,85,247,.15);color:#a855f7;">MARS</span>'
+        else:
+            src_badge = '<span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.6rem;font-weight:600;background:rgba(66,133,244,.15);color:#4285f4;">Cold Call</span>'
+
+        company = deal["company_name"] or deal["name"]
+        amount = deal["amount"]
+        amount_str = f"${amount:,.0f}" if amount else "\u2014"
+        stage_label = deal["stage_label"]
+        color = stage_colors.get(stage_label, "var(--text-muted)")
         bg = stage_bg.get(stage_label, "rgba(90,96,120,.08)")
+        stage_badge = f'<span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.65rem;font-weight:600;background:{bg};color:{color};">{_h(stage_label)}</span>' if stage_label and stage_label != "\u2014" else "\u2014"
+        close = _h(deal["close_date"][:10]) if deal.get("close_date") else "\u2014"
 
         table_rows += f"""
-          <tr class="pipe-stage-row">
-            <td colspan="5" style="padding:.6rem .9rem;font-weight:700;font-size:.82rem;color:{color};background:{bg};letter-spacing:.02em;">
-              {_h(stage_label)}
-              <span style="float:right;font-weight:600;font-variant-numeric:tabular-nums;">{len(stage_deals)} deal{"s" if len(stage_deals) != 1 else ""} &middot; ${subtotal:,.0f}</span>
-            </td>
-          </tr>"""
-
-        for deal in stage_deals:
-            channel = deal.get("channel", "")
-            if channel == "MARS":
-                channel_badge = '<span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.6rem;font-weight:600;background:rgba(168,85,247,.15);color:#a855f7;">MARS</span>'
-            else:
-                channel_badge = '<span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.6rem;font-weight:600;background:rgba(66,133,244,.15);color:#4285f4;">Cold Call</span>'
-
-            company = deal["company_name"] or deal["name"]
-            amount = deal["amount"]
-            amount_str = f"${amount:,.0f}"
-            close = _h(deal["close_date"][:10]) if deal["close_date"] else "\u2014"
-
-            table_rows += f"""
           <tr class="pipe-deal-row" style="cursor:default;">
-            <td style="font-weight:600;color:var(--text-primary);white-space:nowrap;">{_h(company)}</td>
-            <td>{channel_badge}</td>
+            <td style="font-weight:600;color:var(--text-primary);">{_h(company)}</td>
+            <td>{src_badge}</td>
             <td style="font-variant-numeric:tabular-nums;text-align:right;font-weight:500;color:var(--text-primary);">{amount_str}</td>
-            <td>
-              <span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.65rem;font-weight:600;background:{bg};color:{color};">{_h(stage_label)}</span>
-            </td>
+            <td>{stage_badge}</td>
             <td style="font-variant-numeric:tabular-nums;color:var(--text-secondary);">{close}</td>
           </tr>"""
 
-    deal_table_html = f"""
+    pipeline_html = f"""
   <section aria-labelledby="pipeline-deals-heading">
     <h2 class="section-heading" id="pipeline-deals-heading">
-      <span class="sh-icon" aria-hidden="true">🏗️</span> Deal Pipeline ({len(deals)})
+      <span class="sh-icon" aria-hidden="true">🏗️</span> Pipeline ({len(deals)})
     </h2>
-    <div class="filter-bar">
-      <input type="search" id="deal-search" placeholder="Search deal or company..."
-             aria-label="Search deals by name or company"
-             oninput="filterDeals()">
-      <select id="deal-stage-filter" aria-label="Filter by stage" onchange="filterDeals()">
-        <option value="">All stages</option>"""
-
-    for stage_label in stage_order:
-        if stage_label in by_stage:
-            deal_table_html += f'\n        <option value="{_h(stage_label)}">{_h(stage_label)}</option>'
-
-    deal_table_html += f"""
-      </select>
-    </div>
-    <div class="table-wrap" style="max-height:600px;overflow-y:auto;">
-      <table class="pipeline-table" aria-label="Deal pipeline" id="deal-pipeline-table">
+    <div class="table-wrap">
+      <table class="pipeline-table" aria-label="Outbound pipeline" id="deal-pipeline-table">
         <thead><tr>
           <th scope="col">Company</th>
-          <th scope="col">Channel</th>
+          <th scope="col">Source</th>
           <th scope="col" style="text-align:right">Amount</th>
           <th scope="col">Stage</th>
           <th scope="col">Close Date</th>
@@ -1819,9 +1747,7 @@ def _tab_pipeline(data: dict) -> str:
          aria-labelledby="tab-btn-pipeline"
          aria-hidden="true">
   {kpi_html}
-  {mtg_html}
-  {stage_bar_html}
-  {deal_table_html}
+  {pipeline_html}
 </section>"""
 
 
