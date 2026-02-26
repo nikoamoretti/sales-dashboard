@@ -12,7 +12,7 @@ import html as _html
 import json
 import re as _re
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from dash_data import fetch_all
@@ -192,14 +192,16 @@ body {
   color: var(--text-primary);
 }
 .kpi-label {
-  font-size: .75rem; color: var(--text-secondary);
-  margin-top: .35rem; text-transform: uppercase; letter-spacing: .04em;
+  font-size: .8rem; color: var(--text-secondary);
+  margin-top: .35rem;
 }
-.kpi-delta { font-size: .75rem; margin-top: .5rem; }
+.kpi-delta { font-size: .75rem; margin-top: .5rem; color: var(--text-muted); }
+.kpi-delta .delta-context { font-size: .7rem; color: var(--text-muted); }
 .delta-up   { color: var(--accent-green); }
 .delta-down { color: var(--text-secondary); }
 .delta-neutral { color: var(--text-muted); }
-.kpi-card-muted { opacity: 0.4; }
+.kpi-card-muted .kpi-value { color: var(--text-muted); }
+.kpi-card-muted .kpi-label { color: var(--text-muted); }
 
 /* ---- Insight cards ---- */
 .insights-grid {
@@ -391,7 +393,7 @@ tr:hover td { background: var(--bg-hover); }
 
 /* ---- Company cards ---- */
 .company-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: .75rem; margin-bottom: 1.5rem;
 }
 .company-card {
@@ -402,6 +404,8 @@ tr:hover td { background: var(--bg-hover); }
 }
 .company-card:hover { border-color: var(--accent-blue); }
 .company-card:focus-visible { outline: 2px solid var(--accent-blue); }
+.company-card.has-renewal { border-left: 3px solid var(--accent-orange); }
+.company-card.has-action { border-left: 3px solid var(--accent-blue); }
 .company-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: .5rem; }
 .company-name { font-weight: 600; color: var(--text-primary); }
 .company-meta { font-size: .75rem; color: var(--text-secondary); display: flex; gap: .75rem; margin: .35rem 0; flex-wrap: wrap; }
@@ -414,17 +418,44 @@ tr:hover td { background: var(--bg-hover); }
 .channel-badge.ch-linkedin { border-color: var(--accent-teal); color: var(--accent-teal); }
 .channel-badge.ch-email    { border-color: var(--accent-green); color: var(--accent-green); }
 .company-intel-summary { margin-top: .5rem; font-size: .75rem; color: var(--text-secondary); }
+.company-crm-row {
+  display: flex; gap: .5rem; font-size: .75rem; color: var(--text-secondary);
+  margin: .25rem 0; flex-wrap: wrap; align-items: center;
+}
+.company-crm-row .crm-label { color: var(--text-muted); min-width: 60px; }
+.company-crm-row .crm-value { color: var(--text-primary); }
+.company-renewal-badge {
+  font-size: .65rem; padding: .15rem .5rem; border-radius: 999px;
+  background: rgba(245, 158, 11, 0.1); color: var(--accent-orange);
+  border: 1px solid var(--accent-orange);
+}
+.company-renewal-badge.overdue {
+  background: rgba(239, 68, 68, 0.1); color: var(--accent-red);
+  border-color: var(--accent-red);
+}
+.company-next-action {
+  font-size: .75rem; color: var(--accent-blue);
+  margin: .35rem 0; padding: .4rem .6rem;
+  background: rgba(59, 130, 246, 0.06); border-radius: var(--radius-sm);
+}
+.company-next-action .action-date { color: var(--text-muted); margin-left: .5rem; }
 .company-detail {
   display: none; margin-top: .75rem; padding-top: .75rem;
   border-top: 1px solid var(--border);
 }
 .company-detail.visible { display: block; }
+.company-detail-section { margin-bottom: .5rem; }
+.company-detail-section-title { font-size: .65rem; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin-bottom: .25rem; }
 .company-activity-item {
   display: flex; gap: .5rem; font-size: .75rem; color: var(--text-secondary);
   padding: .3rem 0; border-bottom: 1px solid var(--border);
 }
 .company-activity-item:last-child { border-bottom: none; }
 .company-activity-date { color: var(--text-muted); flex-shrink: 0; width: 75px; }
+.company-notes { font-size: .75rem; color: var(--text-secondary); font-style: italic; padding: .35rem 0; }
+.company-sort-bar { display: flex; gap: .5rem; margin-bottom: .5rem; align-items: center; }
+.company-sort-bar label { font-size: .75rem; color: var(--text-muted); }
+.company-sort-bar select { font-size: .75rem; }
 
 /* ---- Experiment cards ---- */
 .experiment-card {
@@ -486,6 +517,108 @@ tr:hover td { background: var(--bg-hover); }
 @media (max-width: 420px) {
   .kpi-grid { grid-template-columns: 1fr 1fr; }
   .kpi-value { font-size: 1.5rem; }
+  .pipeline-bar { flex-wrap: wrap; }
+}
+
+/* ---- Pipeline bar ---- */
+.pipeline-bar {
+  display: flex; align-items: stretch; gap: 0;
+  margin-bottom: 1.5rem; border-radius: var(--radius);
+  overflow: hidden; border: 1px solid var(--border);
+  background: var(--bg-card); box-shadow: var(--shadow);
+}
+.pipeline-segment {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: .75rem .5rem; position: relative;
+  min-width: 0;
+}
+.pipeline-segment + .pipeline-segment {
+  border-left: 1px solid var(--border);
+}
+.pipeline-segment .pipe-count {
+  font-size: 1.5rem; font-weight: 700; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.pipeline-segment .pipe-label {
+  font-size: .65rem; text-transform: uppercase; letter-spacing: .05em;
+  margin-top: .25rem; color: var(--text-secondary);
+}
+.pipeline-segment .pipe-arrow {
+  position: absolute; right: -6px; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted); font-size: .7rem; z-index: 1;
+}
+.pipeline-segment.ps-prospect   .pipe-count { color: var(--text-muted); }
+.pipeline-segment.ps-contacted  .pipe-count { color: var(--accent-blue); }
+.pipeline-segment.ps-interested .pipe-count { color: var(--accent-teal); }
+.pipeline-segment.ps-meeting    .pipe-count { color: var(--accent-purple); }
+
+/* ---- Pipeline detail table ---- */
+.pipeline-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.pipeline-table th { text-align: left; padding: .5rem .6rem; color: var(--text-muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; border-bottom: 2px solid var(--border); position: sticky; top: 0; background: var(--bg-card); z-index: 1; }
+.pipeline-table td { padding: .45rem .6rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+.pipe-stage-row td { background: var(--bg-surface); }
+.pipe-stage-header { font-weight: 700; font-size: .78rem; color: var(--text-primary); padding: .6rem .6rem .4rem !important; letter-spacing: .02em; }
+.pipe-deal-row:hover td { background: rgba(66,133,244,.04); }
+.pipe-company { font-weight: 600; color: var(--text-primary); white-space: nowrap; }
+.pipe-source { color: var(--text-muted); white-space: nowrap; }
+.pipe-contact { color: var(--text-secondary); }
+.pipe-industry { color: var(--text-muted); font-size: .78rem; }
+.pipe-next { color: var(--text-secondary); max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pipe-meeting_booked .pipe-company { color: var(--accent-purple); }
+.pipe-interested .pipe-company { color: var(--accent-teal); }
+.pipe-prospect .pipe-source { color: var(--accent-blue); font-weight: 600; }
+
+/* ---- Action queue ---- */
+.action-queue {
+  display: flex; flex-direction: column; gap: .5rem;
+  margin-bottom: 1.5rem;
+}
+.action-item {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: .75rem 1rem;
+  box-shadow: var(--shadow); display: flex; align-items: center;
+  gap: .75rem; flex-wrap: wrap;
+}
+.action-item:hover { border-color: var(--accent-blue); }
+.action-item .ai-company {
+  font-weight: 600; color: var(--text-primary); min-width: 140px;
+}
+.action-item .ai-action {
+  flex: 1; color: var(--text-secondary); font-size: .8rem;
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.action-item .ai-date {
+  font-size: .7rem; color: var(--text-muted); flex-shrink: 0;
+}
+
+/* ---- Week summary (compact) ---- */
+.week-summary {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: .75rem 1rem;
+  box-shadow: var(--shadow); margin-bottom: 1.5rem;
+  font-size: .85rem; color: var(--text-secondary); line-height: 1.6;
+}
+.week-summary strong { color: var(--text-primary); }
+.week-summary .ws-metric { font-variant-numeric: tabular-nums; }
+.week-summary .ws-prev { font-size: .75rem; color: var(--text-muted); }
+
+/* ---- Company knowledge section ---- */
+.company-knowledge {
+  margin: .5rem 0; display: flex; flex-direction: column; gap: .2rem;
+}
+.company-knowledge .ck-row {
+  font-size: .8rem; color: var(--text-secondary); display: flex; gap: .4rem;
+  align-items: baseline;
+}
+.company-knowledge .ck-label {
+  color: var(--text-muted); font-size: .7rem; min-width: 55px; flex-shrink: 0;
+}
+.company-knowledge .ck-value { color: var(--text-primary); }
+
+/* ---- Company meta line (compact) ---- */
+.company-meta-line {
+  font-size: .7rem; color: var(--text-muted); margin: .35rem 0;
 }
 </style>"""
 
@@ -519,11 +652,12 @@ def _header(data: dict) -> str:
 
 def _tab_bar() -> str:
     tabs = [
-        ("home",      "Home"),
-        ("calling",   "Cold Calling"),
-        ("outreach",  "Email & LinkedIn"),
-        ("companies", "Companies"),
-        ("experiments","Experiments"),
+        ("home",       "Home"),
+        ("calling",    "Cold Calling"),
+        ("outreach",   "Email & LinkedIn"),
+        ("companies",  "Companies"),
+        ("pipeline",   "Pipeline"),
+        ("experiments","Channel Performance"),
     ]
     buttons = ""
     for i, (tid, label) in enumerate(tabs):
@@ -553,45 +687,188 @@ def _tab_bar() -> str:
 def _tab_home(data: dict) -> str:
     ov = data.get("overview", {})
     tw = ov.get("this_week", {})
+    lw = ov.get("last_week", {})
     wow = ov.get("wow_deltas", {})
     insights = data.get("insights", [])
+    companies = data.get("companies", [])
+    pipeline_counts = ov.get("pipeline", {})
 
-    # KPI cards
-    def kpi(value, label, delta_key, suffix=""):
-        raw_delta = wow.get(delta_key, 0)
-        delta_html = _fmt_delta(raw_delta, suffix)
-        is_zero = str(value).strip() in ("0", "0.0%", "0%", "0.0")
-        muted_class = " kpi-card-muted" if is_zero else ""
+    # Week label
+    wk_num = tw.get("week_num")
+    wk_label = f"Week {wk_num}" if wk_num else "This Week"
+
+    # Keep kpi() helper for potential reuse elsewhere
+    def kpi(value, label, delta_key, prev_value=None, suffix="", no_delta=False):
+        display = str(value) if value is not None else "\u2014"
+        is_none = value is None
+        muted_class = " kpi-card-muted" if is_none else ""
+
+        delta_html = ""
+        if not no_delta and delta_key:
+            raw_delta = wow.get(delta_key, 0)
+            try:
+                dv = float(str(raw_delta).replace("+", ""))
+            except (ValueError, TypeError):
+                dv = 0
+            if dv != 0:
+                cls = "delta-up" if dv > 0 else "delta-down"
+                sign = "+" if dv > 0 else ""
+                delta_html = f'<span class="{cls}">{sign}{dv:g}{suffix}</span>'
+
+        context_html = ""
+        if prev_value is not None and not is_none:
+            context_html = f'<span class="delta-context"> (was {_h(str(prev_value))} last wk)</span>'
+        elif is_none:
+            context_html = '<span class="delta-context">No data this week</span>'
+
         return f"""
-    <div class="kpi-card{muted_class}" role="article" aria-label="{_h(label)}: {_h(value)}">
-      <div class="kpi-value" aria-hidden="true">{_h(value)}</div>
+    <div class="kpi-card{muted_class}" role="article" aria-label="{_h(label)}: {_h(display)}">
+      <div class="kpi-value">{_h(display)}</div>
       <div class="kpi-label">{_h(label)}</div>
-      <div class="kpi-delta" aria-label="Week over week change">{delta_html}</div>
+      <div class="kpi-delta">{delta_html}{context_html}</div>
     </div>"""
 
-    dials       = tw.get("dials", 0)
-    cr          = f"{tw.get('contact_rate', 0):.1f}%"
-    meetings    = tw.get("meetings_booked", 0)
-    inmails     = tw.get("inmails_sent", 0)
-    inmail_rr   = f"{tw.get('inmail_reply_rate', 0):.1f}%"
-    total_cos   = ov.get("total_companies", 0)
+    # ------------------------------------------------------------------
+    # 1. Pipeline bar
+    # ------------------------------------------------------------------
+    p_prospect = pipeline_counts.get("prospect", 0)
+    p_contacted = pipeline_counts.get("contacted", 0)
+    p_interested = pipeline_counts.get("interested", 0)
+    p_meeting = pipeline_counts.get("meeting_booked", 0)
 
-    kpi_html = f"""
-  <section aria-labelledby="home-kpis-heading">
-    <h2 class="section-heading" id="home-kpis-heading">
-      <span class="sh-icon" aria-hidden="true">📊</span> This Week
-    </h2>
-    <div class="kpi-grid">
-      {kpi(dials, "Total Dials", "dials")}
-      {kpi(cr, "Contact Rate", "contact_rate", "")}
-      {kpi(meetings, "Meetings Booked", "meetings_booked")}
-      {kpi(inmails, "InMails Sent", "")}
-      {kpi(inmail_rr, "InMail Reply Rate", "inmail_reply_rate", "")}
-      {kpi(total_cos, "Total Companies", "")}
+    pipeline_html = f"""
+  <section aria-labelledby="home-pipeline-heading">
+    <div class="pipeline-bar" role="img" aria-label="Sales pipeline: {p_prospect} prospect, {p_contacted} contacted, {p_interested} interested, {p_meeting} meetings booked">
+      <div class="pipeline-segment ps-prospect">
+        <span class="pipe-count">{p_prospect}</span>
+        <span class="pipe-label">Prospect</span>
+        <span class="pipe-arrow" aria-hidden="true">&rsaquo;</span>
+      </div>
+      <div class="pipeline-segment ps-contacted">
+        <span class="pipe-count">{p_contacted}</span>
+        <span class="pipe-label">Contacted</span>
+        <span class="pipe-arrow" aria-hidden="true">&rsaquo;</span>
+      </div>
+      <div class="pipeline-segment ps-interested">
+        <span class="pipe-count">{p_interested}</span>
+        <span class="pipe-label">Interested</span>
+        <span class="pipe-arrow" aria-hidden="true">&rsaquo;</span>
+      </div>
+      <div class="pipeline-segment ps-meeting">
+        <span class="pipe-count">{p_meeting}</span>
+        <span class="pipe-label">Meetings</span>
+      </div>
     </div>
   </section>"""
 
-    # Insight cards
+    # ------------------------------------------------------------------
+    # 2. Action queue — companies needing attention
+    # ------------------------------------------------------------------
+    action_candidates = []
+    for co in companies:
+        status = (co.get("status") or "").lower()
+        if status not in ("interested", "meeting_booked"):
+            continue
+        # Must have a next_action (from CRM field or latest intel)
+        na = co.get("next_action") or ""
+        if not na and co.get("latest_intel"):
+            na = co["latest_intel"].get("next_action") or ""
+        if not na:
+            continue
+        action_candidates.append({
+            "name": co.get("name", ""),
+            "status": status,
+            "next_action": na,
+            "last_touch": str(co.get("last_touch_at") or "")[:10],
+        })
+
+    # Also add companies with upcoming contract renewals
+    from datetime import date as _date
+    today_str = _date.today().isoformat()
+    renewal_cutoff = (_date.today() + timedelta(days=90)).isoformat()
+    for co in companies:
+        rd = str(co.get("contract_renewal_date") or "")[:10]
+        if rd and rd <= renewal_cutoff and rd >= "2020-01-01":
+            # Avoid duplicates
+            if any(a["name"] == co.get("name") for a in action_candidates):
+                continue
+            action_candidates.append({
+                "name": co.get("name", ""),
+                "status": (co.get("status") or "prospect").lower(),
+                "next_action": f"Renewal {rd}" + (" (overdue)" if rd <= today_str else ""),
+                "last_touch": str(co.get("last_touch_at") or "")[:10],
+            })
+
+    # Sort: meeting_booked first, then interested, then by most recent touch
+    status_priority = {"meeting_booked": 0, "interested": 1}
+    action_candidates.sort(key=lambda a: (
+        status_priority.get(a["status"], 9),
+        "" if not a.get("last_touch") else a["last_touch"],
+    ), reverse=False)
+    # Secondary sort: most recent touch first within same priority
+    action_candidates.sort(key=lambda a: a.get("last_touch") or "", reverse=True)
+    action_candidates.sort(key=lambda a: status_priority.get(a["status"], 9))
+
+    action_items_html = ""
+    for item in action_candidates[:8]:
+        st = item["status"]
+        action_items_html += f"""
+      <div class="action-item">
+        <span class="ai-company">{_h(item["name"])}</span>
+        <span class="badge badge-{_h(st)}">{_h(st.replace("_"," ").title())}</span>
+        <span class="ai-action" title="{_h(item["next_action"])}">{_h(item["next_action"][:120])}</span>
+        <span class="ai-date">{_h(item["last_touch"]) if item["last_touch"] else ""}</span>
+      </div>"""
+
+    if action_items_html:
+        action_queue_html = f"""
+  <section aria-labelledby="home-actions-heading">
+    <h2 class="section-heading" id="home-actions-heading">
+      <span class="sh-icon" aria-hidden="true">🎯</span> Action Queue
+    </h2>
+    <div class="action-queue">
+      {action_items_html}
+    </div>
+  </section>"""
+    else:
+        action_queue_html = ""
+
+    # ------------------------------------------------------------------
+    # 3. Week summary — compact single line
+    # ------------------------------------------------------------------
+    dials       = tw.get("dials", 0)
+    cr          = tw.get("contact_rate", 0)
+    meetings    = tw.get("meetings_booked", 0)
+    inmails_sent = tw.get("inmails_sent", 0)
+    inmail_rr   = tw.get("inmail_reply_rate", 0)
+
+    lw_dials    = lw.get("dials", 0)
+    lw_cr       = lw.get("contact_rate", 0)
+    lw_meetings = lw.get("meetings_booked", 0)
+    lw_inmails  = lw.get("inmails_sent", 0)
+    lw_rr       = lw.get("inmail_reply_rate", 0)
+
+    # Build compact metric spans
+    parts = []
+    if dials or lw_dials:
+        parts.append(f'<strong class="ws-metric">{dials}</strong> dials <span class="ws-prev">(was {lw_dials})</span>')
+        parts.append(f'<strong class="ws-metric">{cr:.1f}%</strong> contact rate <span class="ws-prev">(was {lw_cr:.1f}%)</span>')
+        parts.append(f'<strong class="ws-metric">{meetings}</strong> {"meeting" if meetings == 1 else "meetings"} <span class="ws-prev">(was {lw_meetings})</span>')
+    if inmails_sent or lw_inmails:
+        parts.append(f'<strong class="ws-metric">{inmails_sent}</strong> inmails <span class="ws-prev">(was {lw_inmails})</span>')
+
+    week_summary_inner = " &middot; ".join(parts)
+    week_summary_html = f"""
+  <section aria-labelledby="home-week-heading">
+    <h2 class="section-heading" id="home-week-heading">
+      <span class="sh-icon" aria-hidden="true">📊</span> {_h(wk_label)}
+    </h2>
+    <div class="week-summary" role="status">{week_summary_inner if week_summary_inner else "No activity data this week."}</div>
+  </section>"""
+
+    # ------------------------------------------------------------------
+    # 4. Advisor Insights — keep as-is
+    # ------------------------------------------------------------------
     type_icons = {
         "action_required": "🔔",
         "alert":           "⚠️",
@@ -627,7 +904,6 @@ def _tab_home(data: dict) -> str:
         show_all_btn = ""
     else:
         total_insights = len(insights[:12])
-        hidden_count = total_insights - min(3, total_insights)
         hidden_div = f'<div class="insights-hidden" style="display:none">{extra_cards}</div>' if extra_cards else ""
         show_all_btn = f'<button class="show-all-btn" onclick="toggleInsights(this)">Show all {total_insights} insights ▾</button>' if extra_cards else ""
         insights_section_inner = top_cards + hidden_div
@@ -643,7 +919,9 @@ def _tab_home(data: dict) -> str:
     {show_all_btn}
   </section>"""
 
-    # Channel comparison
+    # ------------------------------------------------------------------
+    # 5. Channels This Week — keep as-is
+    # ------------------------------------------------------------------
     call_trends = data.get("call_trends", [])
     inmail_trends = data.get("inmail_trends", [])
     latest_call = call_trends[-1] if call_trends else {}
@@ -657,7 +935,7 @@ def _tab_home(data: dict) -> str:
     ch_li_metric    = f"{latest_li.get('sent', 0)} sent"
     ch_li_sub       = f"{latest_li.get('reply_rate', 0):.1f}% reply rate"
     total_email_sent = sum(s.get("sent", 0) for s in email_seqs)
-    ch_email_metric = f"{total_email_sent} sent" if total_email_sent else "—"
+    ch_email_metric = f"{total_email_sent} sent" if total_email_sent else "\u2014"
     ch_email_sub    = "Not connected" if not email_seqs else f"{len(email_seqs)} sequences"
 
     channel_html = f"""
@@ -693,7 +971,9 @@ def _tab_home(data: dict) -> str:
          role="tabpanel"
          aria-labelledby="tab-btn-home"
          aria-hidden="false">
-  {kpi_html}
+  {pipeline_html}
+  {action_queue_html}
+  {week_summary_html}
   {insights_html}
   {channel_html}
 </section>"""
@@ -1129,6 +1409,12 @@ def _tab_companies(data: dict) -> str:
     for c in all_channels:
         ch_options += f'<option value="{_h(c)}">{_h(c.title())}</option>'
 
+    # Knowledge-filter: has intel
+    knowledge_options = '<option value="">All companies</option><option value="has_provider">Has provider</option><option value="has_commodities">Has commodities</option><option value="has_contact">Has contact</option>'
+
+    from datetime import date as _date
+    today_str = _date.today().isoformat()
+
     cards = ""
     for co in companies[:120]:
         name = co.get("name", "")
@@ -1141,59 +1427,134 @@ def _tab_companies(data: dict) -> str:
         inmail_count = co.get("inmail_count", 0)
         co_id = str(co.get("id", name))
 
-        ch_badges = ""
-        for ch in channels:
-            ch_badges += f'<span class="channel-badge ch-{_h(ch)}">{_h(ch)}</span>'
+        # CRM fields
+        industry = co.get("industry") or ""
+        provider = co.get("current_provider") or ""
+        commodities = co.get("commodities") or ""
+        renewal_date = str(co.get("contract_renewal_date") or "")[:10]
+        next_action = co.get("next_action") or ""
+        next_action_date = str(co.get("next_action_date") or "")[:10]
+        contact_name = co.get("contact_name") or ""
+        contact_role = co.get("contact_role") or ""
+        notes = co.get("notes") or ""
 
-        intel_html = ""
-        if intel:
-            il = intel.get("interest_level", "none")
-            next_a = intel.get("next_action", "")
-            intel_html = f"""
-          <div class="company-intel-summary">
-            <span class="badge badge-{_h(il)}" style="margin-right:.4rem;">{_h(il)}</span>
-            {_h(next_a[:80]) if next_a else ""}
-          </div>"""
+        # Card accent class based on urgency
+        card_class = "company-card"
+        if renewal_date and renewal_date <= today_str:
+            card_class += " has-renewal"
+        elif next_action:
+            card_class += " has-action"
 
-        # Recent activity items
+        # Data attributes for sorting and filtering
+        sort_renewal = renewal_date or "9999-12-31"
+        sort_action = next_action_date or "9999-12-31"
+        ch_list_str = " ".join(channels)
+
+        # Data attributes for knowledge filter
+        has_provider = "1" if provider else "0"
+        has_commodities = "1" if commodities else "0"
+        has_contact = "1" if contact_name else "0"
+
+        # ----------------------------------------------------------
+        # Card layout: Header -> Knowledge -> Next Action -> Meta line -> Expandable detail
+        # ----------------------------------------------------------
+
+        # 1. Header: name + status badge
+        header_html = f"""
+        <div class="company-card-header">
+          <span class="company-name">{_h(name)}</span>
+          <span class="badge badge-{_h(status)}">{_h(status.replace('_',' ').title())}</span>
+        </div>"""
+
+        # 2. Knowledge section
+        knowledge_rows = []
+        if industry:
+            knowledge_rows.append(f'<div class="ck-row"><span class="ck-label">Industry</span><span class="ck-value">{_h(industry)}</span></div>')
+        if provider:
+            knowledge_rows.append(f'<div class="ck-row"><span class="ck-label">Provider</span><span class="ck-value">&rarr; {_h(provider)}</span></div>')
+        if commodities:
+            knowledge_rows.append(f'<div class="ck-row"><span class="ck-label">Ships</span><span class="ck-value">{_h(commodities[:100])}</span></div>')
+        if contact_name:
+            role_part = f" ({_h(contact_role)})" if contact_role else ""
+            knowledge_rows.append(f'<div class="ck-row"><span class="ck-label">Contact</span><span class="ck-value">{_h(contact_name)}{role_part}</span></div>')
+
+        knowledge_html = ""
+        if knowledge_rows:
+            knowledge_html = f'<div class="company-knowledge">{"".join(knowledge_rows)}</div>'
+
+        # 3. Next action (blue box)
+        action_html = ""
+        if next_action:
+            date_part = f'<span class="action-date">{_h(next_action_date)}</span>' if next_action_date else ""
+            action_html = f'<div class="company-next-action">{_h(next_action[:100])}{date_part}</div>'
+        elif intel and intel.get("next_action"):
+            na = intel["next_action"]
+            action_html = f'<div class="company-next-action">{_h(na[:100])}</div>'
+
+        # Contract renewal badge (inline in meta)
+        renewal_part = ""
+        if renewal_date and renewal_date != "":
+            overdue = renewal_date <= today_str
+            if overdue:
+                renewal_part = f' &middot; <span style="color:var(--accent-red);">Renewal overdue: {_h(renewal_date)}</span>'
+            else:
+                renewal_part = f' &middot; <span style="color:var(--accent-orange);">Renewal: {_h(renewal_date)}</span>'
+
+        # 4. Meta line (compact, demoted)
+        meta_parts = []
+        if last_touch:
+            meta_parts.append(f"Last call: {_h(last_touch)}")
+        if call_count:
+            meta_parts.append(f"{call_count} call{'s' if call_count != 1 else ''}")
+        if inmail_count:
+            meta_parts.append(f"{inmail_count} inmail{'s' if inmail_count != 1 else ''}")
+        meta_text = " &middot; ".join(meta_parts) if meta_parts else ""
+        meta_html = f'<div class="company-meta-line">{meta_text}{renewal_part}</div>' if (meta_text or renewal_part) else ""
+
+        # 5. Expandable detail: notes + activity history
         activity_html = ""
         for call in (co.get("calls") or [])[:3]:
             cat = call.get("category", "")
             dt = str(call.get("called_at") or "")[:10]
-            activity_html += f'<div class="company-activity-item"><span class="company-activity-date">{_h(dt)}</span><span>📞 {_h(cat)}</span></div>'
+            activity_html += f'<div class="company-activity-item"><span class="company-activity-date">{_h(dt)}</span><span>Call: {_h(cat)}</span></div>'
         for im in (co.get("inmails") or [])[:2]:
             dt = str(im.get("sent_date") or "")[:10]
             sent_label = im.get("reply_sentiment") or ("Replied" if im.get("replied") else "Sent")
-            activity_html += f'<div class="company-activity-item"><span class="company-activity-date">{_h(dt)}</span><span>💼 InMail — {_h(str(sent_label))}</span></div>'
+            activity_html += f'<div class="company-activity-item"><span class="company-activity-date">{_h(dt)}</span><span>InMail: {_h(str(sent_label))}</span></div>'
 
-        # Channel list for filtering
-        ch_list_str = " ".join(channels)
+        notes_html = ""
+        if notes:
+            notes_html = f'<div class="company-detail-section"><div class="company-detail-section-title">Notes</div><div class="company-notes">{_h(notes[:300])}</div></div>'
+
         safe_id = _h(co_id.replace(" ", "_"))
 
         cards += f"""
-      <article class="company-card"
+      <article class="{card_class}"
                role="button"
                tabindex="0"
                aria-expanded="false"
                data-status="{_h(status)}"
                data-channels="{_h(ch_list_str)}"
                data-name="{_h(name.lower())}"
+               data-renewal="{_h(sort_renewal)}"
+               data-actiondate="{_h(sort_action)}"
+               data-touches="{touches}"
+               data-lasttouch="{_h(last_touch)}"
+               data-has-provider="{has_provider}"
+               data-has-commodities="{has_commodities}"
+               data-has-contact="{has_contact}"
                onclick="toggleCompanyCard(this)"
                onkeydown="if(event.key==='Enter'||event.key===' '){{event.preventDefault();toggleCompanyCard(this);}}">
-        <div class="company-card-header">
-          <span class="company-name">{_h(name)}</span>
-          <span class="badge badge-{_h(status)}">{_h(status.replace('_',' ').title())}</span>
-        </div>
-        <div class="company-channels">{ch_badges}</div>
-        <div class="company-meta">
-          <span>{touches} touches</span>
-          {f'<span>Last: {_h(last_touch)}</span>' if last_touch else ''}
-          {f'<span>{call_count} calls</span>' if call_count else ''}
-          {f'<span>{inmail_count} inmails</span>' if inmail_count else ''}
-        </div>
-        {intel_html}
+        {header_html}
+        {knowledge_html}
+        {action_html}
+        {meta_html}
         <div class="company-detail" id="co-detail-{safe_id}">
-          {activity_html if activity_html else '<div style="color:var(--text-muted);font-size:.75rem;">No activity details available.</div>'}
+          {notes_html}
+          <div class="company-detail-section">
+            <div class="company-detail-section-title">Recent Activity</div>
+            {activity_html if activity_html else '<div style="color:var(--text-muted);font-size:.75rem;">No activity recorded yet.</div>'}
+          </div>
         </div>
       </article>"""
 
@@ -1224,6 +1585,16 @@ def _tab_companies(data: dict) -> str:
       <select id="company-channel-filter" aria-label="Filter by channel" onchange="filterCompanies()">
         {ch_options}
       </select>
+      <select id="company-knowledge-filter" aria-label="Filter by knowledge" onchange="filterCompanies()">
+        {knowledge_options}
+      </select>
+      <select id="company-sort" aria-label="Sort companies" onchange="filterCompanies()">
+        <option value="recent" selected>Most recent</option>
+        <option value="touches">Most touches</option>
+        <option value="renewal">Renewal date</option>
+        <option value="action">Next action date</option>
+        <option value="name">Name A-Z</option>
+      </select>
     </div>
 
     <div class="company-grid" id="company-grid" aria-live="polite">
@@ -1243,24 +1614,271 @@ def _tab_companies(data: dict) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Tab 5: Experiments
+# Tab 5: Pipeline (HubSpot Deals)
+# ---------------------------------------------------------------------------
+
+def _tab_pipeline(data: dict) -> str:
+    dp = data.get("deal_pipeline", {})
+    deals = dp.get("deals", [])
+    by_stage = dp.get("by_stage", {})
+    stage_order = dp.get("stage_order", [])
+    metrics = dp.get("metrics", {})
+
+    total_value = metrics.get("total_value", 0)
+    weighted_value = metrics.get("weighted_value", 0)
+    deal_count = metrics.get("deal_count", 0)
+    avg_deal = metrics.get("avg_deal", 0)
+    mars_count = metrics.get("mars_count", 0)
+    cold_call_count = metrics.get("cold_call_count", 0)
+
+    # ------------------------------------------------------------------
+    # 1. KPI row
+    # ------------------------------------------------------------------
+    kpi_html = f"""
+  <section aria-labelledby="pipeline-kpi-heading">
+    <h2 class="section-heading" id="pipeline-kpi-heading">
+      <span class="sh-icon" aria-hidden="true">💰</span> Pipeline Summary
+    </h2>
+    <div class="kpi-grid" style="margin-bottom:1.5rem;">
+      <div class="kpi-card">
+        <div class="kpi-value" style="font-size:1.6rem">${total_value:,.0f}</div>
+        <div class="kpi-label">Active Pipeline</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value" style="font-size:1.6rem">${weighted_value:,.0f}</div>
+        <div class="kpi-label">Weighted Pipeline</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">{deal_count}</div>
+        <div class="kpi-label">Active Deals</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value" style="font-size:1.6rem">${avg_deal:,.0f}</div>
+        <div class="kpi-label">Avg Deal Size</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value" style="font-size:1.3rem;">
+          <span style="color:#a855f7;">{mars_count} MARS</span>
+          <span style="color:var(--text-muted);font-size:.85rem;margin:0 .25rem;">/</span>
+          <span style="color:#4285f4;">{cold_call_count} Cold</span>
+        </div>
+        <div class="kpi-label">Channel Split</div>
+      </div>
+    </div>
+  </section>"""
+
+    # ------------------------------------------------------------------
+    # 2. Stage value bar chart (horizontal stacked)
+    # ------------------------------------------------------------------
+    stage_bar_html = f"""
+  <section aria-labelledby="pipeline-bar-heading">
+    <h2 class="section-heading" id="pipeline-bar-heading">
+      <span class="sh-icon" aria-hidden="true">📊</span> Value by Stage
+    </h2>
+    <div class="card chart-card" style="margin-bottom:1.5rem;">
+      <div class="chart-container" style="height:280px;">
+        <canvas id="pipeline-stage-chart" aria-label="Pipeline value by stage" role="img"></canvas>
+      </div>
+    </div>
+  </section>"""
+
+    # ------------------------------------------------------------------
+    # 3. Deal table grouped by stage
+    # ------------------------------------------------------------------
+    stage_colors = {
+        "No Deal Yet": "var(--text-muted)",
+        "Demo": "var(--accent-blue)",
+        "Introductory Call": "var(--accent-teal)",
+        "Qualified": "var(--accent-purple)",
+        "Pilot": "var(--accent-green)",
+        "Proposal": "var(--accent-orange)",
+        "Nurture": "var(--accent-yellow)",
+        "Backlog": "var(--text-muted)",
+        "Closed Won": "var(--accent-green)",
+        "Blocked / Stale": "var(--accent-red)",
+    }
+    stage_bg = {
+        "No Deal Yet": "rgba(90,96,120,.08)",
+        "Demo": "rgba(66,133,244,.12)",
+        "Introductory Call": "rgba(0,196,204,.12)",
+        "Qualified": "rgba(168,85,247,.12)",
+        "Pilot": "rgba(52,168,83,.12)",
+        "Proposal": "rgba(249,115,22,.12)",
+        "Nurture": "rgba(251,188,4,.12)",
+        "Backlog": "rgba(90,96,120,.12)",
+        "Closed Won": "rgba(52,168,83,.18)",
+        "Blocked / Stale": "rgba(234,67,53,.12)",
+    }
+
+    table_rows = ""
+    for stage_label in stage_order:
+        stage_deals = by_stage.get(stage_label, [])
+        if not stage_deals:
+            continue
+
+        subtotal = sum(d["amount"] for d in stage_deals)
+        color = stage_colors.get(stage_label, "var(--text-secondary)")
+        bg = stage_bg.get(stage_label, "rgba(90,96,120,.08)")
+
+        # Stage header — show count label and subtotal
+        if stage_label == "No Deal Yet":
+            header_right = f'{len(stage_deals)} compan{"ies" if len(stage_deals) != 1 else "y"}'
+        else:
+            header_right = f'{len(stage_deals)} deal{"s" if len(stage_deals) != 1 else ""} &middot; ${subtotal:,.0f}'
+
+        table_rows += f"""
+          <tr class="pipe-stage-row">
+            <td colspan="6" style="padding:.6rem .9rem;font-weight:700;font-size:.82rem;color:{color};background:{bg};letter-spacing:.02em;">
+              {_h(stage_label)}
+              <span style="float:right;font-weight:600;font-variant-numeric:tabular-nums;">{header_right}</span>
+            </td>
+          </tr>"""
+
+        for deal in stage_deals:
+            # Channel badge
+            channel = deal.get("channel", "")
+            if channel == "MARS":
+                channel_badge = '<span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.6rem;font-weight:600;background:rgba(168,85,247,.15);color:#a855f7;">MARS</span>'
+            else:
+                channel_badge = '<span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.6rem;font-weight:600;background:rgba(66,133,244,.15);color:#4285f4;">Cold Call</span>'
+
+            company = deal["company_name"] or deal["name"]
+
+            if stage_label == "No Deal Yet":
+                # Show status badge + contact name instead of amount/close date
+                status = deal.get("status", "")
+                if status == "meeting_booked":
+                    status_badge = '<span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.6rem;font-weight:600;background:rgba(52,168,83,.15);color:#34a853;">Meeting Booked</span>'
+                else:
+                    status_badge = '<span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.6rem;font-weight:600;background:rgba(251,188,4,.15);color:#d4a200;">Interested</span>'
+                contact = deal.get("contact_name") or "\u2014"
+                next_action = deal.get("next_action") or ""
+                amount_cell = status_badge
+                close_cell = _h(contact)
+                if next_action:
+                    close_cell += f'<div style="font-size:.7rem;color:var(--text-muted);margin-top:.15rem;">{_h(next_action)}</div>'
+            else:
+                amount = deal["amount"]
+                amount_cell = f"${amount:,.0f}" if amount else "\u2014"
+                close_cell = _h(deal["close_date"][:10]) if deal["close_date"] else "\u2014"
+
+            table_rows += f"""
+          <tr class="pipe-deal-row" style="cursor:default;">
+            <td style="font-weight:600;color:var(--text-primary);white-space:nowrap;">{_h(deal["name"])}</td>
+            <td style="color:var(--text-secondary);">{_h(company)}</td>
+            <td>{channel_badge}</td>
+            <td style="font-variant-numeric:tabular-nums;text-align:right;font-weight:500;color:var(--text-primary);">{amount_cell}</td>
+            <td>
+              <span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.65rem;font-weight:600;background:{bg};color:{color};">{_h(stage_label)}</span>
+            </td>
+            <td style="font-variant-numeric:tabular-nums;color:var(--text-secondary);">{close_cell}</td>
+          </tr>"""
+
+    deal_table_html = f"""
+  <section aria-labelledby="pipeline-deals-heading">
+    <h2 class="section-heading" id="pipeline-deals-heading">
+      <span class="sh-icon" aria-hidden="true">🏗️</span> Outbound Pipeline ({len(deals)})
+    </h2>
+    <div class="filter-bar">
+      <input type="search" id="deal-search" placeholder="Search deal or company..."
+             aria-label="Search deals by name or company"
+             oninput="filterDeals()">
+      <select id="deal-stage-filter" aria-label="Filter by stage" onchange="filterDeals()">
+        <option value="">All stages</option>"""
+
+    for stage_label in stage_order:
+        if stage_label in by_stage:
+            deal_table_html += f'\n        <option value="{_h(stage_label)}">{_h(stage_label)}</option>'
+
+    deal_table_html += f"""
+      </select>
+    </div>
+    <div class="table-wrap" style="max-height:700px;overflow-y:auto;">
+      <table class="pipeline-table" aria-label="Deal pipeline" id="deal-pipeline-table">
+        <thead><tr>
+          <th scope="col">Deal Name</th>
+          <th scope="col">Company</th>
+          <th scope="col">Channel</th>
+          <th scope="col" style="text-align:right">Amount</th>
+          <th scope="col">Stage</th>
+          <th scope="col">Close Date</th>
+        </tr></thead>
+        <tbody id="deal-table-body">{table_rows}</tbody>
+      </table>
+    </div>
+  </section>"""
+
+    return f"""
+<section id="tab-pipeline"
+         class="tab-panel app-wrapper"
+         role="tabpanel"
+         aria-labelledby="tab-btn-pipeline"
+         aria-hidden="true">
+  {kpi_html}
+  {stage_bar_html}
+  {deal_table_html}
+</section>"""
+
+
+# ---------------------------------------------------------------------------
+# Tab 6: Experiments / Channel Performance
 # ---------------------------------------------------------------------------
 
 def _tab_experiments(data: dict) -> str:
-    experiments = data.get("experiments", [])
-    insights = data.get("insights", [])
-    exp_insights = [i for i in insights if i.get("type") == "experiment"]
+    cc = data.get("channel_comparison", {})
+    calls_data = cc.get("calls", {})
+    email_data = cc.get("email", {})
+    li_data = cc.get("linkedin", {})
 
-    if not experiments:
-        exp_section = """
-  <div class="card">
-    <div class="empty-state">
-      <div class="empty-icon" aria-hidden="true">🧪</div>
-      <p>No experiments tracked yet. Experiments are auto-detected from your outreach patterns,
-         or you can add them manually in Supabase.</p>
-    </div>
-  </div>"""
+    # Comparison table rows
+    def _metric_row(label, calls_val, email_val, li_val, fmt="d"):
+        def _fmt(v):
+            if v is None:
+                return "—"
+            if fmt == "pct":
+                return f"{v:.1f}%"
+            return str(v)
+        return f"""
+          <tr>
+            <td style="font-weight:500">{_h(label)}</td>
+            <td style="font-variant-numeric:tabular-nums;text-align:right">{_fmt(calls_val)}</td>
+            <td style="font-variant-numeric:tabular-nums;text-align:right">{_fmt(email_val)}</td>
+            <td style="font-variant-numeric:tabular-nums;text-align:right">{_fmt(li_val)}</td>
+          </tr>"""
+
+    table_rows = ""
+    table_rows += _metric_row("Volume", calls_data.get("volume"), email_data.get("volume"), li_data.get("volume"))
+    table_rows += _metric_row("Responses", calls_data.get("responses"), email_data.get("responses"), li_data.get("responses"))
+    table_rows += _metric_row("Response rate", calls_data.get("response_rate"), email_data.get("response_rate"), li_data.get("response_rate"), "pct")
+    table_rows += _metric_row("Interested", calls_data.get("interested"), email_data.get("interested"), li_data.get("interested"))
+    table_rows += _metric_row("Meetings booked", calls_data.get("meetings"), email_data.get("meetings"), li_data.get("meetings"))
+
+    # Meeting rate: meetings per 100 volume (the real conversion metric)
+    def _mtg_rate(ch):
+        vol = ch.get("volume", 0)
+        mtg = ch.get("meetings", 0)
+        return round(mtg / vol * 100, 2) if vol else 0
+    calls_mtg = _mtg_rate(calls_data)
+    email_mtg = _mtg_rate(email_data)
+    li_mtg = _mtg_rate(li_data)
+    table_rows += _metric_row("Meeting rate (per 100)", calls_mtg, email_mtg, li_mtg, "pct")
+
+    # Best channel callout — by meeting rate, fall back to response rate
+    mtg_rates = [("Cold Calls", calls_mtg), ("Email", email_mtg), ("LinkedIn", li_mtg)]
+    mtg_active = [(n, r) for n, r in mtg_rates if r > 0]
+    if mtg_active:
+        best = max(mtg_active, key=lambda x: x[1])
+        best_html = f'<div style="margin-top:1rem;padding:.75rem 1rem;background:rgba(52,168,83,0.08);border-radius:var(--radius);border-left:3px solid var(--accent-green);font-size:.85rem;color:var(--text-secondary);">Best meeting conversion: <strong style="color:var(--text-primary)">{_h(best[0])}</strong> at {best[1]:.2f} per 100 outreach</div>'
     else:
+        resp_rates = [("Cold Calls", calls_data.get("response_rate", 0)), ("Email", email_data.get("response_rate", 0)), ("LinkedIn", li_data.get("response_rate", 0))]
+        resp_active = [(n, r) for n, r in resp_rates if r > 0]
+        best = max(resp_active, key=lambda x: x[1]) if resp_active else None
+        best_html = f'<div style="margin-top:1rem;padding:.75rem 1rem;background:rgba(52,168,83,0.08);border-radius:var(--radius);border-left:3px solid var(--accent-green);font-size:.85rem;color:var(--text-secondary);">Highest response rate: <strong style="color:var(--text-primary)">{_h(best[0])}</strong> at {best[1]:.1f}%</div>' if best else ""
+
+    # Experiments section (if any exist)
+    experiments = data.get("experiments", [])
+    exp_section = ""
+    if experiments:
         exp_cards = ""
         for exp in experiments:
             status = exp.get("status", "active")
@@ -1276,34 +1894,17 @@ def _tab_experiments(data: dict) -> str:
         </div>
         {f'<div class="experiment-hypothesis">{_h(exp.get("hypothesis",""))}</div>' if exp.get("hypothesis") else ''}
         <div class="experiment-meta">
-          {f'<span class="experiment-meta-item">📡 {_h(exp.get("channel",""))}</span>' if exp.get("channel") else ''}
-          {f'<span class="experiment-meta-item">📅 {_h(date_range)}</span>' if date_range else ''}
-          {f'<span class="experiment-meta-item">📊 {_h(exp.get("metric",""))}</span>' if exp.get("metric") else ''}
+          {f'<span class="experiment-meta-item">{_h(exp.get("channel",""))}</span>' if exp.get("channel") else ''}
+          {f'<span class="experiment-meta-item">{_h(date_range)}</span>' if date_range else ''}
         </div>
         {f'<div class="experiment-result"><strong>Result:</strong> {_h(result)}</div>' if result else ''}
       </article>"""
-        exp_section = exp_cards
-
-    insight_cards = ""
-    for ins in exp_insights[:6]:
-        insight_cards += f"""
-      <article class="insight-card type-experiment" role="article">
-        <div class="insight-header">
-          <span class="insight-type-badge type-experiment">🧪 Experiment</span>
-          <span class="insight-severity">{_h(ins.get("severity",""))}</span>
-        </div>
-        <div class="insight-title">{_h(ins.get("title",""))}</div>
-        <div class="insight-body">{_h(ins.get("body",""))}</div>
-      </article>"""
-
-    exp_insights_section = ""
-    if insight_cards:
-        exp_insights_section = f"""
-  <section aria-labelledby="exp-insights-heading">
-    <h2 class="section-heading" id="exp-insights-heading">
-      <span class="sh-icon" aria-hidden="true">💡</span> Experiment Advisor Notes
+        exp_section = f"""
+  <section aria-labelledby="experiments-heading" style="margin-top:1.5rem;">
+    <h2 class="section-heading" id="experiments-heading">
+      <span class="sh-icon" aria-hidden="true">🧪</span> Active Experiments
     </h2>
-    <div class="insights-grid">{insight_cards}</div>
+    {exp_cards}
   </section>"""
 
     return f"""
@@ -1313,13 +1914,35 @@ def _tab_experiments(data: dict) -> str:
          aria-labelledby="tab-btn-experiments"
          aria-hidden="true">
 
-  <section aria-labelledby="experiments-heading">
-    <h2 class="section-heading" id="experiments-heading">
-      <span class="sh-icon" aria-hidden="true">🧪</span> Experiments
+  <section aria-labelledby="channel-compare-heading">
+    <h2 class="section-heading" id="channel-compare-heading">
+      <span class="sh-icon" aria-hidden="true">📊</span> Channel Efficiency
     </h2>
-    {exp_section}
+
+    <div class="card chart-card" style="margin-bottom:1.5rem;">
+      <div class="chart-container" style="height:300px;">
+        <canvas id="channel-compare-chart" aria-label="Channel efficiency comparison" role="img"></canvas>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table aria-label="Channel comparison">
+        <thead>
+          <tr>
+            <th scope="col">Metric</th>
+            <th scope="col" style="text-align:right">Cold Calls</th>
+            <th scope="col" style="text-align:right">Email</th>
+            <th scope="col" style="text-align:right">LinkedIn</th>
+          </tr>
+        </thead>
+        <tbody>{table_rows}</tbody>
+      </table>
+    </div>
+
+    {best_html}
   </section>
-  {exp_insights_section}
+
+  {exp_section}
 </section>"""
 
 
@@ -1347,12 +1970,15 @@ def _scripts(data: dict) -> str:
     inmail_stats   = data.get("inmail_stats", {})
     call_log       = data.get("call_log", [])
     companies      = data.get("companies", [])
+    deal_pipeline  = data.get("deal_pipeline", {})
 
     # Serialize data subsets
     call_trends_json  = _j(call_trends)
     inmail_trends_json = _j(inmail_trends)
     call_log_json     = _j(call_log)
     companies_json    = _j(companies)
+    channel_compare_json = _j(data.get("channel_comparison", {}))
+    deal_pipeline_json = _j(deal_pipeline)
 
     # Category chart data
     cat_dict = call_cats.get("categories", {}) if isinstance(call_cats, dict) else {}
@@ -1373,12 +1999,16 @@ const CALL_TRENDS   = {call_trends_json};
 const INMAIL_TRENDS = {inmail_trends_json};
 const CALL_LOG_DATA = {call_log_json};
 const COMPANIES_DATA = {companies_json};
+const CHANNEL_COMPARE = {channel_compare_json};
+const DEAL_PIPELINE = {deal_pipeline_json};
 
 // ============================================================
 // Tab switching
 // ============================================================
 let callingChartsRendered  = false;
 let outreachChartsRendered = false;
+let channelChartRendered   = false;
+let pipelineChartRendered  = false;
 
 function switchTab(tabId) {{
   document.querySelectorAll('.tab-panel').forEach(function(p) {{
@@ -1398,6 +2028,8 @@ function switchTab(tabId) {{
   // Lazy chart init
   if (tabId === 'calling'  && !callingChartsRendered)  initCallingCharts();
   if (tabId === 'outreach' && !outreachChartsRendered) initOutreachCharts();
+  if (tabId === 'pipeline' && !pipelineChartRendered) initPipelineChart();
+  if (tabId === 'experiments' && !channelChartRendered) initChannelChart();
 
   // Update URL hash
   history.replaceState(null, '', '#' + tabId);
@@ -1555,15 +2187,16 @@ function initOutreachCharts() {{
             yAxisID: 'y',
           }},
           {{
-            type: 'bar', label: 'Replied', data: replied,
-            backgroundColor: 'rgba(52,168,83,.4)', borderColor: 'rgba(52,168,83,.8)', borderWidth: 1,
-            yAxisID: 'y',
+            type: 'line', label: 'Reply Rate %', data: rr,
+            borderColor: '#34a853', backgroundColor: 'transparent',
+            pointBackgroundColor: '#34a853', pointRadius: 4, tension: 0.3,
+            yAxisID: 'y1',
           }},
           {{
-            type: 'line', label: 'Reply Rate %', data: rr,
-            borderColor: '#fbbc04', backgroundColor: 'transparent',
-            pointBackgroundColor: '#fbbc04', pointRadius: 4, tension: 0.3,
-            yAxisID: 'y1',
+            type: 'line', label: 'Replied', data: replied,
+            borderColor: '#a855f7', backgroundColor: 'transparent',
+            pointStyle: 'circle', pointRadius: 6, pointBackgroundColor: '#a855f7',
+            tension: 0, yAxisID: 'y',
           }},
         ]
       }},
@@ -1614,6 +2247,215 @@ function initOutreachCharts() {{
       }}
     }});
   }}
+}}
+
+
+// ============================================================
+// Pipeline Chart
+// ============================================================
+function initPipelineChart() {{
+  pipelineChartRendered = true;
+  var ctx = document.getElementById('pipeline-stage-chart');
+  if (!ctx || !DEAL_PIPELINE || !DEAL_PIPELINE.by_stage) return;
+
+  var stageOrder = DEAL_PIPELINE.stage_order || [];
+  var byStage = DEAL_PIPELINE.by_stage || {{}};
+  var stageColors = {{
+    'No Deal Yet': '#5a6078',
+    'Demo': '#4285f4',
+    'Introductory Call': '#00c4cc',
+    'Qualified': '#a855f7',
+    'Pilot': '#34a853',
+    'Proposal': '#f97316',
+    'Nurture': '#fbbc04',
+    'Backlog': '#5a6078',
+    'Closed Won': '#34a853',
+    'Blocked / Stale': '#ea4335',
+  }};
+
+  // Only show stages with deals (exclude No Deal Yet — $0 entries)
+  var labels = [];
+  var values = [];
+  var counts = [];
+  var colors = [];
+
+  stageOrder.forEach(function(stage) {{
+    if (stage === 'No Deal Yet') return;  // skip from chart
+    var deals = byStage[stage];
+    if (!deals || deals.length === 0) return;
+    var total = deals.reduce(function(sum, d) {{ return sum + (d.amount || 0); }}, 0);
+    labels.push(stage);
+    values.push(total);
+    counts.push(deals.length);
+    colors.push(stageColors[stage] || '#5a6078');
+  }});
+
+  var cfg = chartDefaults();
+  new Chart(ctx, {{
+    type: 'bar',
+    data: {{
+      labels: labels,
+      datasets: [{{
+        label: 'Pipeline Value ($)',
+        data: values,
+        backgroundColor: colors.map(function(c) {{ return c + 'AA'; }}),
+        borderColor: colors,
+        borderWidth: 1,
+        borderRadius: 4,
+      }}]
+    }},
+    options: Object.assign(cfg, {{
+      indexAxis: 'y',
+      plugins: {{
+        legend: {{ display: false }},
+        tooltip: {{
+          backgroundColor: '#222633',
+          borderColor: '#2d3348',
+          borderWidth: 1,
+          titleColor: '#e8eaed',
+          bodyColor: '#9aa0b4',
+          callbacks: {{
+            label: function(ctx) {{
+              var val = ctx.raw || 0;
+              var count = counts[ctx.dataIndex] || 0;
+              return '$' + val.toLocaleString() + ' (' + count + ' deal' + (count !== 1 ? 's' : '') + ')';
+            }}
+          }}
+        }}
+      }},
+      scales: {{
+        x: {{
+          min: 0,
+          ticks: {{
+            color: '#9aa0b4',
+            font: {{ size: 10 }},
+            callback: function(v) {{
+              if (v >= 1000000) return '$' + (v/1000000).toFixed(1) + 'M';
+              if (v >= 1000) return '$' + (v/1000).toFixed(0) + 'K';
+              return '$' + v;
+            }}
+          }},
+          grid: {{ color: '#2d3348' }},
+          title: {{ display: true, text: 'Deal Value', color: '#5a6078', font: {{ size: 10 }} }}
+        }},
+        y: {{
+          ticks: {{ color: '#e8eaed', font: {{ size: 11 }} }},
+          grid: {{ display: false }},
+        }}
+      }}
+    }})
+  }});
+}}
+
+
+// ============================================================
+// Deal table filter
+// ============================================================
+function filterDeals() {{
+  var search = (document.getElementById('deal-search').value || '').toLowerCase();
+  var stage  = document.getElementById('deal-stage-filter').value || '';
+  var tbody  = document.getElementById('deal-table-body');
+  if (!tbody) return;
+
+  var allRows = Array.from(tbody.querySelectorAll('tr'));
+  var currentStage = '';
+  var stageVisible = false;
+
+  allRows.forEach(function(row) {{
+    // Stage header rows have the pipe-stage-row class
+    if (row.classList.contains('pipe-stage-row')) {{
+      var headerText = row.textContent || '';
+      currentStage = headerText.trim().split('\\n')[0].trim();
+      // Defer visibility -- will show if any child rows match
+      row.style.display = 'none';
+      row._matchedChildren = 0;
+      return;
+    }}
+
+    // Deal row
+    var text = row.textContent.toLowerCase();
+    var matchSearch = !search || text.indexOf(search) !== -1;
+    var matchStage = !stage || currentStage.indexOf(stage) !== -1;
+    var visible = matchSearch && matchStage;
+    row.style.display = visible ? '' : 'none';
+
+    // Track if this stage header should show
+    if (visible) {{
+      // Find the preceding stage header and show it
+      var prev = row.previousElementSibling;
+      while (prev) {{
+        if (prev.classList && prev.classList.contains('pipe-stage-row')) {{
+          prev.style.display = '';
+          break;
+        }}
+        prev = prev.previousElementSibling;
+      }}
+    }}
+  }});
+}}
+
+
+// ============================================================
+// Channel Comparison Chart
+// ============================================================
+function initChannelChart() {{
+  channelChartRendered = true;
+  var ctx = document.getElementById('channel-compare-chart');
+  if (!ctx || !CHANNEL_COMPARE) return;
+  var cc = CHANNEL_COMPARE;
+  var labels = ['Cold Calls', 'Email', 'LinkedIn'];
+
+  // Per-100 normalization for fair cross-channel comparison
+  var vol = [cc.calls?.volume||0, cc.email?.volume||0, cc.linkedin?.volume||0];
+  var resp = [cc.calls?.responses||0, cc.email?.responses||0, cc.linkedin?.responses||0];
+  var interested = [cc.calls?.interested||0, cc.email?.interested||0, cc.linkedin?.interested||0];
+  var meetings = [cc.calls?.meetings||0, cc.email?.meetings||0, cc.linkedin?.meetings||0];
+  var per100Resp = vol.map(function(v,i) {{ return v ? Math.round(resp[i]/v*100*10)/10 : 0; }});
+  var per100Int  = vol.map(function(v,i) {{ return v ? Math.round(interested[i]/v*100*10)/10 : 0; }});
+  var per100Mtg  = vol.map(function(v,i) {{ return v ? Math.round(meetings[i]/v*100*10)/10 : 0; }});
+
+  var cfg = chartDefaults();
+  new Chart(ctx, {{
+    type: 'bar',
+    data: {{
+      labels: labels,
+      datasets: [
+        {{
+          label: 'Response rate %', data: per100Resp,
+          backgroundColor: 'rgba(66,133,244,.55)',
+          borderColor: 'rgba(66,133,244,.9)',
+          borderWidth: 1, borderRadius: 4,
+        }},
+        {{
+          label: 'Interested %', data: per100Int,
+          backgroundColor: 'rgba(251,188,4,.55)',
+          borderColor: 'rgba(251,188,4,.9)',
+          borderWidth: 1, borderRadius: 4,
+        }},
+        {{
+          label: 'Meetings booked %', data: per100Mtg,
+          backgroundColor: 'rgba(52,168,83,.55)',
+          borderColor: 'rgba(52,168,83,.9)',
+          borderWidth: 1, borderRadius: 4,
+        }},
+      ]
+    }},
+    options: Object.assign(cfg, {{
+      indexAxis: 'y',
+      scales: {{
+        x: {{
+          min: 0,
+          ticks: {{ color: '#9aa0b4', font: {{ size: 10 }}, callback: function(v) {{ return v + '%'; }} }},
+          grid: {{ color: '#2d3348' }},
+          title: {{ display: true, text: 'Rate per 100 outreach', color: '#5a6078', font: {{ size: 10 }} }}
+        }},
+        y: {{
+          ticks: {{ color: '#e8eaed', font: {{ size: 12 }} }},
+          grid: {{ display: false }},
+        }}
+      }}
+    }})
+  }});
 }}
 
 
@@ -1775,6 +2617,8 @@ function buildCompanyCards() {{
   var search  = (document.getElementById('company-search').value || '').toLowerCase();
   var status  = (document.getElementById('company-status-filter').value || '').toLowerCase();
   var channel = (document.getElementById('company-channel-filter').value || '').toLowerCase();
+  var knowledge = (document.getElementById('company-knowledge-filter') || {{}}).value || '';
+  var sortBy  = (document.getElementById('company-sort') || {{}}).value || 'recent';
   var grid    = document.getElementById('company-grid');
   if (!grid) return;
 
@@ -1786,8 +2630,34 @@ function buildCompanyCards() {{
     var mSearch  = !search  || name.indexOf(search) !== -1;
     var mStatus  = !status  || cstatus === status;
     var mChannel = !channel || cchannels.indexOf(channel) !== -1;
-    return mSearch && mStatus && mChannel;
+    var mKnow    = true;
+    if (knowledge === 'has_provider')    mKnow = card.dataset.hasProvider === '1';
+    if (knowledge === 'has_commodities') mKnow = card.dataset.hasCommodities === '1';
+    if (knowledge === 'has_contact')     mKnow = card.dataset.hasContact === '1';
+    return mSearch && mStatus && mChannel && mKnow;
   }});
+
+  // Sort
+  coVisible.sort(function(a, b) {{
+    if (sortBy === 'renewal') {{
+      return (a.dataset.renewal || '9999') < (b.dataset.renewal || '9999') ? -1 : 1;
+    }} else if (sortBy === 'action') {{
+      return (a.dataset.actiondate || '9999') < (b.dataset.actiondate || '9999') ? -1 : 1;
+    }} else if (sortBy === 'name') {{
+      return (a.dataset.name || '') < (b.dataset.name || '') ? -1 : 1;
+    }} else if (sortBy === 'recent') {{
+      // Sort by last touch date descending
+      var aTouch = a.dataset.lasttouch || '';
+      var bTouch = b.dataset.lasttouch || '';
+      if (bTouch > aTouch) return 1;
+      if (bTouch < aTouch) return -1;
+      return 0;
+    }} else {{
+      // touches desc
+      return (parseInt(b.dataset.touches)||0) - (parseInt(a.dataset.touches)||0);
+    }}
+  }});
+
   coPage_ = 0;
   renderCompanyPage();
 }}
@@ -1891,6 +2761,7 @@ def build_html(data: dict) -> str:
     {_tab_calling(data)}
     {_tab_outreach(data)}
     {_tab_companies(data)}
+    {_tab_pipeline(data)}
     {_tab_experiments(data)}
   </main>
   {_footer(data)}

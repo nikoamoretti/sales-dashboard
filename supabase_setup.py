@@ -41,6 +41,16 @@ CREATE TABLE IF NOT EXISTS companies (
     total_touches INT DEFAULT 0,
     last_touch_at TIMESTAMPTZ,
     first_touch_at TIMESTAMPTZ,
+    -- CRM fields
+    current_provider TEXT,
+    commodities TEXT,
+    contract_renewal_date DATE,
+    next_action TEXT,
+    next_action_date DATE,
+    notes TEXT,
+    contact_name TEXT,
+    contact_role TEXT,
+    --
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );

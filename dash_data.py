@@ -94,6 +94,7 @@ def _build_overview(
     total_companies: int,
     total_calls: int,
     total_inmails: int,
+    raw_companies: list[dict] | None = None,
 ) -> dict:
     """Compute top-level KPIs including this-week / last-week / WoW deltas."""
     def _snap_to_row(snap: dict | None) -> dict:
@@ -156,6 +157,13 @@ def _build_overview(
         ),
     }
 
+    # Pipeline stage counts from company statuses
+    pipeline: dict[str, int] = {"prospect": 0, "contacted": 0, "interested": 0, "meeting_booked": 0}
+    for co in (raw_companies or []):
+        st = (co.get("status") or "prospect").lower()
+        if st in pipeline:
+            pipeline[st] += 1
+
     return {
         "total_companies": total_companies,
         "total_calls": total_calls,
@@ -164,6 +172,7 @@ def _build_overview(
         "this_week": this_week,
         "last_week": last_week,
         "wow_deltas": wow_deltas,
+        "pipeline": pipeline,
     }
 
 
@@ -425,6 +434,17 @@ def _build_companies(
             "call_count": len(company_calls),
             "inmail_count": len(company_inmails),
             "latest_intel": latest_intel,
+            # CRM fields (may be None before migration)
+            "industry": company.get("industry"),
+            "current_provider": company.get("current_provider"),
+            "commodities": company.get("commodities"),
+            "contract_renewal_date": company.get("contract_renewal_date"),
+            "next_action": company.get("next_action"),
+            "next_action_date": company.get("next_action_date"),
+            "notes": company.get("notes"),
+            "contact_name": company.get("contact_name"),
+            "contact_role": company.get("contact_role"),
+            "source": company.get("source"),
             "calls": [
                 {
                     "called_at": c.get("called_at"),
@@ -459,6 +479,209 @@ def _build_experiments(raw_experiments: list[dict]) -> list[dict]:
         }
         for row in raw_experiments
     ]
+
+
+def _build_deals(raw_deals: list[dict], raw_companies: list[dict]) -> dict:
+    """Build deal pipeline filtered to outbound-sourced companies only.
+
+    Includes real HubSpot deals that match a company in our companies table,
+    plus synthetic "No Deal Yet" entries for active pipeline companies
+    (meeting_booked / interested) that don't have a HubSpot deal.
+
+    Returns a dict with:
+      - deals: list of deal dicts ordered by stage
+      - by_stage: dict of stage_label -> list of deals
+      - metrics: pipeline summary metrics
+    """
+    STAGE_ORDER = [
+        "No Deal Yet", "Demo", "Introductory Call", "Qualified", "Pilot",
+        "Proposal", "Nurture", "Backlog", "Closed Won", "Blocked / Stale",
+    ]
+    STAGE_WEIGHT = {
+        "No Deal Yet": 0.0,
+        "Demo": 0.40,
+        "Introductory Call": 0.20,
+        "Qualified": 0.50,
+        "Pilot": 0.70,
+        "Proposal": 0.80,
+        "Nurture": 0.10,
+        "Backlog": 0.05,
+        "Closed Won": 1.0,
+        "Blocked / Stale": 0.0,
+    }
+
+    stage_rank = {s: i for i, s in enumerate(STAGE_ORDER)}
+
+    # Build lookup: company_name -> info from our companies table
+    co_lookup: dict[str, dict] = {}
+    for c in raw_companies:
+        name = c.get("name")
+        if name:
+            co_lookup[name] = {
+                "source": c.get("source") or "cold_call",
+                "status": c.get("status") or "prospect",
+                "contact_name": c.get("contact_name"),
+                "next_action": c.get("next_action"),
+            }
+
+    # Filter deals to outbound-sourced only (must match a company in our table)
+    deals: list[dict] = []
+    matched_company_names: set[str] = set()
+    for d in raw_deals:
+        co_name = d.get("company_name") or ""
+        if co_name not in co_lookup:
+            continue  # skip non-outbound deals
+        co_info = co_lookup[co_name]
+        source = co_info["source"]
+        channel = "MARS" if source == "mars" else "Cold Call"
+        stage_label = d.get("stage_label") or d.get("stage") or "Unknown"
+        amount = float(d.get("amount") or 0)
+        matched_company_names.add(co_name)
+        deals.append({
+            "id": d.get("id"),
+            "hubspot_deal_id": d.get("hubspot_deal_id"),
+            "name": d.get("name", ""),
+            "amount": amount,
+            "stage": d.get("stage", ""),
+            "stage_label": stage_label,
+            "close_date": str(d.get("close_date") or "")[:10],
+            "company_name": co_name,
+            "company_id": d.get("company_id"),
+            "source": source,
+            "channel": channel,
+            "pipeline": d.get("pipeline", ""),
+        })
+
+    # Add active pipeline companies that don't have deals yet
+    active_statuses = {"meeting_booked", "interested"}
+    for c in raw_companies:
+        name = c.get("name")
+        status = (c.get("status") or "").lower()
+        if not name or status not in active_statuses:
+            continue
+        if name in matched_company_names:
+            continue  # already has a deal
+        source = c.get("source") or "cold_call"
+        channel = "MARS" if source == "mars" else "Cold Call"
+        deals.append({
+            "id": None,
+            "hubspot_deal_id": None,
+            "name": name,  # use company name as deal name
+            "amount": 0,
+            "stage": "",
+            "stage_label": "No Deal Yet",
+            "close_date": "",
+            "company_name": name,
+            "company_id": c.get("id"),
+            "source": source,
+            "channel": channel,
+            "pipeline": "",
+            "contact_name": c.get("contact_name"),
+            "next_action": c.get("next_action"),
+            "status": status,
+        })
+
+    # Sort by stage order, then amount desc within stage
+    deals.sort(key=lambda x: (
+        stage_rank.get(x["stage_label"], 99),
+        -(x["amount"] or 0),
+    ))
+
+    # Group by stage
+    by_stage: dict[str, list[dict]] = {}
+    for d in deals:
+        sl = d["stage_label"]
+        by_stage.setdefault(sl, []).append(d)
+
+    # Metrics — exclude No Deal Yet, Closed Won, Blocked/Stale from active pipeline
+    active_stages = {"Demo", "Introductory Call", "Qualified", "Pilot", "Proposal", "Nurture", "Backlog"}
+    active_deals = [d for d in deals if d["stage_label"] in active_stages]
+    total_value = sum(d["amount"] for d in active_deals)
+    weighted_value = sum(
+        d["amount"] * STAGE_WEIGHT.get(d["stage_label"], 0)
+        for d in active_deals
+    )
+    deal_count = len(active_deals)
+    avg_deal = total_value / deal_count if deal_count else 0
+
+    won = [d for d in deals if d["stage_label"] == "Closed Won"]
+    lost = [d for d in deals if d["stage_label"] == "Blocked / Stale"]
+    win_count = len(won)
+    total_closed = win_count + len(lost)
+    win_rate = round(win_count / total_closed * 100, 1) if total_closed else 0
+
+    # Channel attribution counts
+    mars_count = sum(1 for d in deals if d.get("channel") == "MARS")
+    cold_call_count = sum(1 for d in deals if d.get("channel") == "Cold Call")
+
+    return {
+        "deals": deals,
+        "by_stage": by_stage,
+        "stage_order": STAGE_ORDER,
+        "metrics": {
+            "total_value": total_value,
+            "weighted_value": weighted_value,
+            "deal_count": deal_count,
+            "avg_deal": avg_deal,
+            "win_rate": win_rate,
+            "won_count": win_count,
+            "total_closed": total_closed,
+            "mars_count": mars_count,
+            "cold_call_count": cold_call_count,
+        },
+    }
+
+
+def _build_pipeline(raw_companies: list[dict], calls: list[dict],
+                     company_id_to_name: dict[int, str]) -> list[dict]:
+    """Build pipeline: meeting_booked + interested + mars prospects with details."""
+    # Index: company_id → list of meeting-booked call dates + contacts
+    meeting_calls: dict[int, list[dict]] = {}
+    for c in calls:
+        if (c.get("category") or "") == "Meeting Booked":
+            cid = c.get("company_id")
+            if cid:
+                meeting_calls.setdefault(cid, []).append({
+                    "date": (c.get("called_at") or "")[:10],
+                    "contact": c.get("contact_name"),
+                })
+
+    # Active pipeline stages
+    active_statuses = {"meeting_booked", "interested", "prospect"}
+    result = []
+    for co in raw_companies:
+        status = co.get("status") or "prospect"
+        source = co.get("source") or "cold_call"
+
+        # Include: meeting_booked, interested, or mars-sourced prospects
+        if status not in active_statuses:
+            continue
+        if status == "prospect" and source != "mars":
+            continue
+
+        cid = co["id"]
+        mtg_info = meeting_calls.get(cid, [])
+        # Most recent meeting call date
+        mtg_date = max((m["date"] for m in mtg_info), default=None) if mtg_info else None
+        mtg_contact = mtg_info[0]["contact"] if mtg_info else None
+
+        result.append({
+            "name": co.get("name"),
+            "status": status,
+            "source": source,
+            "industry": co.get("industry"),
+            "contact_name": co.get("contact_name") or mtg_contact,
+            "contact_role": co.get("contact_role"),
+            "current_provider": co.get("current_provider"),
+            "next_action": co.get("next_action"),
+            "meeting_date": mtg_date,
+        })
+
+    # Sort: meeting_booked first, then interested, then mars prospects
+    stage_order = {"meeting_booked": 0, "interested": 1, "prospect": 2}
+    result.sort(key=lambda x: (stage_order.get(x["status"], 9), x.get("meeting_date") or "9999"))
+
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -518,6 +741,10 @@ def fetch_all() -> dict:
     raw_experiments = _fetch_all_rows(sb, "experiments", order_col="start_date", desc=True)
     _log(f"  {len(raw_experiments)} experiments")
 
+    _log("Fetching deals...")
+    raw_deals = _fetch_all_rows(sb, "deals", order_col="amount", desc=True)
+    _log(f"  {len(raw_deals)} deals")
+
     # ------------------------------------------------------------------
     # 2. Build lookup indexes (do joins in Python)
     # ------------------------------------------------------------------
@@ -544,6 +771,7 @@ def fetch_all() -> dict:
         total_companies=len(raw_companies),
         total_calls=len(calls),
         total_inmails=len(raw_inmails),
+        raw_companies=raw_companies,
     )
 
     insights = _build_insights(raw_insights, company_id_to_name)
@@ -556,6 +784,52 @@ def fetch_all() -> dict:
     email_sequences = _build_email_sequences(raw_sequences)
     companies = _build_companies(raw_companies, calls, raw_inmails, intel_by_call_id)
     experiments = _build_experiments(raw_experiments)
+
+    # Pipeline: all companies in active stages + MARS prospects
+    pipeline = _build_pipeline(raw_companies, calls, company_id_to_name)
+
+    # HubSpot deal pipeline (filtered to outbound-sourced companies)
+    deal_pipeline = _build_deals(raw_deals, raw_companies)
+
+    # Channel efficiency comparison
+    total_email_sent = sum(s.get("sent") or 0 for s in raw_sequences)
+    total_email_replied = sum(s.get("replied") or 0 for s in raw_sequences)
+    total_inmail_sent = inmail_stats.get("total_sent", 0)
+    total_inmail_replied = inmail_stats.get("total_replied", 0)
+    interested_from_calls = sum(1 for c in calls if (c.get("category") or "") in ("Interested", "Meeting Booked"))
+    meetings_from_calls = sum(1 for c in calls if (c.get("category") or "") == "Meeting Booked")
+    interested_inmails = sum(1 for im in raw_inmails if im.get("reply_sentiment") == "interested")
+
+    human_contacts = sum(1 for c in calls if (c.get("category") or "") not in ("No Answer", "Left Voicemail", "Wrong Number", ""))
+    overall_contact_rate = round(human_contacts / len(calls) * 100, 1) if calls else 0
+
+    # Meetings booked per channel
+    meetings_from_inmails = 0  # TODO: track when inmail replies convert to meetings
+    meetings_from_email = 0    # TODO: track when email replies convert to meetings
+
+    channel_comparison = {
+        "calls": {
+            "volume": len(calls),
+            "responses": human_contacts,
+            "response_rate": overall_contact_rate,
+            "interested": interested_from_calls,
+            "meetings": meetings_from_calls,
+        },
+        "email": {
+            "volume": total_email_sent,
+            "responses": total_email_replied,
+            "response_rate": round(total_email_replied / total_email_sent * 100, 1) if total_email_sent else 0,
+            "interested": total_email_replied,
+            "meetings": meetings_from_email,
+        },
+        "linkedin": {
+            "volume": total_inmail_sent,
+            "responses": total_inmail_replied,
+            "response_rate": round(total_inmail_replied / total_inmail_sent * 100, 1) if total_inmail_sent else 0,
+            "interested": interested_inmails,
+            "meetings": meetings_from_inmails,
+        },
+    }
 
     _log("Done.")
 
@@ -570,7 +844,10 @@ def fetch_all() -> dict:
         "inmail_stats": inmail_stats,
         "email_sequences": email_sequences,
         "companies": companies,
+        "pipeline": pipeline,
+        "deal_pipeline": deal_pipeline,
         "experiments": experiments,
+        "channel_comparison": channel_comparison,
         "generated_at": datetime.utcnow().isoformat() + "Z",
     }
 
