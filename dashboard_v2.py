@@ -10,6 +10,7 @@ Usage:
 
 import html as _html
 import json
+import re as _re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -199,6 +200,7 @@ body {
 .delta-up   { color: var(--accent-green); font-weight: 600; }
 .delta-down { color: var(--accent-red);   font-weight: 600; }
 .delta-neutral { color: var(--text-muted); }
+.kpi-card-muted { opacity: 0.4; }
 
 /* ---- Insight cards ---- */
 .insights-grid {
@@ -213,7 +215,9 @@ body {
   box-shadow: var(--shadow);
   border-left-width: 3px;
   border-left-style: solid;
+  cursor: pointer; transition: background .2s;
 }
+.insight-card:hover { background: var(--bg-hover); }
 .insight-card.type-action_required { border-left-color: var(--accent-red); }
 .insight-card.type-alert           { border-left-color: var(--accent-yellow); }
 .insight-card.type-win             { border-left-color: var(--accent-green); }
@@ -245,6 +249,15 @@ body {
   font-size: .65rem; padding: .15rem .45rem; border-radius: 999px;
   border: 1px solid var(--border); color: var(--text-muted);
 }
+.insight-chevron { font-size: .7rem; color: var(--text-muted); margin-right: .2rem; }
+.show-all-btn {
+  background: transparent; color: var(--accent-blue);
+  border: 1px solid var(--border); padding: .5rem 1rem;
+  border-radius: var(--radius); cursor: pointer;
+  margin-top: .75rem; font-size: .8rem; font-family: inherit;
+  transition: border-color .15s;
+}
+.show-all-btn:hover { border-color: var(--accent-blue); }
 
 /* ---- Channel comparison ---- */
 .channel-grid {
@@ -548,8 +561,10 @@ def _tab_home(data: dict) -> str:
     def kpi(value, label, delta_key, suffix=""):
         raw_delta = wow.get(delta_key, 0)
         delta_html = _fmt_delta(raw_delta, suffix)
+        is_zero = str(value).strip() in ("0", "0.0%", "0%", "0.0")
+        muted_class = " kpi-card-muted" if is_zero else ""
         return f"""
-    <div class="kpi-card" role="article" aria-label="{_h(label)}: {_h(value)}">
+    <div class="kpi-card{muted_class}" role="article" aria-label="{_h(label)}: {_h(value)}">
       <div class="kpi-value" aria-hidden="true">{_h(value)}</div>
       <div class="kpi-label">{_h(label)}</div>
       <div class="kpi-delta" aria-label="Week over week change">{delta_html}</div>
@@ -586,25 +601,37 @@ def _tab_home(data: dict) -> str:
         "coaching":        "💡",
         "strategic":       "🧭",
     }
-    insight_cards = ""
-    for ins in insights[:12]:
+    top_cards = ""
+    extra_cards = ""
+    for idx, ins in enumerate(insights[:12]):
         ins_type = ins.get("type", "strategic")
         icon = type_icons.get(ins_type, "💬")
         co_tag = f'<span class="insight-tag">{_h(ins["company_name"])}</span>' if ins.get("company_name") else ""
         ch_tag = f'<span class="insight-tag">{_h(ins["channel"])}</span>' if ins.get("channel") else ""
-        insight_cards += f"""
-      <article class="insight-card type-{_h(ins_type)}" role="article">
+        card = f"""
+      <article class="insight-card type-{_h(ins_type)}" role="article" onclick="this.classList.toggle('expanded');var b=this.querySelector('.insight-body');b.style.display=b.style.display==='block'?'none':'block';var ch=this.querySelector('.insight-chevron');ch.textContent=ch.textContent==='▸'?'▾':'▸';">
         <div class="insight-header">
           <span class="insight-type-badge type-{_h(ins_type)}" aria-hidden="true">{_h(icon)} {_h(ins_type.replace("_"," "))}</span>
           <span class="insight-severity">{_h(ins.get("severity",""))}</span>
         </div>
-        <div class="insight-title">{_h(ins.get("title",""))}</div>
-        <div class="insight-body">{_h(ins.get("body",""))}</div>
+        <div class="insight-title"><span class="insight-chevron" aria-hidden="true">▸</span> {_h(ins.get("title",""))}</div>
+        <div class="insight-body" style="display:none">{_h(ins.get("body",""))}</div>
         <div class="insight-meta">{co_tag}{ch_tag}</div>
       </article>"""
+        if idx < 3:
+            top_cards += card
+        else:
+            extra_cards += card
 
-    if not insight_cards:
-        insight_cards = '<div class="empty-state"><div class="empty-icon" aria-hidden="true">💡</div><p>No insights yet. They will appear here once the advisor runs.</p></div>'
+    if not top_cards and not extra_cards:
+        insights_section_inner = '<div class="empty-state"><div class="empty-icon" aria-hidden="true">💡</div><p>No insights yet. They will appear here once the advisor runs.</p></div>'
+        show_all_btn = ""
+    else:
+        total_insights = len(insights[:12])
+        hidden_count = total_insights - min(3, total_insights)
+        hidden_div = f'<div class="insights-hidden" style="display:none">{extra_cards}</div>' if extra_cards else ""
+        show_all_btn = f'<button class="show-all-btn" onclick="toggleInsights(this)">Show all {total_insights} insights ▾</button>' if extra_cards else ""
+        insights_section_inner = top_cards + hidden_div
 
     insights_html = f"""
   <section aria-labelledby="home-insights-heading">
@@ -612,8 +639,9 @@ def _tab_home(data: dict) -> str:
       <span class="sh-icon" aria-hidden="true">💡</span> Advisor Insights
     </h2>
     <div class="insights-grid" aria-live="polite">
-      {insight_cards}
+      {insights_section_inner}
     </div>
+    {show_all_btn}
   </section>"""
 
     # Channel comparison
@@ -727,9 +755,11 @@ def _tab_calling(data: dict) -> str:
 
     # Call log table
     log_rows = ""
-    for call in call_log[:50]:
+    for call in call_log:
         dur = _fmt_dur(call.get("duration_s", 0))
-        summary = (call.get("summary") or "").replace("\n", " ").strip()[:200]
+        _raw_summary = (call.get("summary") or "").strip()
+        _raw_summary = _re.sub(r'^(#+\s+\S.*?\n)+', '', _raw_summary).strip()
+        summary = _raw_summary.replace("\n", " ")[:200]
         summary_full = (call.get("summary") or "").strip()
         intel = call.get("intel") or {}
 
@@ -983,7 +1013,7 @@ def _tab_outreach(data: dict) -> str:
         <tr data-sentiment="{_h(sent)}">
           <td>{_h(str(im.get("sent_date","") or "")[:10])}</td>
           <td>{_h(im.get("contact_name",""))}</td>
-          <td style="color:var(--text-secondary);font-size:.75rem">{_h(im.get("contact_title",""))}</td>
+          <td style="color:var(--text-secondary);font-size:.75rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{_h(im.get("contact_title",""))}">{_h((im.get("contact_title","") or "")[:50] + ("…" if len(im.get("contact_title","") or "") > 50 else ""))}</td>
           <td>{_h(im.get("company_name",""))}</td>
           <td style="color:{replied_color};text-align:center">{replied_icon}</td>
           <td>{sent_badge}</td>
@@ -1589,11 +1619,24 @@ function initOutreachCharts() {{
 
 
 // ============================================================
+// Insights: show/hide overflow cards
+// ============================================================
+function toggleInsights(btn) {{
+  var hidden = document.querySelector('.insights-hidden');
+  if (!hidden) return;
+  var isHidden = hidden.style.display === 'none';
+  hidden.style.display = isHidden ? '' : 'none';
+  var total = document.querySelectorAll('.insight-card').length;
+  btn.textContent = isHidden ? 'Show fewer \u25b4' : 'Show all ' + total + ' insights \u25be';
+}}
+
+
+// ============================================================
 // Call log: filter + pagination
 // ============================================================
 var callLogRows  = [];
 var callLogPage_ = 0;
-var callPageSize = 50;
+var callPageSize = 20;
 
 function buildCallLogRows() {{
   var search = (document.getElementById('call-search').value || '').toLowerCase();
