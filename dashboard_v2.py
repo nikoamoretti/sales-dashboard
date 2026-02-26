@@ -335,6 +335,9 @@ tr:hover td { background: var(--bg-hover); }
 .badge-opportunity { background: rgba(52,168,83,.2); color: var(--accent-green); }
 .badge-closed      { background: rgba(52,168,83,.3); color: var(--accent-green); }
 .badge-disqualified{ background: rgba(234,67,53,.15); color: var(--accent-red); }
+.badge-do_not_contact { background: rgba(234,67,53,.25); color: var(--accent-red); }
+.badge-not_interested { background: rgba(234,67,53,.15); color: var(--accent-red); }
+.badge-exhausted     { background: rgba(251,188,4,.15); color: var(--accent-orange); }
 
 .badge-active    { background: rgba(52,168,83,.15); color: var(--accent-green); }
 .badge-paused    { background: rgba(251,188,4,.15); color: var(--accent-yellow); }
