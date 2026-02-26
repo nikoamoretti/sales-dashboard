@@ -3,7 +3,11 @@
 weekly_digest.py — Weekly Slack digest for Telegraph outbound sales.
 
 Pulls data from Supabase, generates an AI executive summary via Gemini Flash,
-and posts a formatted mrkdwn message to a Slack webhook.
+and posts a formatted mrkdwn message to Slack.
+
+Supports two posting methods:
+  1. SLACK_BOT_TOKEN + SLACK_CHANNEL_ID  (preferred — chat.postMessage API)
+  2. SLACK_WEBHOOK_URL                    (legacy — incoming webhook)
 
 Usage:
     python3 weekly_digest.py                 # generate + send to Slack
@@ -31,6 +35,7 @@ load_dotenv()
 CAMPAIGN_START = date(2026, 1, 19)
 GEMINI_MODEL = "gemini-2.0-flash"
 DASHBOARD_URL = "https://nikoamoretti.github.io/sales-dashboard/"
+SLACK_CHANNEL_ID_DEFAULT = "C0AH7NTDT5G"  # Group DM: Harris, Shachar, Nico + Daily Digest bot
 
 INSIGHT_EMOJI: dict[str, str] = {
     "action_required": ":red_circle:",
@@ -514,7 +519,24 @@ def build_message(
 # Slack posting
 # ---------------------------------------------------------------------------
 
-def post_to_slack(webhook_url: str, message: str) -> None:
+def post_to_slack_bot(token: str, channel: str, message: str) -> None:
+    """Post via Slack Bot Token (chat.postMessage API)."""
+    resp = requests.post(
+        "https://slack.com/api/chat.postMessage",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"channel": channel, "text": message, "unfurl_links": False},
+        timeout=10,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    if not data.get("ok"):
+        raise RuntimeError(f"Slack API error: {data.get('error', 'unknown')}")
+    ts = data.get("ts", "")
+    print(f"Slack: posted to {channel} (ts={ts})")
+
+
+def post_to_slack_webhook(webhook_url: str, message: str) -> None:
+    """Post via incoming webhook (legacy)."""
     resp = requests.post(
         webhook_url,
         json={"text": message},
@@ -548,12 +570,19 @@ def main() -> int:
     required_env = ["SUPABASE_URL", "SUPABASE_SERVICE_KEY"]
     if not args.no_ai:
         required_env.append("GEMINI_API_KEY")
-    if not args.dry_run:
-        required_env.append("SLACK_WEBHOOK_URL")
+
+    # Determine Slack posting method
+    slack_bot_token = os.environ.get("SLACK_BOT_TOKEN")
+    slack_channel = os.environ.get("SLACK_CHANNEL_ID", SLACK_CHANNEL_ID_DEFAULT)
+    slack_webhook = os.environ.get("SLACK_WEBHOOK_URL")
+
+    if not args.dry_run and not slack_bot_token and not slack_webhook:
+        required_env.append("SLACK_BOT_TOKEN")  # will trigger error below
 
     missing = [k for k in required_env if not os.environ.get(k)]
     if missing:
         print(f"ERROR: Missing environment variables: {', '.join(missing)}", file=sys.stderr)
+        print("  Set SLACK_BOT_TOKEN (preferred) or SLACK_WEBHOOK_URL", file=sys.stderr)
         return 1
 
     today = date.today()
@@ -623,11 +652,15 @@ def main() -> int:
         print("=" * 72)
         print("\n(dry-run — not posted to Slack)")
     else:
-        webhook_url = os.environ["SLACK_WEBHOOK_URL"]
         print("  Posting to Slack...")
         try:
-            post_to_slack(webhook_url, message)
-        except requests.HTTPError as e:
+            if slack_bot_token:
+                print(f"  Using Bot Token → channel {slack_channel}")
+                post_to_slack_bot(slack_bot_token, slack_channel, message)
+            else:
+                print("  Using Webhook URL")
+                post_to_slack_webhook(slack_webhook, message)
+        except (requests.HTTPError, RuntimeError) as e:
             print(f"ERROR: Slack post failed — {e}", file=sys.stderr)
             return 1
 
