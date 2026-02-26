@@ -601,21 +601,25 @@ KNOWN COMPANIES (for related_company_name field — pick exact match from this l
 ---
 INSTRUCTIONS:
 
-Generate between 5 and {MAX_INSIGHTS} insights. Be ruthlessly selective — only surface \
+Generate between 5 and {MAX_INSIGHTS} insights. Be selective — only surface \
 insights that are genuinely actionable or surprising. Do not pad with generic advice.
+
+TONE: Be constructive and matter-of-fact. Avoid alarmist language (no "dangerously", \
+"plummeted", "crashed", "critical"). State facts and recommend actions neutrally. \
+This dashboard is read by leadership — present data with confidence, not panic.
 
 Each insight must fall into exactly one of these types:
 - action_required: something that must happen TODAY or this week (follow-up, outreach)
-- alert: a concerning pattern or metric that needs attention
+- alert: a trend or metric worth monitoring
 - win: a success to acknowledge and reinforce
 - experiment: a specific, concrete test to run (with clear hypothesis)
 - coaching: a technique improvement grounded in the call data
 - strategic: big-picture observation about channel performance or targeting
 
 Severity rules:
-- high: urgent (referral aging past 48h, meeting fell off, contact rate crashed)
-- medium: important but not on fire
-- low: nice-to-know, improvement opportunity
+- high: time-sensitive (referral aging past 48h, meeting follow-up needed, notable trend change)
+- medium: worth addressing this week
+- low: improvement opportunity, nice-to-know
 
 Output ONLY a JSON array. No markdown, no preamble, no commentary outside the JSON.
 Each element must match this exact schema:

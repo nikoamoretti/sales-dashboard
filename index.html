@@ -151,8 +151,8 @@ body {
   margin-top: .35rem; text-transform: uppercase; letter-spacing: .04em;
 }
 .kpi-delta { font-size: .75rem; margin-top: .5rem; }
-.delta-up   { color: var(--accent-green); font-weight: 600; }
-.delta-down { color: var(--accent-red);   font-weight: 600; }
+.delta-up   { color: var(--accent-green); }
+.delta-down { color: var(--text-secondary); }
 .delta-neutral { color: var(--text-muted); }
 .kpi-card-muted { opacity: 0.4; }
 
@@ -172,7 +172,7 @@ body {
   cursor: pointer; transition: background .2s;
 }
 .insight-card:hover { background: var(--bg-hover); }
-.insight-card.type-action_required { border-left-color: var(--accent-red); }
+.insight-card.type-action_required { border-left-color: var(--accent-orange); }
 .insight-card.type-alert           { border-left-color: var(--accent-yellow); }
 .insight-card.type-win             { border-left-color: var(--accent-green); }
 .insight-card.type-experiment      { border-left-color: var(--accent-blue); }
@@ -185,8 +185,8 @@ body {
   letter-spacing: .06em; padding: .15rem .45rem;
   border-radius: 999px; flex-shrink: 0;
 }
-.insight-type-badge.type-action_required { background: rgba(234,67,53,.15); color: #ff6b6b; }
-.insight-type-badge.type-alert           { background: rgba(251,188,4,.15); color: var(--accent-yellow); }
+.insight-type-badge.type-action_required { background: rgba(249,115,22,.15); color: var(--accent-orange); }
+.insight-type-badge.type-alert           { background: rgba(180,140,60,.15); color: #b8a060; }
 .insight-type-badge.type-win             { background: rgba(52,168,83,.15); color: var(--accent-green); }
 .insight-type-badge.type-experiment      { background: rgba(66,133,244,.15); color: var(--accent-blue); }
 .insight-type-badge.type-coaching        { background: rgba(168,85,247,.15); color: var(--accent-purple); }
@@ -453,7 +453,7 @@ tr:hover td { background: var(--bg-hover); }
     Telegraph Outbound Central
   </h1>
   <div class="header-meta" role="status" aria-live="polite">
-    Updated Feb 26, 2026 00:34 UTC
+    Updated Feb 26, 2026 02:46 UTC
   </div>
 </header>
   
@@ -524,37 +524,37 @@ tr:hover td { background: var(--bg-hover); }
     <div class="kpi-card" role="article" aria-label="Total Dials: 163">
       <div class="kpi-value" aria-hidden="true">163</div>
       <div class="kpi-label">Total Dials</div>
-      <div class="kpi-delta" aria-label="Week over week change"><span class="delta-down">↓ -74</span></div>
+      <div class="kpi-delta" aria-label="Week over week change"><span class="delta-down">-74</span></div>
     </div>
       
     <div class="kpi-card" role="article" aria-label="Contact Rate: 5.5%">
       <div class="kpi-value" aria-hidden="true">5.5%</div>
       <div class="kpi-label">Contact Rate</div>
-      <div class="kpi-delta" aria-label="Week over week change"><span class="delta-down">↓ -4.6</span></div>
+      <div class="kpi-delta" aria-label="Week over week change"><span class="delta-down">-4.6</span></div>
     </div>
       
     <div class="kpi-card kpi-card-muted" role="article" aria-label="Meetings Booked: ">
       <div class="kpi-value" aria-hidden="true"></div>
       <div class="kpi-label">Meetings Booked</div>
-      <div class="kpi-delta" aria-label="Week over week change"><span class="delta-down">↓ -1</span></div>
+      <div class="kpi-delta" aria-label="Week over week change"><span class="delta-down">-1</span></div>
     </div>
       
     <div class="kpi-card kpi-card-muted" role="article" aria-label="InMails Sent: ">
       <div class="kpi-value" aria-hidden="true"></div>
       <div class="kpi-label">InMails Sent</div>
-      <div class="kpi-delta" aria-label="Week over week change"><span class="delta-neutral">→ 0</span></div>
+      <div class="kpi-delta" aria-label="Week over week change"><span class="delta-neutral">0</span></div>
     </div>
       
     <div class="kpi-card kpi-card-muted" role="article" aria-label="InMail Reply Rate: 0.0%">
       <div class="kpi-value" aria-hidden="true">0.0%</div>
       <div class="kpi-label">InMail Reply Rate</div>
-      <div class="kpi-delta" aria-label="Week over week change"><span class="delta-neutral">→ 0</span></div>
+      <div class="kpi-delta" aria-label="Week over week change"><span class="delta-neutral">0</span></div>
     </div>
       
     <div class="kpi-card" role="article" aria-label="Total Companies: 372">
       <div class="kpi-value" aria-hidden="true">372</div>
       <div class="kpi-label">Total Companies</div>
-      <div class="kpi-delta" aria-label="Week over week change"><span class="delta-neutral">→ 0</span></div>
+      <div class="kpi-delta" aria-label="Week over week change"><span class="delta-neutral">0</span></div>
     </div>
     </div>
   </section>
@@ -28894,7 +28894,7 @@ Adam Jackson from Telegraph left a voicemail for William Gay regarding chemical 
   
 <footer class="app-footer app-wrapper" role="contentinfo">
   <span>Telegraph Outbound Central</span>
-  <span>Generated 2026-02-26T00:34:34</span>
+  <span>Generated 2026-02-26T02:46:10</span>
 </footer>
   
 <script>
@@ -29027,13 +29027,13 @@ function initCallingCharts() {
         scales: {
           x: { ticks: { color: '#9aa0b4', font: { size: 10 } }, grid: { color: '#2d3348' } },
           y: {
-            type: 'linear', position: 'left',
+            type: 'linear', position: 'left', min: 0,
             ticks: { color: '#9aa0b4', font: { size: 10 } },
             grid:  { color: '#2d3348' },
             title: { display: true, text: 'Count', color: '#5a6078', font: { size: 10 } }
           },
           y1: {
-            type: 'linear', position: 'right',
+            type: 'linear', position: 'right', min: 0,
             ticks: { color: '#9aa0b4', font: { size: 10 }, callback: function(v) { return v + '%'; } },
             grid:  { drawOnChartArea: false },
             title: { display: true, text: 'Contact Rate %', color: '#5a6078', font: { size: 10 } }
@@ -29108,12 +29108,12 @@ function initOutreachCharts() {
         scales: {
           x: { ticks: { color: '#9aa0b4', font: { size: 10 } }, grid: { color: '#2d3348' } },
           y: {
-            type: 'linear', position: 'left',
+            type: 'linear', position: 'left', min: 0,
             ticks: { color: '#9aa0b4', font: { size: 10 } }, grid: { color: '#2d3348' },
             title: { display: true, text: 'Count', color: '#5a6078', font: { size: 10 } }
           },
           y1: {
-            type: 'linear', position: 'right',
+            type: 'linear', position: 'right', min: 0,
             ticks: { color: '#9aa0b4', font: { size: 10 }, callback: function(v) { return v + '%'; } },
             grid: { drawOnChartArea: false },
             title: { display: true, text: 'Reply Rate %', color: '#5a6078', font: { size: 10 } }

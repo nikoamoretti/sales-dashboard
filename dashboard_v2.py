@@ -46,8 +46,7 @@ def _fmt_delta(val, suffix="") -> str:
     cls = "delta-up" if v > 0 else "delta-down" if v < 0 else "delta-neutral"
     sign = "+" if v > 0 else ""
     display = f"{sign}{v:g}{suffix}"
-    arrow = "↑" if v > 0 else "↓" if v < 0 else "→"
-    return f'<span class="{cls}">{arrow} {display}</span>'
+    return f'<span class="{cls}">{display}</span>'
 
 
 # ---------------------------------------------------------------------------
@@ -197,8 +196,8 @@ body {
   margin-top: .35rem; text-transform: uppercase; letter-spacing: .04em;
 }
 .kpi-delta { font-size: .75rem; margin-top: .5rem; }
-.delta-up   { color: var(--accent-green); font-weight: 600; }
-.delta-down { color: var(--accent-red);   font-weight: 600; }
+.delta-up   { color: var(--accent-green); }
+.delta-down { color: var(--text-secondary); }
 .delta-neutral { color: var(--text-muted); }
 .kpi-card-muted { opacity: 0.4; }
 
@@ -218,7 +217,7 @@ body {
   cursor: pointer; transition: background .2s;
 }
 .insight-card:hover { background: var(--bg-hover); }
-.insight-card.type-action_required { border-left-color: var(--accent-red); }
+.insight-card.type-action_required { border-left-color: var(--accent-orange); }
 .insight-card.type-alert           { border-left-color: var(--accent-yellow); }
 .insight-card.type-win             { border-left-color: var(--accent-green); }
 .insight-card.type-experiment      { border-left-color: var(--accent-blue); }
@@ -231,8 +230,8 @@ body {
   letter-spacing: .06em; padding: .15rem .45rem;
   border-radius: 999px; flex-shrink: 0;
 }
-.insight-type-badge.type-action_required { background: rgba(234,67,53,.15); color: #ff6b6b; }
-.insight-type-badge.type-alert           { background: rgba(251,188,4,.15); color: var(--accent-yellow); }
+.insight-type-badge.type-action_required { background: rgba(249,115,22,.15); color: var(--accent-orange); }
+.insight-type-badge.type-alert           { background: rgba(180,140,60,.15); color: #b8a060; }
 .insight-type-badge.type-win             { background: rgba(52,168,83,.15); color: var(--accent-green); }
 .insight-type-badge.type-experiment      { background: rgba(66,133,244,.15); color: var(--accent-blue); }
 .insight-type-badge.type-coaching        { background: rgba(168,85,247,.15); color: var(--accent-purple); }
@@ -1496,13 +1495,13 @@ function initCallingCharts() {{
         scales: {{
           x: {{ ticks: {{ color: '#9aa0b4', font: {{ size: 10 }} }}, grid: {{ color: '#2d3348' }} }},
           y: {{
-            type: 'linear', position: 'left',
+            type: 'linear', position: 'left', min: 0,
             ticks: {{ color: '#9aa0b4', font: {{ size: 10 }} }},
             grid:  {{ color: '#2d3348' }},
             title: {{ display: true, text: 'Count', color: '#5a6078', font: {{ size: 10 }} }}
           }},
           y1: {{
-            type: 'linear', position: 'right',
+            type: 'linear', position: 'right', min: 0,
             ticks: {{ color: '#9aa0b4', font: {{ size: 10 }}, callback: function(v) {{ return v + '%'; }} }},
             grid:  {{ drawOnChartArea: false }},
             title: {{ display: true, text: 'Contact Rate %', color: '#5a6078', font: {{ size: 10 }} }}
@@ -1577,12 +1576,12 @@ function initOutreachCharts() {{
         scales: {{
           x: {{ ticks: {{ color: '#9aa0b4', font: {{ size: 10 }} }}, grid: {{ color: '#2d3348' }} }},
           y: {{
-            type: 'linear', position: 'left',
+            type: 'linear', position: 'left', min: 0,
             ticks: {{ color: '#9aa0b4', font: {{ size: 10 }} }}, grid: {{ color: '#2d3348' }},
             title: {{ display: true, text: 'Count', color: '#5a6078', font: {{ size: 10 }} }}
           }},
           y1: {{
-            type: 'linear', position: 'right',
+            type: 'linear', position: 'right', min: 0,
             ticks: {{ color: '#9aa0b4', font: {{ size: 10 }}, callback: function(v) {{ return v + '%'; }} }},
             grid: {{ drawOnChartArea: false }},
             title: {{ display: true, text: 'Reply Rate %', color: '#5a6078', font: {{ size: 10 }} }}
