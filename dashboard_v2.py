@@ -66,7 +66,7 @@ def _styles() -> str:
   --border:       #2d3348;
   --text-primary: #e8eaed;
   --text-secondary: #9aa0b4;
-  --text-muted:   #5a6078;
+  --text-muted:   #8b92a0;
   --accent-blue:  #4285f4;
   --accent-green: #34a853;
   --accent-red:   #ea4335;
@@ -391,6 +391,12 @@ tr:hover td { background: var(--bg-hover); }
 .intel-action { font-size: .75rem; color: var(--text-secondary); }
 .intel-action strong { color: var(--accent-blue); }
 
+/* ---- View toggle ---- */
+.view-toggle { display:inline-flex; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.view-toggle-btn { background:transparent; border:none; color:var(--text-muted); padding:.35rem .5rem; cursor:pointer; display:flex; align-items:center; transition:all .15s; }
+.view-toggle-btn:hover { color:var(--text-primary); }
+.view-toggle-btn.active { background:var(--accent-blue); color:#fff; }
+
 /* ---- Company cards ---- */
 .company-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -693,8 +699,7 @@ def _header(data: dict) -> str:
 def _tab_bar() -> str:
     tabs = [
         ("home",       "Home"),
-        ("calling",    "Cold Calling"),
-        ("outreach",   "Email & LinkedIn"),
+        ("activity",   "Activity"),
         ("companies",  "Companies"),
         ("pipeline",   "Pipeline"),
         ("experiments","Channel Performance"),
@@ -994,10 +999,13 @@ def _tab_home(data: dict) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Tab 2: Cold Calling
+# Tab 2: Activity (merged Cold Calling + Email & LinkedIn)
 # ---------------------------------------------------------------------------
 
-def _tab_calling(data: dict) -> str:
+def _tab_activity(data: dict) -> str:
+    # =================================================================
+    # Section 1: Calling — trends chart + category breakdown
+    # =================================================================
     call_log = data.get("call_log", [])
 
     # Category breakdown table
@@ -1021,13 +1029,23 @@ def _tab_calling(data: dict) -> str:
             </td>
           </tr>"""
 
-    cat_section = f"""
-  <section aria-labelledby="calling-cats-heading">
-    <h2 class="section-heading" id="calling-cats-heading">
-      <span class="sh-icon" aria-hidden="true">📋</span> Category Breakdown
-      <span style="margin-left:auto;font-size:.75rem;color:var(--text-muted);font-weight:400">{total_calls} total calls</span>
+    calling_section = f"""
+  <section aria-labelledby="activity-calling-heading">
+    <h2 class="section-heading" id="activity-calling-heading">
+      <span class="sh-icon" aria-hidden="true">📞</span> Calling
     </h2>
+
+    <div class="card chart-card">
+      <div class="chart-container">
+        <canvas id="calling-trends-chart" aria-label="Weekly calling trends chart" role="img"></canvas>
+      </div>
+    </div>
+
     <div class="card" style="margin-bottom:1.5rem;">
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;">
+        <span style="font-weight:600;color:var(--text-primary);font-size:.875rem;">Category Breakdown</span>
+        <span style="margin-left:auto;font-size:.75rem;color:var(--text-muted);font-weight:400">{total_calls} total calls</span>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
         <div>
           <div class="table-wrap" style="margin-bottom:0;">
@@ -1046,7 +1064,79 @@ def _tab_calling(data: dict) -> str:
     </div>
   </section>"""
 
-    # Call log table
+    # =================================================================
+    # Section 2: Email & LinkedIn — InMail trends, stats, sentiment
+    # =================================================================
+    inmails = data.get("inmails", [])
+    inmail_stats = data.get("inmail_stats", {})
+    email_seqs = data.get("email_sequences", [])
+
+    total_sent    = inmail_stats.get("total_sent", 0)
+    total_replied = inmail_stats.get("total_replied", 0)
+    reply_rate    = inmail_stats.get("reply_rate", 0)
+    if isinstance(reply_rate, float) and reply_rate <= 1:
+        rr_pct = f"{reply_rate*100:.1f}%"
+    else:
+        rr_pct = f"{reply_rate:.1f}%"
+
+    sentiments = inmail_stats.get("sentiment_breakdown", {})
+
+    outreach_stats_html = f"""
+  <section aria-labelledby="activity-outreach-heading">
+    <h2 class="section-heading" id="activity-outreach-heading">
+      <span class="sh-icon" aria-hidden="true">💼</span> Email & LinkedIn
+    </h2>
+
+    <div class="card chart-card">
+      <div class="chart-container">
+        <canvas id="inmail-trends-chart" aria-label="Weekly InMail trends chart" role="img"></canvas>
+      </div>
+    </div>
+
+    <div class="kpi-grid" style="margin-bottom:1rem;">
+      <div class="kpi-card">
+        <div class="kpi-value">{total_sent}</div>
+        <div class="kpi-label">Total Sent</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">{total_replied}</div>
+        <div class="kpi-label">Replied</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">{rr_pct}</div>
+        <div class="kpi-label">Reply Rate</div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:center;">
+        <div>
+          <div class="section-heading" style="margin-bottom:.75rem;font-size:.875rem;">Sentiment Breakdown</div>"""
+
+    for sent, cnt in sentiments.items():
+        pct = (cnt / total_replied * 100) if total_replied else 0
+        outreach_stats_html += f"""
+          <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;">
+            <span style="min-width:100px;color:var(--text-secondary);font-size:.8rem;">{_h(sent.replace('_',' ').title())}</span>
+            <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
+              <div style="width:{pct:.1f}%;height:100%;background:var(--accent-blue);border-radius:3px;"></div>
+            </div>
+            <span style="color:var(--text-secondary);font-size:.75rem;min-width:30px;text-align:right">{cnt}</span>
+          </div>"""
+
+    outreach_stats_html += """
+        </div>
+        <div>
+          <div class="chart-container" style="height:220px;">
+            <canvas id="sentiment-donut-chart" aria-label="InMail sentiment breakdown" role="img"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>"""
+
+    # =================================================================
+    # Section 3: Call Log
+    # =================================================================
     log_rows = ""
     for call in call_log:
         dur = _fmt_dur(call.get("duration_s", 0))
@@ -1056,7 +1146,6 @@ def _tab_calling(data: dict) -> str:
         summary_full = (call.get("summary") or "").strip()
         intel = call.get("intel") or {}
 
-        # Inline detail content
         detail_parts = []
         if summary_full:
             detail_parts.append(f"<strong>Summary:</strong> {_h(summary_full)}")
@@ -1109,15 +1198,14 @@ def _tab_calling(data: dict) -> str:
             <td style="color:var(--text-secondary)">{_h(summary[:80])}</td>
           </tr>"""
 
-    # Unique categories for filter
     all_cats = sorted(set(c.get("category", "") for c in call_log if c.get("category")))
     cat_options = '<option value="">All categories</option>'
     for c in all_cats:
         cat_options += f'<option value="{_h(c)}">{_h(c)}</option>'
 
-    log_section = f"""
-  <section aria-labelledby="calling-log-heading">
-    <h2 class="section-heading" id="calling-log-heading">
+    call_log_section = f"""
+  <section aria-labelledby="activity-calllog-heading">
+    <h2 class="section-heading" id="activity-calllog-heading">
       <span class="sh-icon" aria-hidden="true">📝</span> Call Log
       <span style="margin-left:auto;font-size:.75rem;color:var(--text-muted);font-weight:400"
             id="call-log-count">{len(call_log)} calls</span>
@@ -1157,140 +1245,9 @@ def _tab_calling(data: dict) -> str:
     </div>
   </section>"""
 
-    # Intel highlights
-    intel_list = data.get("call_intel", [])
-    intel_cards = ""
-    for item in intel_list[:8]:
-        il = item.get("interest_level", "none")
-        quote = item.get("key_quote", "")
-        next_action = item.get("next_action", "")
-        referral = item.get("referral_name", "")
-        intel_cards += f"""
-      <article class="intel-card" role="article">
-        <div class="intel-card-header">
-          <span class="intel-company">{_h(item.get("company",""))}</span>
-          <span class="badge badge-{_h(il)}">{_h(il)}</span>
-        </div>
-        <div class="intel-contact">{_h(item.get("contact",""))}</div>
-        {f'<div class="intel-quote">&ldquo;{_h(quote)}&rdquo;</div>' if quote else ''}
-        {f'<div class="intel-action"><strong>Next:</strong> {_h(next_action)}</div>' if next_action else ''}
-        {f'<div class="intel-action" style="margin-top:.25rem;">Referral: <strong>{_h(referral)}</strong></div>' if referral else ''}
-      </article>"""
-
-    intel_section = ""
-    if intel_cards:
-        intel_section = f"""
-  <section aria-labelledby="calling-intel-heading">
-    <h2 class="section-heading" id="calling-intel-heading">
-      <span class="sh-icon" aria-hidden="true">🎯</span> Intel Highlights
-    </h2>
-    <div class="intel-grid">{intel_cards}</div>
-  </section>"""
-
-    return f"""
-<section id="tab-calling"
-         class="tab-panel app-wrapper"
-         role="tabpanel"
-         aria-labelledby="tab-btn-calling"
-         aria-hidden="true">
-
-  <section aria-labelledby="calling-trends-heading">
-    <h2 class="section-heading" id="calling-trends-heading">
-      <span class="sh-icon" aria-hidden="true">📈</span> Weekly Calling Trends
-    </h2>
-    <div class="card chart-card">
-      <div class="chart-container">
-        <canvas id="calling-trends-chart" aria-label="Weekly calling trends chart" role="img"></canvas>
-      </div>
-    </div>
-  </section>
-
-  {cat_section}
-  {log_section}
-  {intel_section}
-</section>"""
-
-
-# ---------------------------------------------------------------------------
-# Tab 3: Email & LinkedIn
-# ---------------------------------------------------------------------------
-
-def _tab_outreach(data: dict) -> str:
-    inmails = data.get("inmails", [])
-    inmail_stats = data.get("inmail_stats", {})
-    email_seqs = data.get("email_sequences", [])
-
-    # Stats row
-    total_sent    = inmail_stats.get("total_sent", 0)
-    total_replied = inmail_stats.get("total_replied", 0)
-    reply_rate    = inmail_stats.get("reply_rate", 0)
-    if isinstance(reply_rate, float) and reply_rate <= 1:
-        rr_pct = f"{reply_rate*100:.1f}%"
-    else:
-        rr_pct = f"{reply_rate:.1f}%"
-
-    sentiments = inmail_stats.get("sentiment_breakdown", {})
-
-    stats_html = f"""
-  <section aria-labelledby="outreach-stats-heading">
-    <h2 class="section-heading" id="outreach-stats-heading">
-      <span class="sh-icon" aria-hidden="true">💼</span> LinkedIn InMail Stats
-    </h2>
-    <div class="kpi-grid" style="margin-bottom:1rem;">
-      <div class="kpi-card">
-        <div class="kpi-value">{total_sent}</div>
-        <div class="kpi-label">Total Sent</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-value">{total_replied}</div>
-        <div class="kpi-label">Replied</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-value">{rr_pct}</div>
-        <div class="kpi-label">Reply Rate</div>
-      </div>
-    </div>
-    <div class="card" style="margin-bottom:1.5rem;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:center;">
-        <div>
-          <div class="section-heading" style="margin-bottom:.75rem;font-size:.875rem;">Sentiment Breakdown</div>"""
-
-    for sent, cnt in sentiments.items():
-        pct = (cnt / total_replied * 100) if total_replied else 0
-        stats_html += f"""
-          <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;">
-            <span style="min-width:100px;color:var(--text-secondary);font-size:.8rem;">{_h(sent.replace('_',' ').title())}</span>
-            <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
-              <div style="width:{pct:.1f}%;height:100%;background:var(--accent-blue);border-radius:3px;"></div>
-            </div>
-            <span style="color:var(--text-muted);font-size:.75rem;min-width:30px;text-align:right">{cnt}</span>
-          </div>"""
-
-    stats_html += """
-        </div>
-        <div>
-          <div class="chart-container" style="height:220px;">
-            <canvas id="sentiment-donut-chart" aria-label="InMail sentiment breakdown" role="img"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>"""
-
-    # InMail trends chart
-    trends_html = f"""
-  <section aria-labelledby="outreach-trends-heading">
-    <h2 class="section-heading" id="outreach-trends-heading">
-      <span class="sh-icon" aria-hidden="true">📈</span> InMail Weekly Trends
-    </h2>
-    <div class="card chart-card">
-      <div class="chart-container">
-        <canvas id="inmail-trends-chart" aria-label="Weekly InMail trends chart" role="img"></canvas>
-      </div>
-    </div>
-  </section>"""
-
-    # InMail table
+    # =================================================================
+    # Section 4: InMail Log
+    # =================================================================
     all_sentiments = sorted(set(im.get("reply_sentiment", "") or "" for im in inmails if im.get("reply_sentiment")))
     sent_options = '<option value="">All sentiments</option>'
     for s in all_sentiments:
@@ -1312,9 +1269,9 @@ def _tab_outreach(data: dict) -> str:
           <td>{sent_badge}</td>
         </tr>"""
 
-    inmail_table_html = f"""
-  <section aria-labelledby="outreach-inmail-table-heading">
-    <h2 class="section-heading" id="outreach-inmail-table-heading">
+    inmail_log_section = f"""
+  <section aria-labelledby="activity-inmail-log-heading">
+    <h2 class="section-heading" id="activity-inmail-log-heading">
       <span class="sh-icon" aria-hidden="true">📨</span> InMail Log
       <span style="margin-left:auto;font-size:.75rem;color:var(--text-muted);font-weight:400">{len(inmails)} records</span>
     </h2>
@@ -1343,7 +1300,9 @@ def _tab_outreach(data: dict) -> str:
     <div id="inmail-page-controls" class="page-controls" aria-live="polite"></div>
   </section>"""
 
-    # Email sequences
+    # =================================================================
+    # Section 5: Email Sequences
+    # =================================================================
     if email_seqs:
         seq_rows = ""
         for seq in email_seqs:
@@ -1354,13 +1313,13 @@ def _tab_outreach(data: dict) -> str:
           <td>{_h(seq.get("sequence_name",""))}</td>
           <td>{_h(seq.get("status",""))}</td>
           <td style="font-variant-numeric:tabular-nums">{_h(seq.get("sent",0))}</td>
-          <td style="font-variant-numeric:tabular-nums">{_h(seq.get("opened",0))} <span style="color:var(--text-muted)">({or_:.1f}%)</span></td>
-          <td style="font-variant-numeric:tabular-nums">{_h(seq.get("replied",0))} <span style="color:var(--text-muted)">({rr_:.1f}%)</span></td>
-          <td style="color:var(--text-muted);font-size:.75rem">{_h(str(seq.get("snapshot_date",""))[:10])}</td>
+          <td style="font-variant-numeric:tabular-nums">{_h(seq.get("opened",0))} <span style="color:var(--text-secondary)">({or_:.1f}%)</span></td>
+          <td style="font-variant-numeric:tabular-nums">{_h(seq.get("replied",0))} <span style="color:var(--text-secondary)">({rr_:.1f}%)</span></td>
+          <td style="color:var(--text-secondary);font-size:.75rem">{_h(str(seq.get("snapshot_date",""))[:10])}</td>
         </tr>"""
         email_section = f"""
-  <section aria-labelledby="outreach-email-heading">
-    <h2 class="section-heading" id="outreach-email-heading">
+  <section aria-labelledby="activity-email-heading">
+    <h2 class="section-heading" id="activity-email-heading">
       <span class="sh-icon" aria-hidden="true">✉️</span> Email Sequences
     </h2>
     <div class="table-wrap">
@@ -1381,8 +1340,8 @@ def _tab_outreach(data: dict) -> str:
   </section>"""
     else:
         email_section = f"""
-  <section aria-labelledby="outreach-email-heading">
-    <h2 class="section-heading" id="outreach-email-heading">
+  <section aria-labelledby="activity-email-heading">
+    <h2 class="section-heading" id="activity-email-heading">
       <span class="sh-icon" aria-hidden="true">✉️</span> Email Sequences
     </h2>
     <div class="card">
@@ -1393,16 +1352,53 @@ def _tab_outreach(data: dict) -> str:
     </div>
   </section>"""
 
+    # =================================================================
+    # Intel highlights (from call intel)
+    # =================================================================
+    intel_list = data.get("call_intel", [])
+    intel_cards = ""
+    for item in intel_list[:8]:
+        il = item.get("interest_level", "none")
+        quote = item.get("key_quote", "")
+        next_action = item.get("next_action", "")
+        referral = item.get("referral_name", "")
+        intel_cards += f"""
+      <article class="intel-card" role="article">
+        <div class="intel-card-header">
+          <span class="intel-company">{_h(item.get("company",""))}</span>
+          <span class="badge badge-{_h(il)}">{_h(il)}</span>
+        </div>
+        <div class="intel-contact">{_h(item.get("contact",""))}</div>
+        {f'<div class="intel-quote">&ldquo;{_h(quote)}&rdquo;</div>' if quote else ''}
+        {f'<div class="intel-action"><strong>Next:</strong> {_h(next_action)}</div>' if next_action else ''}
+        {f'<div class="intel-action" style="margin-top:.25rem;">Referral: <strong>{_h(referral)}</strong></div>' if referral else ''}
+      </article>"""
+
+    intel_section = ""
+    if intel_cards:
+        intel_section = f"""
+  <section aria-labelledby="activity-intel-heading">
+    <h2 class="section-heading" id="activity-intel-heading">
+      <span class="sh-icon" aria-hidden="true">🎯</span> Intel Highlights
+    </h2>
+    <div class="intel-grid">{intel_cards}</div>
+  </section>"""
+
+    # =================================================================
+    # Assemble tab
+    # =================================================================
     return f"""
-<section id="tab-outreach"
+<section id="tab-activity"
          class="tab-panel app-wrapper"
          role="tabpanel"
-         aria-labelledby="tab-btn-outreach"
+         aria-labelledby="tab-btn-activity"
          aria-hidden="true">
-  {trends_html}
-  {stats_html}
-  {inmail_table_html}
+  {calling_section}
+  {outreach_stats_html}
+  {call_log_section}
+  {inmail_log_section}
   {email_section}
+  {intel_section}
 </section>"""
 
 
@@ -1575,6 +1571,40 @@ def _tab_companies(data: dict) -> str:
     if not cards:
         cards = '<div class="empty-state"><div class="empty-icon" aria-hidden="true">🏢</div><p>No companies found. They will appear once call or LinkedIn data is synced.</p></div>'
 
+    # Table view rows
+    table_rows = ""
+    for co in companies[:120]:
+        name = co.get("name", "")
+        status = co.get("status", "prospect")
+        channels = co.get("channels_touched") or co.get("channels") or []
+        touches = co.get("total_touches", 0)
+        last_touch = str(co.get("last_touch_at") or co.get("last_touch") or "")[:10]
+        provider = co.get("current_provider") or ""
+        commodities = co.get("commodities") or ""
+        contact_name = co.get("contact_name") or ""
+        next_action = co.get("next_action") or ""
+        call_count = co.get("call_count", 0)
+        inmail_count = co.get("inmail_count", 0)
+        ch_tags = " ".join(f'<span class="badge" style="font-size:.65rem;padding:.1rem .35rem;">{_h(c)}</span>' for c in channels)
+        ch_list_str = " ".join(channels)
+
+        table_rows += f"""
+          <tr data-status="{_h(status)}" data-channels="{_h(ch_list_str)}"
+              data-name="{_h(name.lower())}" data-touches="{touches}"
+              data-lasttouch="{_h(last_touch)}"
+              data-has-provider="{"1" if provider else "0"}"
+              data-has-commodities="{"1" if commodities else "0"}"
+              data-has-contact="{"1" if contact_name else "0"}">
+            <td style="font-weight:600;color:var(--text-primary)">{_h(name)}</td>
+            <td><span class="badge badge-{_h(status)}" style="font-size:.7rem;">{_h(status.replace('_',' ').title())}</span></td>
+            <td>{ch_tags}</td>
+            <td style="text-align:center;font-variant-numeric:tabular-nums">{touches}</td>
+            <td style="color:var(--text-secondary);font-size:.8rem">{_h(last_touch)}</td>
+            <td style="color:var(--text-secondary);font-size:.8rem">{_h(provider[:30])}</td>
+            <td style="color:var(--text-secondary);font-size:.8rem">{_h(contact_name)}</td>
+            <td style="color:var(--text-secondary);font-size:.75rem">{_h(next_action[:50])}</td>
+          </tr>"""
+
     return f"""
 <section id="tab-companies"
          class="tab-panel app-wrapper"
@@ -1585,8 +1615,20 @@ def _tab_companies(data: dict) -> str:
   <section aria-labelledby="companies-heading">
     <h2 class="section-heading" id="companies-heading">
       <span class="sh-icon" aria-hidden="true">🏢</span> Companies
-      <span style="margin-left:auto;font-size:.75rem;color:var(--text-muted);font-weight:400"
-            id="companies-count">{len(companies)} total</span>
+      <span style="margin-left:auto;display:flex;align-items:center;gap:.75rem;">
+        <span style="font-size:.75rem;color:var(--text-muted);font-weight:400"
+              id="companies-count">{len(companies)} total</span>
+        <span class="view-toggle" role="group" aria-label="View mode">
+          <button class="view-toggle-btn active" id="view-cards-btn"
+                  onclick="setCompanyView('cards')" aria-label="Card view" title="Cards">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+          </button>
+          <button class="view-toggle-btn" id="view-table-btn"
+                  onclick="setCompanyView('table')" aria-label="Table view" title="Table">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="2" width="14" height="2" rx=".5"/><rect x="1" y="7" width="14" height="2" rx=".5"/><rect x="1" y="12" width="14" height="2" rx=".5"/></svg>
+          </button>
+        </span>
+      </span>
     </h2>
 
     <div class="filter-bar">
@@ -1613,6 +1655,24 @@ def _tab_companies(data: dict) -> str:
 
     <div class="company-grid" id="company-grid" aria-live="polite">
       {cards}
+    </div>
+
+    <div class="table-wrap" id="company-table-wrap" style="display:none;">
+      <table class="data-table" id="company-table">
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Status</th>
+            <th>Channels</th>
+            <th style="text-align:center">Touches</th>
+            <th>Last Touch</th>
+            <th>Provider</th>
+            <th>Contact</th>
+            <th>Next Action</th>
+          </tr>
+        </thead>
+        <tbody>{table_rows}</tbody>
+      </table>
     </div>
 
     <div class="pagination" id="company-pagination" aria-label="Company pagination">
@@ -2028,8 +2088,7 @@ const DEAL_PIPELINE = {deal_pipeline_json};
 // ============================================================
 // Tab switching
 // ============================================================
-let callingChartsRendered  = false;
-let outreachChartsRendered = false;
+let activityChartsRendered = false;
 let channelChartRendered   = false;
 let pipelineChartRendered  = false;
 
@@ -2049,9 +2108,8 @@ function switchTab(tabId) {{
   if (btn)   {{ btn.classList.add('active'); btn.setAttribute('aria-selected', 'true'); btn.setAttribute('tabindex', '0'); }}
 
   // Lazy chart init
-  if (tabId === 'calling'  && !callingChartsRendered)  initCallingCharts();
-  if (tabId === 'outreach' && !outreachChartsRendered) initOutreachCharts();
-  if (tabId === 'pipeline' && !pipelineChartRendered) initPipelineChart();
+  if (tabId === 'activity'    && !activityChartsRendered) {{ initCallingCharts(); initOutreachCharts(); activityChartsRendered = true; }}
+  if (tabId === 'pipeline'    && !pipelineChartRendered) initPipelineChart();
   if (tabId === 'experiments' && !channelChartRendered) initChannelChart();
 
   // Update URL hash
@@ -2113,7 +2171,6 @@ function chartDefaults() {{
 }}
 
 function initCallingCharts() {{
-  callingChartsRendered = true;
 
   // --- Trends chart ---
   var trendCtx = document.getElementById('calling-trends-chart');
@@ -2191,7 +2248,6 @@ function initCallingCharts() {{
 }}
 
 function initOutreachCharts() {{
-  outreachChartsRendered = true;
 
   // --- InMail trends chart ---
   var imCtx = document.getElementById('inmail-trends-chart');
@@ -2718,7 +2774,10 @@ function renderCompanyPage() {{
   if (next) next.disabled = coPage_ >= pages - 1;
 }}
 
-function filterCompanies() {{ buildCompanyCards(); }}
+function filterCompanies() {{
+  if (companyViewMode === 'table') {{ filterCompanyTable(); }}
+  else {{ buildCompanyCards(); }}
+}}
 function companyPage(dir) {{
   var total = coVisible.length;
   var pages = Math.max(1, Math.ceil(total / coPageSize));
@@ -2733,13 +2792,67 @@ function toggleCompanyCard(card) {{
   if (detailEl) detailEl.classList.toggle('visible', !expanded);
 }}
 
+// ============================================================
+// Company view toggle (Cards / Table)
+// ============================================================
+var companyViewMode = 'cards';
+
+function setCompanyView(mode) {{
+  companyViewMode = mode;
+  var grid  = document.getElementById('company-grid');
+  var table = document.getElementById('company-table-wrap');
+  var pagination = document.getElementById('company-pagination');
+  var cardsBtn = document.getElementById('view-cards-btn');
+  var tableBtn = document.getElementById('view-table-btn');
+
+  if (mode === 'table') {{
+    if (grid)  grid.style.display = 'none';
+    if (table) table.style.display = '';
+    if (pagination) pagination.style.display = 'none';
+    cardsBtn.classList.remove('active');
+    tableBtn.classList.add('active');
+    filterCompanyTable();
+  }} else {{
+    if (grid)  grid.style.display = '';
+    if (table) table.style.display = 'none';
+    if (pagination) pagination.style.display = '';
+    cardsBtn.classList.add('active');
+    tableBtn.classList.remove('active');
+  }}
+}}
+
+function filterCompanyTable() {{
+  var search  = (document.getElementById('company-search').value || '').toLowerCase();
+  var status  = document.getElementById('company-status-filter').value;
+  var channel = document.getElementById('company-channel-filter').value;
+  var know    = document.getElementById('company-knowledge-filter').value;
+  var tbody   = document.querySelector('#company-table tbody');
+  if (!tbody) return;
+  var rows = Array.from(tbody.querySelectorAll('tr'));
+  var visible = 0;
+  rows.forEach(function(r) {{
+    var name = r.getAttribute('data-name') || '';
+    var st   = r.getAttribute('data-status') || '';
+    var ch   = r.getAttribute('data-channels') || '';
+    var show = true;
+    if (search && name.indexOf(search) < 0) show = false;
+    if (status && st !== status) show = false;
+    if (channel && ch.indexOf(channel) < 0) show = false;
+    if (know === 'has_provider' && r.getAttribute('data-has-provider') !== '1') show = false;
+    if (know === 'has_commodities' && r.getAttribute('data-has-commodities') !== '1') show = false;
+    if (know === 'has_contact' && r.getAttribute('data-has-contact') !== '1') show = false;
+    r.style.display = show ? '' : 'none';
+    if (show) visible++;
+  }});
+  var countEl = document.getElementById('companies-count');
+  if (countEl) countEl.textContent = visible + ' total';
+}}
+
 
 // ============================================================
 // Init on load
 // ============================================================
 window.addEventListener('DOMContentLoaded', function() {{
-  // Init home tab charts (always visible)
-  initCallingCharts();   // calling tab charts are also needed here if active
   // Init call log pagination
   var tbody = document.getElementById('call-log-body');
   if (tbody) {{
@@ -2776,8 +2889,7 @@ def build_html(data: dict) -> str:
   {_tab_bar()}
   <main id="main-content">
     {_tab_home(data)}
-    {_tab_calling(data)}
-    {_tab_outreach(data)}
+    {_tab_activity(data)}
     {_tab_companies(data)}
     {_tab_pipeline(data)}
     {_tab_experiments(data)}
