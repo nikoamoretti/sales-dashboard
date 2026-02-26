@@ -35,7 +35,7 @@ load_dotenv()
 CAMPAIGN_START = date(2026, 1, 19)
 GEMINI_MODEL = "gemini-2.0-flash"
 DASHBOARD_URL = "https://nikoamoretti.github.io/sales-dashboard/"
-SLACK_CHANNEL_ID_DEFAULT = "C0AH7NTDT5G"  # Group DM: Harris, Shachar, Nico + Daily Digest bot
+SLACK_CHANNEL_ID_DEFAULT = "C09J9DY57U3"  # Group DM: Harris, Shachar, Nico
 
 INSIGHT_EMOJI: dict[str, str] = {
     "action_required": ":red_circle:",
