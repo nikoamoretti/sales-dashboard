@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="build-ts" content="20260227174302">
+  <meta name="build-ts" content="20260227174526">
   <meta name="description" content="Telegraph Outbound Central — multi-channel sales analytics dashboard">
   <title>Telegraph Outbound Central</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -635,7 +635,7 @@ tr:hover td { background: var(--bg-hover); }
     Telegraph Outbound Central
   </h1>
   <div class="header-meta" role="status" aria-live="polite">
-    Updated Feb 27, 2026 17:43 UTC
+    Updated Feb 27, 2026 17:45 UTC
   </div>
 </header>
   
@@ -26874,7 +26874,7 @@ tr:hover td { background: var(--bg-hover); }
   
 <footer class="app-footer app-wrapper" role="contentinfo">
   <span>Telegraph Outbound Central</span>
-  <span>Generated 2026-02-27T17:43:02</span>
+  <span>Generated 2026-02-27T17:45:26</span>
 </footer>
   
 <script>
@@ -26891,7 +26891,8 @@ const DEAL_PIPELINE = {"deals": [{"id": 41, "hubspot_deal_id": 54616171110, "nam
 // ============================================================
 // Tab switching
 // ============================================================
-let activityChartsRendered = false;
+let callingChartsRendered  = false;
+let linkedinChartsRendered = false;
 let channelChartRendered   = false;
 let pipelineChartRendered  = false;
 
@@ -26911,9 +26912,10 @@ function switchTab(tabId) {
   if (btn)   { btn.classList.add('active'); btn.setAttribute('aria-selected', 'true'); btn.setAttribute('tabindex', '0'); }
 
   // Lazy chart init
-  if (tabId === 'activity'    && !activityChartsRendered) { initCallingCharts(); initOutreachCharts(); activityChartsRendered = true; }
-  if (tabId === 'pipeline'    && !pipelineChartRendered) initPipelineChart();
-  if (tabId === 'experiments' && !channelChartRendered) initChannelChart();
+  if (tabId === 'calling'     && !callingChartsRendered)  { initCallingCharts();  callingChartsRendered = true; }
+  if (tabId === 'linkedin'    && !linkedinChartsRendered) { initOutreachCharts(); linkedinChartsRendered = true; }
+  if (tabId === 'pipeline'    && !pipelineChartRendered)  initPipelineChart();
+  if (tabId === 'experiments' && !channelChartRendered)   initChannelChart();
 
   // Update URL hash
   history.replaceState(null, '', '#' + tabId);

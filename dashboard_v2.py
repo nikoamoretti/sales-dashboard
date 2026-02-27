@@ -2261,7 +2261,8 @@ const DEAL_PIPELINE = {deal_pipeline_json};
 // ============================================================
 // Tab switching
 // ============================================================
-let activityChartsRendered = false;
+let callingChartsRendered  = false;
+let linkedinChartsRendered = false;
 let channelChartRendered   = false;
 let pipelineChartRendered  = false;
 
@@ -2281,9 +2282,10 @@ function switchTab(tabId) {{
   if (btn)   {{ btn.classList.add('active'); btn.setAttribute('aria-selected', 'true'); btn.setAttribute('tabindex', '0'); }}
 
   // Lazy chart init
-  if (tabId === 'activity'    && !activityChartsRendered) {{ initCallingCharts(); initOutreachCharts(); activityChartsRendered = true; }}
-  if (tabId === 'pipeline'    && !pipelineChartRendered) initPipelineChart();
-  if (tabId === 'experiments' && !channelChartRendered) initChannelChart();
+  if (tabId === 'calling'     && !callingChartsRendered)  {{ initCallingCharts();  callingChartsRendered = true; }}
+  if (tabId === 'linkedin'    && !linkedinChartsRendered) {{ initOutreachCharts(); linkedinChartsRendered = true; }}
+  if (tabId === 'pipeline'    && !pipelineChartRendered)  initPipelineChart();
+  if (tabId === 'experiments' && !channelChartRendered)   initChannelChart();
 
   // Update URL hash
   history.replaceState(null, '', '#' + tabId);
