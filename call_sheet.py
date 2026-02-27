@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Daily call sheet generator.
+"""Daily call sheet generator → HubSpot tasks.
 
-Reads call history from Supabase, applies cadence rules, and outputs
-a prioritized list of contacts Adam can call today.
+Reads call history from Supabase, applies cadence rules, and creates
+prioritized HubSpot tasks for Adam to work from his task queue.
 
 Usage:
-    python3 call_sheet.py              # print today's call sheet
-    python3 call_sheet.py --sync       # sync call history → contacts table first
+    python3 call_sheet.py              # create today's HubSpot tasks
+    python3 call_sheet.py --dry-run    # show what would be created
     python3 call_sheet.py --stats      # show roster stats only
 
 Rules:
@@ -14,19 +14,15 @@ Rules:
     - Max 5 contacts worked per company
     - Terminal outcomes retire a contact permanently
     - Blocked companies (do_not_contact / not_interested / exhausted) are excluded
-    - No voicemails, no emails — calls only
 """
 
 import argparse
-import json
 import os
 import sys
 from collections import defaultdict
-from datetime import datetime, timedelta, date
+from datetime import date, timedelta
 from pathlib import Path
 
-import psycopg2
-import requests
 from dotenv import load_dotenv
 
 ROOT = Path(__file__).parent
@@ -41,25 +37,16 @@ DAILY_TARGET = 50            # contacts per day
 BLOCKED_COMPANY_STATUSES = {"do_not_contact", "not_interested", "exhausted"}
 TERMINAL_CATEGORIES = {"Not Interested", "No Rail", "Wrong Person", "Wrong Number"}
 POSITIVE_CATEGORIES = {"Interested", "Meeting Booked", "Referral Given"}
-
-DB_PARAMS = dict(
-    host="db.giptkpwwhwhtrrrmdfqt.supabase.co",
-    port=5432,
-    user="postgres",
-    password="NINTOEMF2w2Uwxbn",
-    dbname="postgres",
-    sslmode="require",
-)
+MAX_VM_NO_REPLY = 3          # voicemails with no live answer → retire
+MAX_NO_ANSWER = 5            # no-answers → retire
+DNT_FILE = Path.home() / "nico_repo/rail-dashboard/dnt_accounts.txt"
 
 
-def get_conn():
-    return psycopg2.connect(**DB_PARAMS)
-
-
-def get_supabase_headers():
-    url = os.environ.get("SUPABASE_URL", "")
-    key = os.environ.get("SUPABASE_ANON_KEY", "") or os.environ.get("SUPABASE_KEY", "")
-    return url, {"apikey": key, "Authorization": f"Bearer {key}"}
+def load_dnt_companies() -> set[str]:
+    """Load do-not-touch company names (lowercased) from the DNT file."""
+    if not DNT_FILE.exists():
+        return set()
+    return {line.strip().lower() for line in DNT_FILE.read_text().splitlines() if line.strip()}
 
 
 def add_business_days(start: date, days: int) -> date:
@@ -68,58 +55,98 @@ def add_business_days(start: date, days: int) -> date:
     added = 0
     while added < days:
         current += timedelta(days=1)
-        if current.weekday() < 5:  # Mon=0 .. Fri=4
+        if current.weekday() < 5:
             added += 1
     return current
 
 
-# ── Sync: call history → contacts table ─────────────────────────────
+# ── Supabase client ─────────────────────────────────────────────────
 
-def sync_contacts():
-    """Backfill/update the contacts table from call history in Supabase."""
-    conn = get_conn()
-    cur = conn.cursor()
+def get_supabase():
+    from supabase import create_client
+    url = os.environ["SUPABASE_URL"]
+    key = os.environ["SUPABASE_SERVICE_KEY"]
+    return create_client(url, key)
 
-    # Fetch all calls via direct Postgres (much faster than REST pagination)
-    cur.execute("""
-        SELECT c.contact_name, co.name, c.category, c.called_at
-        FROM calls c
-        LEFT JOIN companies co ON c.company_id = co.id
-        ORDER BY c.called_at ASC;
-    """)
-    all_calls = [
-        {"contact_name": r[0], "company_name": r[1], "category": r[2], "called_at": str(r[3]) if r[3] else ""}
-        for r in cur.fetchall()
-    ]
-    print(f"  Fetched {len(all_calls)} calls from Supabase")
+
+# ── Build contact profiles from call history ────────────────────────
+
+def fetch_call_data(sb) -> tuple[list[dict], dict[str, dict]]:
+    """Fetch calls (with company join data) and companies from Supabase."""
+    # Fetch all calls with company info
+    calls_resp = sb.table("calls").select(
+        "contact_name, company_id, category, called_at, hubspot_contact_id, "
+        "companies(id, name, hubspot_id, status)"
+    ).order("called_at").execute()
 
     # Fetch blocked companies
-    cur.execute("SELECT name FROM companies WHERE status IN %s;", (tuple(BLOCKED_COMPANY_STATUSES),))
-    blocked_cos = {r[0] for r in cur.fetchall()}
-    print(f"  {len(blocked_cos)} blocked companies")
-    cur.close()
-    conn.close()
+    companies_resp = sb.table("companies").select(
+        "id, name, hubspot_id, status"
+    ).execute()
 
-    # Build contact profiles from call history
-    contacts = {}  # key: "name|||company" → profile
-    for c in all_calls:
+    companies_by_id = {}
+    for co in companies_resp.data:
+        companies_by_id[co["id"]] = co
+
+    return calls_resp.data, companies_by_id
+
+
+def build_contact_profiles(
+    calls: list[dict],
+    companies_by_id: dict[str, dict],
+) -> list[dict]:
+    """Build contact profiles from call history, applying cadence rules.
+
+    Returns a list of callable contacts sorted by priority.
+    """
+    today = date.today()
+
+    # Blocked company IDs (from Supabase status)
+    blocked_company_ids = {
+        cid for cid, co in companies_by_id.items()
+        if co.get("status") in BLOCKED_COMPANY_STATUSES
+    }
+
+    # DNT list (from rail-dashboard file)
+    dnt_companies = load_dnt_companies()
+
+    # DNT company IDs — match by name (case-insensitive)
+    dnt_company_ids = set()
+    for cid, co in companies_by_id.items():
+        co_name = (co.get("name") or "").lower()
+        if co_name and co_name in dnt_companies:
+            dnt_company_ids.add(cid)
+
+    # Group calls by contact (name + company_id)
+    profiles: dict[str, dict] = {}
+
+    for c in calls:
         name = (c.get("contact_name") or "").strip()
-        company = (c.get("company_name") or "").strip()
-        if not name or not company:
+        company_id = c.get("company_id")
+        if not name or not company_id:
             continue
 
-        key = f"{name}|||{company}"
-        if key not in contacts:
-            contacts[key] = {
+        co = c.get("companies") or companies_by_id.get(company_id, {})
+        company_name = co.get("name", "") if isinstance(co, dict) else ""
+        hubspot_company_id = co.get("hubspot_id", "") if isinstance(co, dict) else ""
+
+        key = f"{name}|||{company_id}"
+        if key not in profiles:
+            profiles[key] = {
                 "name": name,
-                "company_name": company,
+                "company_name": company_name,
+                "company_id": company_id,
+                "hubspot_company_id": hubspot_company_id,
+                "hubspot_contact_id": c.get("hubspot_contact_id") or "",
                 "attempt_count": 0,
                 "last_called_at": None,
                 "best_outcome": None,
                 "categories": [],
+                "status": "active",
+                "retired_reason": None,
             }
 
-        p = contacts[key]
+        p = profiles[key]
         cat = c.get("category", "")
         called_at = (c.get("called_at") or "")[:10]
 
@@ -128,241 +155,252 @@ def sync_contacts():
         if called_at:
             p["last_called_at"] = called_at
 
+        # Keep most recent hubspot_contact_id
+        hcid = c.get("hubspot_contact_id")
+        if hcid:
+            p["hubspot_contact_id"] = hcid
+
         # Track best outcome
         if cat in POSITIVE_CATEGORIES:
             p["best_outcome"] = cat
         elif cat in TERMINAL_CATEGORIES and not p["best_outcome"]:
             p["best_outcome"] = cat
 
-    print(f"  {len(contacts)} unique contacts identified")
-
-    # Determine status and next_callable for each contact
-    today = date.today()
-    conn = get_conn()
-    cur = conn.cursor()
-
-    # Clear and rebuild
-    cur.execute("DELETE FROM contacts;")
-
-    inserted = 0
-    for key, p in contacts.items():
+    # Determine status for each contact
+    for key, p in profiles.items():
         cats = p["categories"]
-        last_called = p["last_called_at"]
 
-        # Determine status
-        status = "active"
-        retired_reason = None
+        # Blocked company (Supabase status)
+        if p["company_id"] in blocked_company_ids:
+            p["status"] = "blocked"
+            p["retired_reason"] = "Company blocked"
+            continue
 
-        # Check if company is blocked
-        if p["company_name"] in blocked_cos:
-            status = "blocked"
-            retired_reason = "Company blocked"
+        # DNT list (rail-dashboard)
+        if p["company_id"] in dnt_company_ids:
+            p["status"] = "blocked"
+            p["retired_reason"] = "DNT list"
+            continue
 
-        # Check terminal outcomes
-        elif any(c in TERMINAL_CATEGORIES for c in cats):
-            terminal = [c for c in cats if c in TERMINAL_CATEGORIES][-1]
-            status = "retired"
-            retired_reason = f"Outcome: {terminal}"
+        # Meeting booked — in pipeline (check before terminal so it takes precedence)
+        if "Meeting Booked" in cats:
+            p["status"] = "retired"
+            p["retired_reason"] = "Meeting booked"
+            continue
 
-        # Check if meeting booked (done — in pipeline)
-        elif "Meeting Booked" in cats:
-            status = "retired"
-            retired_reason = "Meeting booked — in pipeline"
+        # Interested — hand off to Nico for email/meeting follow-up
+        if "Interested" in cats:
+            p["status"] = "retired"
+            p["retired_reason"] = "Interested — follow up via email"
+            continue
 
-        # Check max attempts
-        elif p["attempt_count"] >= MAX_ATTEMPTS:
-            status = "retired"
-            retired_reason = f"Max attempts reached ({p['attempt_count']})"
+        # Terminal outcome
+        terminal = [c for c in cats if c in TERMINAL_CATEGORIES]
+        if terminal:
+            p["status"] = "retired"
+            p["retired_reason"] = f"Outcome: {terminal[-1]}"
+            continue
 
-        # Check cooldown
-        elif last_called:
-            next_callable = add_business_days(
-                datetime.strptime(last_called, "%Y-%m-%d").date(),
-                COOLDOWN_DAYS,
-            )
+        # Max attempts
+        if p["attempt_count"] >= MAX_ATTEMPTS:
+            p["status"] = "retired"
+            p["retired_reason"] = f"Max attempts ({p['attempt_count']})"
+            continue
+
+        # VM exhaustion: N+ voicemails and never reached a live person
+        vm_count = cats.count("Left Voicemail")
+        ever_answered = any(c not in ("Left Voicemail", "No Answer") for c in cats)
+        if vm_count >= MAX_VM_NO_REPLY and not ever_answered:
+            p["status"] = "retired"
+            p["retired_reason"] = f"{vm_count} voicemails, never answered"
+            continue
+
+        # No-answer exhaustion
+        na_count = cats.count("No Answer")
+        if na_count >= MAX_NO_ANSWER:
+            p["status"] = "retired"
+            p["retired_reason"] = f"{na_count} no-answers"
+            continue
+
+        # Cooldown check
+        if p["last_called_at"]:
+            last = date.fromisoformat(p["last_called_at"])
+            next_callable = add_business_days(last, COOLDOWN_DAYS)
             if next_callable > today:
-                status = "cooling"
+                p["status"] = "cooling"
+                continue
 
-        # Calculate next_callable_at
-        next_callable_at = None
-        if status == "active" and last_called:
-            next_callable_at = add_business_days(
-                datetime.strptime(last_called, "%Y-%m-%d").date(),
-                COOLDOWN_DAYS,
-            )
-        elif status == "cooling" and last_called:
-            next_callable_at = add_business_days(
-                datetime.strptime(last_called, "%Y-%m-%d").date(),
-                COOLDOWN_DAYS,
-            )
-
-        cur.execute(
-            """INSERT INTO contacts
-               (name, company_name, attempt_count, last_called_at, next_callable_at,
-                best_outcome, status, retired_reason)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
-            (
-                p["name"],
-                p["company_name"],
-                p["attempt_count"],
-                last_called,
-                next_callable_at,
-                p["best_outcome"],
-                status,
-                retired_reason,
-            ),
-        )
-        inserted += 1
-
-    conn.commit()
-    cur.close()
-    conn.close()
-    print(f"  Synced {inserted} contacts to Supabase")
+    return list(profiles.values())
 
 
-# ── Stats ────────────────────────────────────────────────────────────
-
-def show_stats():
-    conn = get_conn()
-    cur = conn.cursor()
-
-    cur.execute("SELECT status, count(*) FROM contacts GROUP BY status ORDER BY count DESC;")
-    rows = cur.fetchall()
-    total = sum(r[1] for r in rows)
-
-    print(f"\n{'=' * 55}")
-    print(f"  CONTACT ROSTER — {date.today()}")
-    print(f"{'=' * 55}")
-    print(f"  Total contacts: {total}")
-    print()
-    for status, count in rows:
-        pct = count / total * 100 if total else 0
-        bar = "#" * int(pct / 2)
-        print(f"  {status:12s}  {count:4d}  ({pct:4.1f}%)  {bar}")
-
-    # Retired breakdown
-    cur.execute("""SELECT retired_reason, count(*) FROM contacts
-                   WHERE status = 'retired' GROUP BY retired_reason ORDER BY count DESC;""")
-    print(f"\n  Retired breakdown:")
-    for reason, count in cur.fetchall():
-        print(f"    {count:3d}  {reason}")
-
-    # Company saturation
-    cur.execute("""SELECT company_name,
-                   count(*) FILTER (WHERE status = 'active') as active,
-                   count(*) FILTER (WHERE status = 'retired') as retired,
-                   count(*) as total
-                   FROM contacts GROUP BY company_name
-                   HAVING count(*) >= 5 ORDER BY count(*) DESC LIMIT 15;""")
-    print(f"\n  Most-worked companies (5+ contacts):")
-    print(f"  {'Company':35s}  Active  Retired  Total")
-    for co, active, retired, total in cur.fetchall():
-        flag = " ← saturated" if active == 0 else ""
-        print(f"  {co:35s}  {active:5d}  {retired:6d}  {total:5d}{flag}")
-
-    cur.close()
-    conn.close()
-
-
-# ── Generate daily call sheet ────────────────────────────────────────
-
-def generate_call_sheet():
+def select_callable_contacts(profiles: list[dict]) -> list[dict]:
+    """Apply cadence rules and return up to DAILY_TARGET callable contacts."""
     today = date.today()
-    conn = get_conn()
-    cur = conn.cursor()
 
-    # Get callable contacts: active + next_callable_at <= today (or NULL)
-    # Priority order: prior positive signal first, then fewest attempts, then oldest
-    cur.execute("""
-        SELECT name, company_name, attempt_count, last_called_at, best_outcome
-        FROM contacts
-        WHERE status = 'active'
-          AND (next_callable_at IS NULL OR next_callable_at <= %s)
-        ORDER BY
-          CASE WHEN best_outcome IN ('Interested', 'Referral Given') THEN 0 ELSE 1 END,
-          attempt_count ASC,
-          last_called_at ASC NULLS FIRST;
-    """, (today,))
-    candidates = cur.fetchall()
+    # Filter to callable contacts
+    callable_contacts = [
+        p for p in profiles
+        if p["status"] == "active"
+    ]
 
-    # Also get cooling contacts coming off cooldown today
-    cur.execute("""
-        SELECT name, company_name, attempt_count, last_called_at, best_outcome
-        FROM contacts
-        WHERE status = 'cooling'
-          AND next_callable_at <= %s
-        ORDER BY
-          CASE WHEN best_outcome IN ('Interested', 'Referral Given') THEN 0 ELSE 1 END,
-          attempt_count ASC;
-    """, (today,))
-    candidates.extend(cur.fetchall())
+    # Sort by priority: warm leads first, then fewest attempts, then oldest
+    def sort_key(p):
+        warm = 0 if p.get("best_outcome") in {"Interested", "Referral Given"} else 1
+        return (warm, p["attempt_count"], p.get("last_called_at") or "")
 
-    # Enforce company-level limits: max 5 contacts per company in today's sheet
-    # Also check how many contacts are already worked (active+cooling) per company
-    cur.execute("""
-        SELECT company_name, count(*)
-        FROM contacts
-        WHERE status IN ('active', 'cooling')
-        GROUP BY company_name;
-    """)
-    company_active = dict(cur.fetchall())
+    callable_contacts.sort(key=sort_key)
 
-    # Build the call sheet
+    # Enforce company-level limits
+    company_total_worked = defaultdict(int)
+    for p in profiles:
+        if p["status"] in ("active", "cooling"):
+            company_total_worked[p["company_id"]] += 1
+
     company_slots_today = defaultdict(int)
     call_sheet = []
 
-    for name, company, attempts, last_called, best in candidates:
-        # Skip if company already has too many active contacts
-        active_at_co = company_active.get(company, 0)
-        if active_at_co > MAX_CONTACTS_PER_COMPANY:
+    for p in callable_contacts:
+        cid = p["company_id"]
+
+        # Max contacts worked per company overall
+        if company_total_worked.get(cid, 0) > MAX_CONTACTS_PER_COMPANY:
             continue
 
-        # Limit contacts per company in today's sheet (max 3 per day)
-        if company_slots_today[company] >= 3:
+        # Max 3 per company per day
+        if company_slots_today[cid] >= 3:
             continue
 
-        company_slots_today[company] += 1
+        company_slots_today[cid] += 1
+
+        # Determine HubSpot task priority
+        if p.get("best_outcome") in {"Interested", "Referral Given"}:
+            priority = "HIGH"
+        elif p["attempt_count"] > 0:
+            priority = "MEDIUM"
+        else:
+            priority = "LOW"
+
         call_sheet.append({
-            "name": name,
-            "company": company,
-            "attempt": attempts + 1,
-            "last_called": str(last_called or "—"),
-            "prior_best": best or "—",
+            "name": p["name"],
+            "company": p["company_name"],
+            "company_id": p["company_id"],
+            "hubspot_company_id": p["hubspot_company_id"],
+            "hubspot_contact_id": p["hubspot_contact_id"],
+            "attempt": p["attempt_count"] + 1,
+            "last_called": p.get("last_called_at") or "—",
+            "prior_best": p.get("best_outcome") or "—",
+            "priority": priority,
         })
 
         if len(call_sheet) >= DAILY_TARGET:
             break
 
-    cur.close()
-    conn.close()
+    return call_sheet
 
-    # Print the call sheet
+
+# ── Stats ────────────────────────────────────────────────────────────
+
+def show_stats(profiles: list[dict]):
+    today = date.today()
+    total = len(profiles)
+
+    status_counts = defaultdict(int)
+    for p in profiles:
+        status_counts[p["status"]] += 1
+
+    print(f"\n{'=' * 55}")
+    print(f"  CONTACT ROSTER — {today}")
+    print(f"{'=' * 55}")
+    print(f"  Total contacts: {total}")
+    print()
+    for status in ["active", "cooling", "retired", "blocked"]:
+        count = status_counts.get(status, 0)
+        pct = count / total * 100 if total else 0
+        bar = "#" * int(pct / 2)
+        print(f"  {status:12s}  {count:4d}  ({pct:4.1f}%)  {bar}")
+
+    # Retired breakdown
+    retired_reasons = defaultdict(int)
+    for p in profiles:
+        if p["status"] == "retired" and p.get("retired_reason"):
+            retired_reasons[p["retired_reason"]] += 1
+
+    if retired_reasons:
+        print(f"\n  Retired breakdown:")
+        for reason, count in sorted(retired_reasons.items(), key=lambda x: -x[1]):
+            print(f"    {count:3d}  {reason}")
+
+    # Company saturation
+    company_stats = defaultdict(lambda: {"active": 0, "retired": 0, "total": 0})
+    for p in profiles:
+        co = p["company_name"]
+        company_stats[co]["total"] += 1
+        if p["status"] == "active":
+            company_stats[co]["active"] += 1
+        elif p["status"] == "retired":
+            company_stats[co]["retired"] += 1
+
+    saturated = [(co, s) for co, s in company_stats.items() if s["total"] >= 5]
+    if saturated:
+        saturated.sort(key=lambda x: -x[1]["total"])
+        print(f"\n  Most-worked companies (5+ contacts):")
+        print(f"  {'Company':35s}  Active  Retired  Total")
+        for co, s in saturated[:15]:
+            flag = " <- saturated" if s["active"] == 0 else ""
+            print(f"  {co:35s}  {s['active']:5d}  {s['retired']:6d}  {s['total']:5d}{flag}")
+
+
+# ── Output ───────────────────────────────────────────────────────────
+
+def print_call_sheet(call_sheet: list[dict]):
+    """Print call sheet summary to terminal."""
+    today = date.today()
+
     print(f"\n{'=' * 80}")
     print(f"  DAILY CALL SHEET — {today.strftime('%A %b %d, %Y')}")
-    print(f"  {len(call_sheet)} contacts to call (target: {DAILY_TARGET})")
+    print(f"  {len(call_sheet)} contacts (target: {DAILY_TARGET})")
     print(f"{'=' * 80}")
 
     if not call_sheet:
-        print("\n  No contacts available. Run --sync to refresh, or add new prospects.")
+        print("\n  No contacts available. Add new prospects to Supabase.")
         return
 
-    # Group by priority
-    fresh = [c for c in call_sheet if c["attempt"] == 1]
-    retry = [c for c in call_sheet if c["attempt"] > 1]
+    # Priority breakdown
+    by_priority = defaultdict(int)
+    for c in call_sheet:
+        by_priority[c["priority"]] += 1
 
-    if fresh:
-        print(f"\n  FRESH CONTACTS — first call ({len(fresh)})")
-        print(f"  {'#':>3s}  {'Contact':30s}  {'Company':35s}")
-        print(f"  {'─' * 3}  {'─' * 30}  {'─' * 35}")
-        for i, c in enumerate(fresh, 1):
-            print(f"  {i:3d}  {c['name']:30s}  {c['company']:35s}")
+    print(f"\n  Priority: HIGH={by_priority.get('HIGH', 0)}  "
+          f"MEDIUM={by_priority.get('MEDIUM', 0)}  "
+          f"LOW={by_priority.get('LOW', 0)}")
+
+    # Group by type
+    warm = [c for c in call_sheet if c["priority"] == "HIGH"]
+    retry = [c for c in call_sheet if c["priority"] == "MEDIUM"]
+    fresh = [c for c in call_sheet if c["priority"] == "LOW"]
+
+    if warm:
+        print(f"\n  WARM LEADS — prior positive signal ({len(warm)})")
+        print(f"  {'#':>3s}  {'Contact':30s}  {'Company':30s}  {'Att':>3s}  Prior Best")
+        print(f"  {'─' * 3}  {'─' * 30}  {'─' * 30}  {'─' * 3}  {'─' * 15}")
+        for i, c in enumerate(warm, 1):
+            print(f"  {i:3d}  {c['name']:30s}  {c['company']:30s}  {c['attempt']:3d}  {c['prior_best']}")
 
     if retry:
-        print(f"\n  RETRY CONTACTS — follow-up calls ({len(retry)})")
-        print(f"  {'#':>3s}  {'Contact':30s}  {'Company':35s}  {'Att':>3s}  {'Last Called':12s}  Prior Best")
-        print(f"  {'─' * 3}  {'─' * 30}  {'─' * 35}  {'─' * 3}  {'─' * 12}  {'─' * 15}")
-        for i, c in enumerate(retry, len(fresh) + 1):
-            print(f"  {i:3d}  {c['name']:30s}  {c['company']:35s}  {c['attempt']:3d}  {c['last_called']:12s}  {c['prior_best']}")
+        n = len(warm) + 1
+        print(f"\n  RETRIES — follow-up calls ({len(retry)})")
+        print(f"  {'#':>3s}  {'Contact':30s}  {'Company':30s}  {'Att':>3s}  Last Called")
+        print(f"  {'─' * 3}  {'─' * 30}  {'─' * 30}  {'─' * 3}  {'─' * 12}")
+        for i, c in enumerate(retry, n):
+            print(f"  {i:3d}  {c['name']:30s}  {c['company']:30s}  {c['attempt']:3d}  {c['last_called']}")
+
+    if fresh:
+        n = len(warm) + len(retry) + 1
+        print(f"\n  FRESH CONTACTS — first call ({len(fresh)})")
+        print(f"  {'#':>3s}  {'Contact':30s}  {'Company':30s}")
+        print(f"  {'─' * 3}  {'─' * 30}  {'─' * 30}")
+        for i, c in enumerate(fresh, n):
+            print(f"  {i:3d}  {c['name']:30s}  {c['company']:30s}")
 
     # Company distribution
     cos = defaultdict(int)
@@ -381,34 +419,93 @@ def generate_call_sheet():
 # ── Main ─────────────────────────────────────────────────────────────
 
 def main():
-    parser = argparse.ArgumentParser(description="Daily call sheet generator")
-    parser.add_argument("--sync", action="store_true", help="Sync call history → contacts table")
-    parser.add_argument("--stats", action="store_true", help="Show roster stats")
+    parser = argparse.ArgumentParser(description="Daily call sheet → HubSpot tasks")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Print call sheet without creating HubSpot tasks")
+    parser.add_argument("--stats", action="store_true",
+                        help="Show roster stats only")
     args = parser.parse_args()
 
-    if args.sync:
-        print("Syncing contacts from call history...")
-        sync_contacts()
-        print()
+    # Fetch data from Supabase
+    print("Fetching call data from Supabase...")
+    sb = get_supabase()
+    calls, companies_by_id = fetch_call_data(sb)
+    print(f"  {len(calls)} calls, {len(companies_by_id)} companies")
+
+    # Build contact profiles in memory
+    profiles = build_contact_profiles(calls, companies_by_id)
+    print(f"  {len(profiles)} unique contacts")
 
     if args.stats:
-        show_stats()
+        show_stats(profiles)
         return
 
-    # Default: generate call sheet (auto-sync if contacts table is empty)
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT count(*) FROM contacts;")
-    count = cur.fetchone()[0]
-    cur.close()
-    conn.close()
+    # Generate call sheet
+    call_sheet = select_callable_contacts(profiles)
+    print_call_sheet(call_sheet)
 
-    if count == 0:
-        print("Contacts table empty — syncing from call history first...")
-        sync_contacts()
-        print()
+    if not call_sheet:
+        return
 
-    generate_call_sheet()
+    # ── Validate before touching HubSpot ──
+    from validate_call_sheet import validate
+
+    result = validate(call_sheet, profiles)
+    result.print_report()
+
+    if not result.passed:
+        print(f"  Aborting — fix {len(result.violations)} violation(s) before creating tasks.")
+        sys.exit(1)
+
+    if args.dry_run:
+        print(f"\n  [dry-run] Would create {len(call_sheet)} HubSpot tasks for Adam")
+        return
+
+    # ── HubSpot task management ──
+    token = os.environ.get("HUBSPOT_TOKEN")
+    if not token:
+        print("ERROR: HUBSPOT_TOKEN not set. Cannot create tasks.")
+        sys.exit(1)
+
+    from hubspot_tasks import (
+        search_call_sheet_tasks,
+        complete_tasks,
+        create_call_tasks,
+    )
+
+    # Step 1: Find existing call sheet tasks (stale + today)
+    print(f"\nChecking existing call sheet tasks...")
+    existing = search_call_sheet_tasks(token)
+
+    # Guard: don't create duplicates if today's tasks already exist
+    if existing["today"]:
+        print(f"  Found {len(existing['today'])} tasks already created for today.")
+        print(f"  Aborting — run once per day. To recreate, complete today's tasks first.")
+        return
+
+    # Step 2: Complete stale tasks from previous days
+    if existing["stale"]:
+        stale_ids = [t["id"] for t in existing["stale"]]
+        completed = complete_tasks(token, stale_ids)
+        print(f"  Completed {completed} stale tasks from previous days")
+    else:
+        print(f"  No stale tasks found")
+
+    # Step 3: Create today's tasks
+    print(f"\nCreating {len(call_sheet)} HubSpot tasks for Adam...")
+    created = create_call_tasks(token, call_sheet)
+
+    # Priority breakdown
+    by_priority = defaultdict(int)
+    for c in call_sheet:
+        by_priority[c["priority"]] += 1
+
+    print(f"\n{'=' * 50}")
+    print(f"  Created {created} tasks")
+    print(f"  HIGH={by_priority.get('HIGH', 0)}  "
+          f"MEDIUM={by_priority.get('MEDIUM', 0)}  "
+          f"LOW={by_priority.get('LOW', 0)}")
+    print(f"{'=' * 50}")
 
 
 if __name__ == "__main__":
