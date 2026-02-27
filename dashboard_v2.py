@@ -668,6 +668,10 @@ tr:hover td { background: var(--bg-hover); }
   .funnel-arrow { flex-direction: row; padding: .15rem 0; }
   .funnel-arrow-svg { transform: rotate(90deg); width: 14px; height: 14px; }
 }
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .3; }
+}
 </style>"""
 
 
@@ -1043,6 +1047,42 @@ def _tab_calling(data: dict) -> str:
           </tr>"""
 
     calling_section = f"""
+  <!-- Live Today banner -->
+  <div id="live-today-banner" class="card" style="padding:1rem 1.25rem;margin-bottom:1.5rem;border-left:3px solid var(--accent-green);display:none;">
+    <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent-green);animation:pulse-dot 2s infinite;"></span>
+      <span style="font-weight:600;font-size:.9rem;color:var(--text-primary);">Live Today</span>
+      <span id="live-timestamp" style="margin-left:auto;font-size:.7rem;color:var(--text-muted);"></span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:1rem;text-align:center;">
+      <div>
+        <div id="live-dials" style="font-size:1.75rem;font-weight:700;color:var(--text-primary);">—</div>
+        <div style="font-size:.7rem;color:var(--text-muted);">Dials</div>
+      </div>
+      <div>
+        <div id="live-contacts" style="font-size:1.75rem;font-weight:700;color:var(--text-primary);">—</div>
+        <div style="font-size:.7rem;color:var(--text-muted);">Contacts</div>
+      </div>
+      <div>
+        <div id="live-contact-pct" style="font-size:1.75rem;font-weight:700;color:var(--text-primary);">—</div>
+        <div style="font-size:.7rem;color:var(--text-muted);">Contact %</div>
+      </div>
+      <div>
+        <div id="live-interested" style="font-size:1.75rem;font-weight:700;color:var(--accent-green);">—</div>
+        <div style="font-size:.7rem;color:var(--text-muted);">Interested</div>
+      </div>
+      <div>
+        <div id="live-meetings" style="font-size:1.75rem;font-weight:700;color:var(--accent-blue);">—</div>
+        <div style="font-size:.7rem;color:var(--text-muted);">Meetings</div>
+      </div>
+      <div>
+        <div id="live-vms" style="font-size:1.75rem;font-weight:700;color:var(--text-primary);">—</div>
+        <div style="font-size:.7rem;color:var(--text-muted);">VMs Left</div>
+      </div>
+    </div>
+    <div id="live-recent" style="margin-top:.75rem;border-top:1px solid var(--border);padding-top:.6rem;font-size:.75rem;color:var(--text-secondary);"></div>
+  </div>
+
   <section aria-labelledby="activity-calling-heading">
     <h2 class="section-heading" id="activity-calling-heading">
       <span class="sh-icon" aria-hidden="true">📞</span> Calling
@@ -2971,7 +3011,93 @@ window.addEventListener('DOMContentLoaded', function() {{
   }}
   // Init company table
   filterCompanies();
+  // Start live data polling
+  fetchLiveToday();
+  setInterval(fetchLiveToday, 120000); // every 2 min
 }});
+
+// ============================================================
+// Live Today — fetch today's calls from Supabase in real-time
+// ============================================================
+var SUPA_URL = 'https://giptkpwwhwhtrrrmdfqt.supabase.co/rest/v1';
+var SUPA_KEY = 'sb_publishable_QYwzbS_t_lEtO8LqtrW7zg_0St7HQVs';
+var HUMAN_CONTACT_CATS = ['Interested','Not Interested','Meeting Booked','Referral Given','No Rail','Wrong Person','Gatekeeper','Call Back','Pitched'];
+
+function fetchLiveToday() {{
+  var today = new Date();
+  var yyyy = today.getFullYear();
+  var mm = String(today.getMonth() + 1).padStart(2, '0');
+  var dd = String(today.getDate()).padStart(2, '0');
+  var todayStr = yyyy + '-' + mm + '-' + dd;
+
+  var url = SUPA_URL + '/calls?called_at=gte.' + todayStr + 'T00:00:00&select=category,duration_s,called_at,contact_name,companies(name)&order=called_at.desc';
+
+  fetch(url, {{
+    headers: {{
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY
+    }}
+  }})
+  .then(function(r) {{ return r.json(); }})
+  .then(function(calls) {{
+    if (!calls || !calls.length) {{
+      // No calls yet today — still show the banner with zeros
+      var banner = document.getElementById('live-today-banner');
+      if (banner) {{
+        banner.style.display = 'block';
+        document.getElementById('live-dials').textContent = '0';
+        document.getElementById('live-contacts').textContent = '0';
+        document.getElementById('live-contact-pct').textContent = '—';
+        document.getElementById('live-interested').textContent = '0';
+        document.getElementById('live-meetings').textContent = '0';
+        document.getElementById('live-vms').textContent = '0';
+        document.getElementById('live-timestamp').textContent = 'No calls yet · updated ' + new Date().toLocaleTimeString([], {{hour:'2-digit',minute:'2-digit'}});
+        document.getElementById('live-recent').innerHTML = '<span style="color:var(--text-muted)">No calls recorded today yet.</span>';
+      }}
+      return;
+    }}
+
+    var dials = calls.length;
+    var contacts = 0, interested = 0, meetings = 0, vms = 0;
+    calls.forEach(function(c) {{
+      var cat = c.category || '';
+      if (HUMAN_CONTACT_CATS.indexOf(cat) !== -1) contacts++;
+      if (cat === 'Interested') interested++;
+      if (cat === 'Meeting Booked') meetings++;
+      if (cat === 'Left Voicemail') vms++;
+    }});
+    var contactPct = dials > 0 ? (contacts / dials * 100).toFixed(1) + '%' : '—';
+
+    document.getElementById('live-today-banner').style.display = 'block';
+    document.getElementById('live-dials').textContent = dials;
+    document.getElementById('live-contacts').textContent = contacts;
+    document.getElementById('live-contact-pct').textContent = contactPct;
+    document.getElementById('live-interested').textContent = interested;
+    document.getElementById('live-meetings').textContent = meetings;
+    document.getElementById('live-vms').textContent = vms;
+    document.getElementById('live-timestamp').textContent = 'updated ' + new Date().toLocaleTimeString([], {{hour:'2-digit',minute:'2-digit'}});
+
+    // Show last 5 calls
+    var recent = calls.slice(0, 5);
+    var recentHtml = '<strong>Recent:</strong> ';
+    recent.forEach(function(c, i) {{
+      var time = new Date(c.called_at).toLocaleTimeString([], {{hour:'2-digit',minute:'2-digit'}});
+      var name = c.contact_name || '?';
+      var co = (c.companies && c.companies.name) || '';
+      var cat = c.category || '';
+      var catColor = cat === 'Interested' ? 'var(--accent-green)' : cat === 'Meeting Booked' ? 'var(--accent-blue)' : 'var(--text-muted)';
+      recentHtml += '<span style="margin-right:1rem;">' + time + ' ' + name + (co ? ' @ ' + co : '') + ' <span style="color:' + catColor + '">' + cat + '</span></span>';
+    }});
+    document.getElementById('live-recent').innerHTML = recentHtml;
+
+    // Also update the Home tab KPI if visible
+    var homeDialsEl = document.querySelector('#tab-home [data-live-dials]');
+    if (homeDialsEl) homeDialsEl.textContent = dials;
+  }})
+  .catch(function(err) {{
+    console.warn('Live fetch failed:', err);
+  }});
+}}
 </script>"""
 
 
