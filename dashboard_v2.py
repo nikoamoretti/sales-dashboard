@@ -2658,11 +2658,14 @@ window.addEventListener('DOMContentLoaded', function() {{
 # ---------------------------------------------------------------------------
 
 def build_html(data: dict) -> str:
+    from datetime import datetime as _dt, timezone as _tz
+    _build_ts = _dt.now(_tz.utc).strftime("%Y%m%d%H%M%S")
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="build-ts" content="{_build_ts}">
   <meta name="description" content="Telegraph Outbound Central — multi-channel sales analytics dashboard">
   <title>Telegraph Outbound Central</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2684,6 +2687,23 @@ def build_html(data: dict) -> str:
   </main>
   {_footer(data)}
   {_scripts(data)}
+  <script>
+  // Auto-update: check for new build every 2 min, bypass CDN with cache-busting param
+  (function() {{
+    var current = document.querySelector('meta[name="build-ts"]');
+    if (!current) return;
+    var myTs = current.getAttribute('content');
+    setInterval(function() {{
+      fetch(location.pathname + '?_cb=' + Date.now(), {{cache: 'no-store'}})
+        .then(function(r) {{ return r.text(); }})
+        .then(function(html) {{
+          var m = html.match(/name="build-ts"\\s+content="(\\d+)"/);
+          if (m && m[1] !== myTs) location.reload();
+        }})
+        .catch(function() {{}});
+    }}, 120000);
+  }})();
+  </script>
 </body>
 </html>"""
 
