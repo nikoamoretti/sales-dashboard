@@ -307,11 +307,10 @@ tr:hover td { background: var(--bg-hover); }
 
 /* Expandable row detail */
 .row-detail {
-  display: none; padding: .75rem .9rem;
+  padding: .75rem .9rem;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
 }
-.row-detail.visible { display: table-cell; }
 .row-detail-inner { padding: .5rem .75rem; font-size: .8rem; color: var(--text-secondary); line-height: 1.5; }
 .row-detail-inner strong { color: var(--text-primary); }
 
@@ -1457,9 +1456,9 @@ def _tab_companies(data: dict) -> str:
         if d != today_str and d != yesterday_str:
             date_options += f'<option value="{_h(d)}">{_h(d)}</option>'
 
-    # Table rows — unified table, no cards
+    # Table rows — expandable with full intel detail
     table_rows = ""
-    for co in companies:
+    for idx, co in enumerate(companies):
         name = co.get("name", "")
         status = co.get("status", "prospect")
         channels = co.get("channels_touched") or co.get("channels") or []
@@ -1469,14 +1468,77 @@ def _tab_companies(data: dict) -> str:
         contact_name = co.get("contact_name") or ""
         contact_role = co.get("contact_role") or ""
         next_action = co.get("next_action") or ""
-        notes = co.get("notes") or ""
+        co_notes = co.get("notes") or ""
         ch_list_str = " ".join(channels)
+        intel = co.get("latest_intel") or {}
+        co_calls = co.get("calls") or []
 
         contact_display = _h(contact_name)
         if contact_role:
             contact_display += f'<br><span style="font-size:.7rem;color:var(--text-muted)">{_h(contact_role)}</span>'
 
-        table_rows += f"""
+        # Build detail panel content
+        detail_parts = []
+        # Key quote — the most important thing
+        kq = intel.get("key_quote")
+        if kq:
+            detail_parts.append(f'<div style="margin-bottom:.5rem;padding:.5rem .75rem;border-left:3px solid var(--accent-blue);background:rgba(59,130,246,.08);border-radius:0 .25rem .25rem 0"><em>"{_h(kq)}"</em></div>')
+        # Objection
+        obj = intel.get("objection")
+        if obj:
+            detail_parts.append(f'<div style="margin-bottom:.4rem"><strong style="color:var(--accent-red)">Objection:</strong> {_h(obj)}</div>')
+        # Call notes from most recent call (Adam's raw notes)
+        for c in co_calls:
+            raw_n = _re.sub(r'<[^>]+>', ' ', c.get("notes") or "")
+            raw_n = _re.sub(r'\s+', ' ', raw_n).strip()
+            if raw_n:
+                cdate = str(c.get("called_at") or "")[:10]
+                ccontact = c.get("contact_name") or ""
+                detail_parts.append(f'<div style="margin-bottom:.4rem"><strong>Call notes ({_h(cdate)} — {_h(ccontact)}):</strong> {_h(raw_n)}</div>')
+                break  # only most recent with notes
+        # AI summary from most recent call (cleaned)
+        for c in co_calls:
+            raw_s = _re.sub(r'<[^>]+>', ' ', c.get("summary") or "")
+            raw_s = _re.sub(r'#{1,4}\s+[A-Za-z].*?(?:\n|$)', '', raw_s)
+            raw_s = _re.sub(r'-{3,}', '', raw_s)
+            raw_s = _re.sub(r'\*{1,2}([^*]+)\*{1,2}', r'\1', raw_s)
+            raw_s = _re.sub(r'\s+', ' ', raw_s).strip()
+            if raw_s:
+                cdate = str(c.get("called_at") or "")[:10]
+                detail_parts.append(f'<div style="margin-bottom:.4rem;color:var(--text-secondary)"><strong>AI summary ({_h(cdate)}):</strong> {_h(raw_s[:300])}</div>')
+                break
+        # Provider / commodities if not in table header
+        if provider and commodities:
+            detail_parts.append(f'<div style="margin-bottom:.3rem"><strong>Ships:</strong> {_h(commodities)} &nbsp;|&nbsp; <strong>Current provider:</strong> {_h(provider)}</div>')
+
+        has_detail = bool(detail_parts)
+        detail_html = "".join(detail_parts) if detail_parts else ""
+        row_id = f"co-{idx}"
+
+        if has_detail:
+            table_rows += f"""
+          <tr class="expandable-row" data-status="{_h(status)}" data-channels="{_h(ch_list_str)}"
+              data-name="{_h(name.lower())}"
+              data-lasttouch="{_h(last_touch)}"
+              data-has-provider="{"1" if provider else "0"}"
+              data-has-commodities="{"1" if commodities else "0"}"
+              data-has-contact="{"1" if contact_name else "0"}"
+              data-co-id="{row_id}"
+              onclick="toggleCompanyRow(this)"
+              style="cursor:pointer">
+            <td style="font-weight:600;color:var(--text-primary);white-space:nowrap">{_h(name)}</td>
+            <td><span class="badge badge-{_h(status)}" style="font-size:.65rem">{_h(status.replace('_',' ').title())}</span></td>
+            <td style="color:var(--text-secondary);font-size:.8rem;white-space:nowrap">{_h(last_touch)}</td>
+            <td style="color:var(--text-secondary);font-size:.8rem">{_h(provider)}</td>
+            <td style="color:var(--text-secondary);font-size:.8rem">{_h(commodities[:50])}</td>
+            <td style="font-size:.8rem">{contact_display}</td>
+            <td style="color:var(--accent-blue);font-size:.75rem">{_h(next_action)}</td>
+          </tr>
+          <tr class="detail-row" id="{row_id}" style="display:none">
+            <td colspan="7" class="row-detail"><div class="row-detail-inner" style="font-size:.8rem;line-height:1.5">{detail_html}</div></td>
+          </tr>"""
+        else:
+            table_rows += f"""
           <tr data-status="{_h(status)}" data-channels="{_h(ch_list_str)}"
               data-name="{_h(name.lower())}"
               data-lasttouch="{_h(last_touch)}"
@@ -1489,8 +1551,7 @@ def _tab_companies(data: dict) -> str:
             <td style="color:var(--text-secondary);font-size:.8rem">{_h(provider)}</td>
             <td style="color:var(--text-secondary);font-size:.8rem">{_h(commodities[:50])}</td>
             <td style="font-size:.8rem">{contact_display}</td>
-            <td style="color:var(--accent-blue);font-size:.75rem;max-width:250px">{_h(next_action[:80])}</td>
-            <td style="color:var(--text-muted);font-size:.75rem;max-width:200px">{_h(notes[:80])}</td>
+            <td style="color:var(--text-muted);font-size:.75rem">—</td>
           </tr>"""
 
     return f"""
@@ -1540,7 +1601,6 @@ def _tab_companies(data: dict) -> str:
             <th>Commodities</th>
             <th>Contact</th>
             <th>Next Action</th>
-            <th>Notes</th>
           </tr>
         </thead>
         <tbody>{table_rows}</tbody>
@@ -2506,6 +2566,14 @@ function toggleCallRow(tr) {{
   if (det) det.style.display = expanded ? '' : 'none';
 }}
 
+function toggleCompanyRow(tr) {{
+  var coId = tr.dataset.coId;
+  if (!coId) return;
+  var det = document.getElementById(coId);
+  var expanded = tr.classList.toggle('expanded');
+  if (det) det.style.display = expanded ? '' : 'none';
+}}
+
 
 // ============================================================
 // InMail table filter + pagination
@@ -2568,7 +2636,10 @@ function filterCompanies() {{
   var sortBy  = document.getElementById('company-sort').value;
   var tbody   = document.querySelector('#company-table tbody');
   if (!tbody) return;
-  var allRows = Array.from(tbody.querySelectorAll('tr'));
+  var allRows = Array.from(tbody.querySelectorAll('tr:not(.detail-row)'));
+  // Hide all detail rows when re-filtering
+  Array.from(tbody.querySelectorAll('tr.detail-row')).forEach(function(d) {{ d.style.display = 'none'; }});
+  Array.from(tbody.querySelectorAll('tr.expanded')).forEach(function(r) {{ r.classList.remove('expanded'); }});
 
   coRows = allRows.filter(function(r) {{
     var name = r.getAttribute('data-name') || '';
@@ -2610,7 +2681,15 @@ function renderCompanyTablePage() {{
   var tbody = document.querySelector('#company-table tbody');
   if (!tbody) return;
   Array.from(tbody.querySelectorAll('tr')).forEach(function(r) {{ r.style.display = 'none'; }});
-  coRows.slice(start, end).forEach(function(r) {{ r.style.display = ''; }});
+  coRows.slice(start, end).forEach(function(r) {{
+    r.style.display = '';
+    // Show detail row if this row is expanded
+    var coId = r.dataset.coId;
+    if (coId && r.classList.contains('expanded')) {{
+      var det = document.getElementById(coId);
+      if (det) det.style.display = '';
+    }}
+  }});
   var info = document.getElementById('company-page-info');
   if (info) info.textContent = total ? ((start+1) + '–' + end + ' of ' + total) : '0 companies';
   var btns = document.getElementById('co-page-btns');

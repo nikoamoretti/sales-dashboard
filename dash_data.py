@@ -412,6 +412,11 @@ def _build_companies(
                     "interest_level": intel_row.get("interest_level"),
                     "next_action": intel_row.get("next_action"),
                     "key_quote": intel_row.get("key_quote"),
+                    "objection": intel_row.get("objection"),
+                    "competitor": intel_row.get("competitor"),
+                    "commodities": intel_row.get("commodities"),
+                    "referral_name": intel_row.get("referral_name"),
+                    "referral_role": intel_row.get("referral_role"),
                 }
                 break
 
@@ -450,6 +455,8 @@ def _build_companies(
                     "called_at": c.get("called_at"),
                     "category": c.get("category"),
                     "summary": c.get("summary"),
+                    "notes": c.get("notes"),
+                    "contact_name": c.get("contact_name"),
                 }
                 for c in company_calls[:5]
             ],
