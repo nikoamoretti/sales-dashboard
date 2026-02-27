@@ -1143,13 +1143,18 @@ def _tab_activity(data: dict) -> str:
     log_rows = ""
     for call in call_log:
         dur = _fmt_dur(call.get("duration_s", 0))
+        _raw_notes = (call.get("notes") or "").strip()
         _raw_summary = (call.get("summary") or "").strip()
         _raw_summary = _re.sub(r'^(#+\s+\S.*?\n)+', '', _raw_summary).strip()
-        summary = _raw_summary.replace("\n", " ")[:200]
-        summary_full = (call.get("summary") or "").strip()
+        # Show notes in the table column (Adam's input); fall back to AI summary
+        display_text = (_raw_notes or _raw_summary).replace("\n", " ")[:200]
+        summary_full = _raw_summary
+        notes_full = _raw_notes
         intel = call.get("intel") or {}
 
         detail_parts = []
+        if notes_full:
+            detail_parts.append(f"<strong>Notes:</strong> {_h(notes_full)}")
         if summary_full:
             detail_parts.append(f"<strong>Summary:</strong> {_h(summary_full)}")
         if intel.get("key_quote"):
@@ -1183,7 +1188,7 @@ def _tab_activity(data: dict) -> str:
             <td>{_h(company)}</td>
             <td><span class="badge badge-{_h(category.lower().replace(' ','_'))}" style="font-size:.6rem">{_h(category)}</span></td>
             <td style="font-variant-numeric:tabular-nums">{_h(dur)}</td>
-            <td style="color:var(--text-secondary);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{_h(summary[:80] + ('…' if len(summary)>80 else ''))}</td>
+            <td style="color:var(--text-secondary);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{_h(display_text[:80] + ('…' if len(display_text)>80 else ''))}</td>
           </tr>
           <tr class="detail-row" id="detail-{call_id}" style="display:none">
             <td colspan="6" class="row-detail">
@@ -1198,7 +1203,7 @@ def _tab_activity(data: dict) -> str:
             <td>{_h(company)}</td>
             <td><span class="badge" style="font-size:.6rem">{_h(category)}</span></td>
             <td style="font-variant-numeric:tabular-nums">{_h(dur)}</td>
-            <td style="color:var(--text-secondary)">{_h(summary[:80])}</td>
+            <td style="color:var(--text-secondary)">{_h(display_text[:80])}</td>
           </tr>"""
 
     all_cats = sorted(set(c.get("category", "") for c in call_log if c.get("category")))
@@ -1647,6 +1652,8 @@ def _tab_companies(data: dict) -> str:
       <select id="company-knowledge-filter" aria-label="Filter by knowledge" onchange="filterCompanies()">
         {knowledge_options}
       </select>
+      <input type="date" id="company-date-filter" value="{today_str}" aria-label="Filter by date"
+             onchange="filterCompanies()" style="background:var(--surface-card);color:var(--text-primary);border:1px solid var(--border);border-radius:6px;padding:.35rem .5rem;font-size:.8rem;">
       <select id="company-sort" aria-label="Sort companies" onchange="filterCompanies()">
         <option value="recent" selected>Most recent</option>
         <option value="touches">Most touches</option>
@@ -2695,6 +2702,7 @@ function buildCompanyCards() {{
   var status  = (document.getElementById('company-status-filter').value || '').toLowerCase();
   var channel = (document.getElementById('company-channel-filter').value || '').toLowerCase();
   var knowledge = (document.getElementById('company-knowledge-filter') || {{}}).value || '';
+  var dateVal = (document.getElementById('company-date-filter') || {{}}).value || '';
   var sortBy  = (document.getElementById('company-sort') || {{}}).value || 'recent';
   var grid    = document.getElementById('company-grid');
   if (!grid) return;
@@ -2704,14 +2712,16 @@ function buildCompanyCards() {{
     var name     = (card.dataset.name     || '').toLowerCase();
     var cstatus  = (card.dataset.status   || '').toLowerCase();
     var cchannels= (card.dataset.channels || '').toLowerCase();
+    var lasttouch = card.dataset.lasttouch || '';
     var mSearch  = !search  || name.indexOf(search) !== -1;
     var mStatus  = !status  || cstatus === status;
     var mChannel = !channel || cchannels.indexOf(channel) !== -1;
+    var mDate    = !dateVal || lasttouch === dateVal;
     var mKnow    = true;
     if (knowledge === 'has_provider')    mKnow = card.dataset.hasProvider === '1';
     if (knowledge === 'has_commodities') mKnow = card.dataset.hasCommodities === '1';
     if (knowledge === 'has_contact')     mKnow = card.dataset.hasContact === '1';
-    return mSearch && mStatus && mChannel && mKnow;
+    return mSearch && mStatus && mChannel && mDate && mKnow;
   }});
 
   // Sort
@@ -2829,6 +2839,7 @@ function filterCompanyTable() {{
   var status  = document.getElementById('company-status-filter').value;
   var channel = document.getElementById('company-channel-filter').value;
   var know    = document.getElementById('company-knowledge-filter').value;
+  var dateVal = (document.getElementById('company-date-filter') || {{}}).value || '';
   var tbody   = document.querySelector('#company-table tbody');
   if (!tbody) return;
   var rows = Array.from(tbody.querySelectorAll('tr'));
@@ -2837,10 +2848,12 @@ function filterCompanyTable() {{
     var name = r.getAttribute('data-name') || '';
     var st   = r.getAttribute('data-status') || '';
     var ch   = r.getAttribute('data-channels') || '';
+    var lt   = r.getAttribute('data-lasttouch') || '';
     var show = true;
     if (search && name.indexOf(search) < 0) show = false;
     if (status && st !== status) show = false;
     if (channel && ch.indexOf(channel) < 0) show = false;
+    if (dateVal && lt !== dateVal) show = false;
     if (know === 'has_provider' && r.getAttribute('data-has-provider') !== '1') show = false;
     if (know === 'has_commodities' && r.getAttribute('data-has-commodities') !== '1') show = false;
     if (know === 'has_contact' && r.getAttribute('data-has-contact') !== '1') show = false;
