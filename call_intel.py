@@ -47,7 +47,7 @@ Return ONLY valid JSON with these fields (use null for unknown/not applicable):
 
 {{
   "interest_level": "high" | "medium" | "low" | "none",
-  "next_action": "string describing what should happen next",
+  "next_action": "short CRM task, max 50 chars (e.g. 'Email rate comparison to Ben Grimm')",
   "referral_name": "name of person referred to, or null",
   "referral_role": "role/title of referred person, or null",
   "objection": "main objection raised, or null",
@@ -60,8 +60,9 @@ Return ONLY valid JSON with these fields (use null for unknown/not applicable):
 Guidelines:
 - interest_level: "high" = wants meeting/demo, "medium" = open but noncommittal, \
 "low" = reluctant/pushing back, "none" = hard no or wrong person
-- next_action: be specific (e.g., "Email Ben Grimm the rail rate comparison" \
-not just "follow up")
+- next_action: short CRM task, MAX 50 chars. Start with a verb. \
+Examples: "Email rate comparison to Ben Grimm", "Call back Thu 2pm", \
+"Ask Nico re: corporate contact", "Remove — no rail". NOT paragraphs.
 - qualified: true if they ship via rail or could, false if wrong number/person, \
 no rail, or clearly not a fit
 - competitor: names like "CSX", "UP", "BNSF", "NS", "XPO", etc.
