@@ -50,11 +50,12 @@ Return ONLY valid JSON with these fields (use null for unknown/not applicable):
   "next_action": "short CRM task, max 50 chars (e.g. 'Email rate comparison to Ben Grimm')",
   "referral_name": "name of person referred to, or null",
   "referral_role": "role/title of referred person, or null",
-  "objection": "main objection raised, or null",
-  "competitor": "any competitor mentioned, or null",
-  "commodities": "what they ship (chemicals, plastics, food, etc.), or null",
+  "objection": "category: brief detail" or null (see categories below),
+  "competitor": "specific company name, or null",
+  "commodities": "what they ship, normalized (see categories below), or null",
   "key_quote": "most important thing the prospect said, or null",
-  "qualified": true | false
+  "qualified": true | false,
+  "challenges": "prospect's pain points or challenges mentioned, or null"
 }}
 
 Guidelines:
@@ -65,7 +66,22 @@ Examples: "Email rate comparison to Ben Grimm", "Call back Thu 2pm", \
 "Ask Nico re: corporate contact", "Remove — no rail". NOT paragraphs.
 - qualified: true if they ship via rail or could, false if wrong number/person, \
 no rail, or clearly not a fit
-- competitor: names like "CSX", "UP", "BNSF", "NS", "XPO", etc.
+- competitor: specific company name. Common rail/logistics competitors include: \
+RSI, Railinc, Intellitrans, Transplace, Echo, XPO, CH Robinson, \
+Schneider, JB Hunt, BNSF Logistics, CSX, UP, NS, CN, CPKC, \
+Watco, Genesee & Wyoming, OmniTRAX, R.J. Corman, Savage. \
+Also capture any 3PL, TMS, or rail management software mentioned.
+- commodities: what they ship. Normalize to categories where possible: \
+chemicals, plastics, food/ag, metals, building materials, energy, \
+paper/packaging, automotive, minerals, consumer goods, lumber. \
+Use the specific product if mentioned (e.g., "plastics, polyethylene").
+- objection: normalize to one of these categories followed by colon and brief detail: \
+"no_rail: [detail]", "wrong_person: [detail]", "happy_with_provider: [detail]", \
+"bad_timing: [detail]", "no_budget: [detail]", "no_interest: [detail]", \
+"internal_solution: [detail]", "too_small: [detail]". Use null if no objection.
+- challenges: pain points the prospect mentioned — unreliable ETAs, damaged freight, \
+portal issues, visibility gaps, carrier switching delays, rate volatility, capacity \
+constraints. Keep it brief and specific. Null if no challenges discussed.
 - referral_name: do NOT include "Adam", "Adam Jackson", "Nico", or "Nicolas Amoretti" \
 as referrals — only include names of people at the prospect company
 - If the call is just a voicemail with no real conversation, still extract what you can

@@ -126,6 +126,30 @@ def fetch_existing_call_ids(sb) -> set[str]:
     return {r["hubspot_call_id"] for r in result.data if r.get("hubspot_call_id")}
 
 
+def backup_calls(sb) -> Optional[Path]:
+    """Snapshot calls table to backups/ before sync writes. Returns backup path."""
+    backup_dir = BASE_DIR / "backups"
+    backup_dir.mkdir(exist_ok=True)
+
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    path = backup_dir / f"calls_{ts}.json"
+
+    # Fetch all calls (paginate past 1000-row default)
+    all_rows: list[dict] = []
+    page_size = 1000
+    offset = 0
+    while True:
+        resp = sb.table("calls").select("*").range(offset, offset + page_size - 1).execute()
+        all_rows.extend(resp.data)
+        if len(resp.data) < page_size:
+            break
+        offset += page_size
+
+    path.write_text(json.dumps(all_rows, indent=2, default=str))
+    print(f"  Backup: {len(all_rows)} calls -> {path.name}")
+    return path
+
+
 def fetch_intel_call_ids(sb) -> set[int]:
     """Fetch call.id values that already have a call_intel record."""
     result = sb.table("call_intel").select("call_id").execute()
@@ -367,6 +391,7 @@ def build_call_record(
         "has_transcript": (props.get("hs_call_has_transcript") or "").lower() == "true",
         "called_at": ts.isoformat(),
         "week_num": week_num,
+        "hubspot_contact_id": enrich.get("contact_id") or None,
     }
 
 
@@ -392,6 +417,20 @@ def upsert_calls(
 
     new_records = [r for r in records if r["hubspot_call_id"] not in existing_call_ids]
     existing_records = [r for r in records if r["hubspot_call_id"] in existing_call_ids]
+
+    # Guard: don't overwrite enrichment fields with blanks on existing calls.
+    # If enrichment failed (403, timeout, etc.), these fields come back as
+    # None/"Unknown" — stripping them lets the DB keep its current values.
+    ENRICHMENT_FIELDS = ("company_id", "contact_name", "hubspot_contact_id")
+    stripped = 0
+    for rec in existing_records:
+        for field in ENRICHMENT_FIELDS:
+            val = rec.get(field)
+            if val is None or val == "Unknown":
+                del rec[field]
+                stripped += 1
+    if stripped:
+        print(f"  Preserved {stripped} existing enrichment fields (empty in this sync)")
 
     if dry_run:
         print(f"  [dry-run] Would insert {len(new_records)} new calls")
@@ -541,6 +580,7 @@ def run_intel_extraction(
             "referral_name": intel.get("referral_name"),
             "referral_role": intel.get("referral_role"),
             "key_quote": intel.get("key_quote"),
+            "challenges": intel.get("challenges"),
         })
         extracted += 1
 
@@ -703,6 +743,8 @@ def sync(
 
     # Step 5: Upsert calls
     print("\nStep 4: Upserting calls...")
+    if not dry_run:
+        backup_calls(sb)
     existing_call_ids = fetch_existing_call_ids(sb)
 
     call_records, new_supabase_ids = upsert_calls(

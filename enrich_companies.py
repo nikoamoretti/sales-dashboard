@@ -14,7 +14,7 @@ Usage:
 import argparse
 import os
 import sys
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 from dotenv import load_dotenv
 
@@ -51,7 +51,7 @@ def enrich(dry_run: bool = False) -> int:
     # Fetch all call_intel with company data
     print("Fetching call_intel records...")
     result = sb.table("call_intel").select(
-        "company_id, competitor, commodities, next_action, "
+        "company_id, competitor, commodities, next_action, objection, "
         "referral_name, referral_role, interest_level, qualified, "
         "extracted_at"
     ).not_.is_("company_id", "null").order("extracted_at").execute()
@@ -64,7 +64,7 @@ def enrich(dry_run: bool = False) -> int:
         return 0
 
     # Fetch existing companies
-    companies_result = sb.table("companies").select("id, name, status").execute()
+    companies_result = sb.table("companies").select("id, name, status, notes").execute()
     companies = {c["id"]: c for c in (companies_result.data or [])}
 
     # Aggregate intel by company
@@ -84,7 +84,6 @@ def enrich(dry_run: bool = False) -> int:
         competitors = [r["competitor"] for r in records if r.get("competitor")]
         current_provider = None
         if competitors:
-            from collections import Counter
             current_provider = Counter(competitors).most_common(1)[0][0]
 
         # Commodities: union of all mentioned
@@ -108,6 +107,17 @@ def enrich(dry_run: bool = False) -> int:
             if r.get("referral_name"):
                 contact_name = r["referral_name"]
                 contact_role = r.get("referral_role")
+                break
+
+        # Objection: extract normalized category from "category: detail" format
+        objection_category = None
+        for r in reversed(records):
+            obj = r.get("objection")
+            if obj and ":" in obj:
+                objection_category = obj.split(":")[0].strip()
+                break
+            elif obj:
+                objection_category = obj  # legacy free-text fallback
                 break
 
         # Status upgrade based on interest
@@ -143,6 +153,12 @@ def enrich(dry_run: bool = False) -> int:
         if new_status != current_status:
             update["status"] = new_status
             changed = True
+        if objection_category:
+            existing_notes = companies[company_id].get("notes") or ""
+            # Only set if no manual notes (preserve user-entered notes)
+            if not existing_notes or existing_notes.startswith("objection:"):
+                update["notes"] = f"objection: {objection_category}"
+                changed = True
 
         if changed:
             updates.append(update)

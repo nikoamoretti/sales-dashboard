@@ -378,6 +378,10 @@ def enrich_calls_with_associations(token: str, calls: List[Dict]) -> Dict[str, D
     print("  Fetching call->contact associations...")
     call_contacts = batch_fetch_associations(token, "call", "contact", call_ids)
 
+    # Call -> Company (direct, for calls logged without a contact)
+    print("  Fetching call->company associations...")
+    call_companies_direct = batch_fetch_associations(token, "call", "company", call_ids)
+
     # Call -> Note
     print("  Fetching call->note associations...")
     call_notes_map = batch_fetch_associations(token, "call", "note", call_ids)
@@ -404,9 +408,11 @@ def enrich_calls_with_associations(token: str, calls: List[Dict]) -> Dict[str, D
             token, "contact", "company", list(all_contact_ids),
         )
 
-    # Unique company IDs
+    # Unique company IDs (from contact->company + direct call->company)
     all_company_ids: set = set()
     for cids in contact_companies.values():
+        all_company_ids.update(cids)
+    for cids in call_companies_direct.values():
         all_company_ids.update(cids)
 
     # Batch fetch companies
@@ -456,6 +462,22 @@ def enrich_calls_with_associations(token: str, calls: List[Dict]) -> Dict[str, D
                     company_name = resolved
                 company_id = comp_ids[0]
 
+        # Fallback: direct call->company association (calls logged without a contact)
+        if not company_id:
+            direct_co_ids = call_companies_direct.get(call_id, [])
+            if direct_co_ids:
+                company_id = direct_co_ids[0]
+                comp_p = companies.get(company_id, {})
+                company_name = comp_p.get("name", "") or company_name
+                # Extract contact name from call title if we don't have one
+                if not contact_name:
+                    for call in calls:
+                        if str(call.get("id", "")) == call_id:
+                            title = call.get("properties", {}).get("hs_call_title", "")
+                            if title.startswith("Call with "):
+                                contact_name = title[len("Call with "):]
+                            break
+
         note_ids = call_notes_map.get(call_id, [])
         engagement_notes = []
         for nid in note_ids:
@@ -466,6 +488,7 @@ def enrich_calls_with_associations(token: str, calls: List[Dict]) -> Dict[str, D
 
         enrichment[call_id] = {
             "contact_name": contact_name,
+            "contact_id": cid_list[0] if cid_list else "",
             "company_name": company_name,
             "company_id": company_id,
             "engagement_notes": engagement_notes,

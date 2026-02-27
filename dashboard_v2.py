@@ -950,15 +950,23 @@ def _tab_home(data: dict) -> str:
     latest_li   = inmail_trends[-1] if inmail_trends else {}
 
     inmail_stats = data.get("inmail_stats", {})
-    email_seqs = data.get("email_sequences", [])
+    email_seqs_raw = data.get("email_sequences", [])
+    # Deduplicate: latest snapshot per sequence
+    _home_latest: dict[str, dict] = {}
+    for s in email_seqs_raw:
+        n = s.get("sequence_name", "")
+        sd = s.get("snapshot_date", "")
+        if n not in _home_latest or sd > _home_latest[n].get("snapshot_date", ""):
+            _home_latest[n] = s
+    home_email_deduped = list(_home_latest.values())
 
     ch_calls_metric = f"{latest_call.get('dials', 0)} dials"
     ch_calls_sub    = f"{latest_call.get('contact_rate', 0):.1f}% contact rate"
     ch_li_metric    = f"{latest_li.get('sent', 0)} sent"
     ch_li_sub       = f"{latest_li.get('reply_rate', 0):.1f}% reply rate"
-    total_email_sent = sum(s.get("sent", 0) for s in email_seqs)
+    total_email_sent = sum(s.get("sent", 0) for s in home_email_deduped)
     ch_email_metric = f"{total_email_sent} sent" if total_email_sent else "\u2014"
-    ch_email_sub    = "Not connected" if not email_seqs else f"{len(email_seqs)} sequences"
+    ch_email_sub    = "Not connected" if not home_email_deduped else f"{len(home_email_deduped)} sequences"
 
     channel_html = f"""
   <section aria-labelledby="home-channels-heading">
@@ -1067,21 +1075,93 @@ def _tab_activity(data: dict) -> str:
   </section>"""
 
     # =================================================================
-    # Section 2: Email & LinkedIn — InMail trends, stats, sentiment
+    # Section 2: Email & LinkedIn — unified channel view
     # =================================================================
     inmails = data.get("inmails", [])
     inmail_stats = data.get("inmail_stats", {})
     email_seqs = data.get("email_sequences", [])
 
-    total_sent    = inmail_stats.get("total_sent", 0)
-    total_replied = inmail_stats.get("total_replied", 0)
-    reply_rate    = inmail_stats.get("reply_rate", 0)
-    if isinstance(reply_rate, float) and reply_rate <= 1:
-        rr_pct = f"{reply_rate*100:.1f}%"
+    # LinkedIn (InMail) aggregates — all-time
+    li_total_sent    = inmail_stats.get("total_sent", 0)
+    li_total_replied = inmail_stats.get("total_replied", 0)
+    li_reply_rate    = inmail_stats.get("reply_rate", 0)
+    if isinstance(li_reply_rate, float) and li_reply_rate <= 1:
+        li_rr_pct = f"{li_reply_rate*100:.1f}%"
     else:
-        rr_pct = f"{reply_rate:.1f}%"
+        li_rr_pct = f"{li_reply_rate:.1f}%"
 
     sentiments = inmail_stats.get("sentiment_breakdown", {})
+
+    # Deduplicate email sequences: keep only the latest snapshot per sequence name
+    _latest_seqs: dict[str, dict] = {}
+    for s in email_seqs:
+        name = s.get("sequence_name", "")
+        snap = s.get("snapshot_date", "")
+        if name not in _latest_seqs or snap > _latest_seqs[name].get("snapshot_date", ""):
+            _latest_seqs[name] = s
+    email_seqs_deduped = list(_latest_seqs.values())
+
+    # Email aggregates from deduplicated sequences — latest snapshot only
+    em_total_sent    = sum(s.get("sent", 0) for s in email_seqs_deduped)
+    em_total_opened  = sum(s.get("opened", 0) for s in email_seqs_deduped)
+    em_total_replied = sum(s.get("replied", 0) for s in email_seqs_deduped)
+    em_open_rate     = (em_total_opened / em_total_sent * 100) if em_total_sent else 0
+    em_reply_rate    = (em_total_replied / em_total_sent * 100) if em_total_sent else 0
+
+    # Sentiment bar rows
+    sentiment_bars = ""
+    for sent_label, cnt in sentiments.items():
+        pct = (cnt / li_total_replied * 100) if li_total_replied else 0
+        sentiment_bars += f"""
+              <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;">
+                <span style="min-width:100px;color:var(--text-secondary);font-size:.8rem;">{_h(sent_label.replace('_',' ').title())}</span>
+                <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
+                  <div style="width:{pct:.1f}%;height:100%;background:var(--accent-blue);border-radius:3px;"></div>
+                </div>
+                <span style="color:var(--text-secondary);font-size:.75rem;min-width:30px;text-align:right">{cnt}</span>
+              </div>"""
+
+    # Email sequences table rows (deduplicated — latest snapshot only)
+    seq_rows = ""
+    if email_seqs_deduped:
+        for seq in sorted(email_seqs_deduped, key=lambda s: s.get("sent", 0), reverse=True):
+            or_ = seq.get("open_rate", 0)
+            rr_ = seq.get("reply_rate", 0)
+            seq_rows += f"""
+        <tr>
+          <td>{_h(seq.get("sequence_name",""))}</td>
+          <td>{_h(seq.get("status",""))}</td>
+          <td style="font-variant-numeric:tabular-nums">{_h(seq.get("sent",0))}</td>
+          <td style="font-variant-numeric:tabular-nums">{_h(seq.get("opened",0))} <span style="color:var(--text-secondary)">({or_:.1f}%)</span></td>
+          <td style="font-variant-numeric:tabular-nums">{_h(seq.get("replied",0))} <span style="color:var(--text-secondary)">({rr_:.1f}%)</span></td>
+          <td style="color:var(--text-secondary);font-size:.75rem">{_h(str(seq.get("snapshot_date",""))[:10])}</td>
+        </tr>"""
+        seq_table_html = f"""
+    <div style="margin-top:1.5rem;">
+      <div style="font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.75rem;">Sequence Breakdown</div>
+      <div class="table-wrap">
+        <table aria-label="Email sequences by name">
+          <thead>
+            <tr>
+              <th scope="col">Sequence</th>
+              <th scope="col">Status</th>
+              <th scope="col">Sent</th>
+              <th scope="col">Opened</th>
+              <th scope="col">Replied</th>
+              <th scope="col">Snapshot</th>
+            </tr>
+          </thead>
+          <tbody>{seq_rows}</tbody>
+        </table>
+      </div>
+    </div>"""
+    else:
+        seq_table_html = """
+    <div style="margin-top:1.5rem;padding:1.25rem;text-align:center;color:var(--text-muted);font-size:.85rem;">
+      No sequence data — connect Apollo to see per-sequence breakdown.
+    </div>"""
+
+    em_kpi_value_style = "color:var(--text-muted)" if not email_seqs else ""
 
     outreach_stats_html = f"""
   <section aria-labelledby="activity-outreach-heading">
@@ -1089,51 +1169,91 @@ def _tab_activity(data: dict) -> str:
       <span class="sh-icon" aria-hidden="true">💼</span> Email & LinkedIn
     </h2>
 
-    <div class="card chart-card">
+    <!-- Trend chart spanning full width -->
+    <div class="card chart-card" style="margin-bottom:1.5rem;">
       <div class="chart-container">
         <canvas id="inmail-trends-chart" aria-label="Weekly InMail trends chart" role="img"></canvas>
       </div>
     </div>
 
-    <div class="kpi-grid" style="margin-bottom:1rem;">
-      <div class="kpi-card">
-        <div class="kpi-value">{total_sent}</div>
-        <div class="kpi-label">Total Sent</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-value">{total_replied}</div>
-        <div class="kpi-label">Replied</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-value">{rr_pct}</div>
-        <div class="kpi-label">Reply Rate</div>
-      </div>
-    </div>
-    <div class="card" style="margin-bottom:1.5rem;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:center;">
-        <div>
-          <div class="section-heading" style="margin-bottom:.75rem;font-size:.875rem;">Sentiment Breakdown</div>"""
+    <!-- Two-column channel breakdown -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem;">
 
-    for sent, cnt in sentiments.items():
-        pct = (cnt / total_replied * 100) if total_replied else 0
-        outreach_stats_html += f"""
-          <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;">
-            <span style="min-width:100px;color:var(--text-secondary);font-size:.8rem;">{_h(sent.replace('_',' ').title())}</span>
-            <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
-              <div style="width:{pct:.1f}%;height:100%;background:var(--accent-blue);border-radius:3px;"></div>
-            </div>
-            <span style="color:var(--text-secondary);font-size:.75rem;min-width:30px;text-align:right">{cnt}</span>
-          </div>"""
-
-    outreach_stats_html += """
+      <!-- LinkedIn column -->
+      <div class="card" style="padding:1.25rem;">
+        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:1rem;">
+          <span style="font-size:1rem;" aria-hidden="true">💼</span>
+          <span style="font-weight:600;font-size:.9rem;">LinkedIn InMail</span>
+          <span style="margin-left:auto;font-size:.7rem;color:var(--text-muted);font-weight:500;background:var(--bg-secondary);padding:.15rem .45rem;border-radius:.25rem;">all time</span>
         </div>
-        <div>
-          <div class="chart-container" style="height:220px;">
-            <canvas id="sentiment-donut-chart" aria-label="InMail sentiment breakdown" role="img"></canvas>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1.25rem;">
+          <div style="text-align:center;">
+            <div style="font-size:1.5rem;font-weight:700;color:var(--text-primary);">{li_total_sent}</div>
+            <div style="font-size:.7rem;color:var(--text-muted);margin-top:.2rem;">Sent</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:1.5rem;font-weight:700;color:var(--text-primary);">{li_total_replied}</div>
+            <div style="font-size:.7rem;color:var(--text-muted);margin-top:.2rem;">Replied</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:1.5rem;font-weight:700;color:var(--accent-blue);">{li_rr_pct}</div>
+            <div style="font-size:.7rem;color:var(--text-muted);margin-top:.2rem;">Reply Rate</div>
+          </div>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:1rem;">
+          <div style="font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.6rem;">Reply Sentiment</div>
+          <div style="display:grid;grid-template-columns:1fr auto;gap:.75rem;align-items:center;">
+            <div>{sentiment_bars if sentiment_bars else '<div style="color:var(--text-muted);font-size:.8rem;">No replies yet.</div>'}</div>
+            <div style="width:100px;height:100px;">
+              <canvas id="sentiment-donut-chart" aria-label="InMail sentiment breakdown" role="img"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email column -->
+      <div class="card" style="padding:1.25rem;">
+        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:1rem;">
+          <span style="font-size:1rem;" aria-hidden="true">✉️</span>
+          <span style="font-weight:600;font-size:.9rem;">Email Sequences</span>
+          <span style="margin-left:auto;font-size:.7rem;color:var(--text-muted);font-weight:500;background:var(--bg-secondary);padding:.15rem .45rem;border-radius:.25rem;">all time</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1.25rem;">
+          <div style="text-align:center;">
+            <div style="font-size:1.5rem;font-weight:700;color:var(--text-primary);{em_kpi_value_style}">{em_total_sent if email_seqs else "—"}</div>
+            <div style="font-size:.7rem;color:var(--text-muted);margin-top:.2rem;">Sent</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:1.5rem;font-weight:700;color:var(--text-primary);{em_kpi_value_style}">{f"{em_open_rate:.1f}%" if email_seqs else "—"}</div>
+            <div style="font-size:.7rem;color:var(--text-muted);margin-top:.2rem;">Open Rate</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:1.5rem;font-weight:700;color:var(--accent-blue);{em_kpi_value_style}">{f"{em_reply_rate:.1f}%" if email_seqs else "—"}</div>
+            <div style="font-size:.7rem;color:var(--text-muted);margin-top:.2rem;">Reply Rate</div>
+          </div>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:1rem;">
+          <div style="font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.6rem;">Volume</div>
+          <div style="display:flex;gap:1.5rem;">
+            <div>
+              <div style="font-size:.85rem;font-weight:600;color:var(--text-primary);">{em_total_opened if email_seqs else "—"}</div>
+              <div style="font-size:.7rem;color:var(--text-muted);">Opened</div>
+            </div>
+            <div>
+              <div style="font-size:.85rem;font-weight:600;color:var(--text-primary);">{em_total_replied if email_seqs else "—"}</div>
+              <div style="font-size:.7rem;color:var(--text-muted);">Replied</div>
+            </div>
+            <div>
+              <div style="font-size:.85rem;font-weight:600;color:var(--text-primary);">{len(email_seqs_deduped)}</div>
+              <div style="font-size:.7rem;color:var(--text-muted);">Sequences</div>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Email sequences table -->
+    {seq_table_html}
   </section>"""
 
     # =================================================================
@@ -1170,6 +1290,8 @@ def _tab_activity(data: dict) -> str:
             detail_parts.append(f"<strong>Referral:</strong> {_h(intel['referral_name'])} ({_h(intel.get('referral_role',''))})")
         if intel.get("commodities"):
             detail_parts.append(f"<strong>Commodities:</strong> {_h(intel['commodities'])}")
+        if intel.get("challenges"):
+            detail_parts.append(f"<strong>Challenges:</strong> {_h(intel['challenges'])}")
         detail_inner = " &nbsp;·&nbsp; ".join(detail_parts) if detail_parts else "No detail available."
         has_detail = bool(detail_parts)
 
@@ -1315,58 +1437,6 @@ def _tab_activity(data: dict) -> str:
   </section>"""
 
     # =================================================================
-    # Section 5: Email Sequences
-    # =================================================================
-    if email_seqs:
-        seq_rows = ""
-        for seq in email_seqs:
-            or_ = seq.get("open_rate", 0)
-            rr_ = seq.get("reply_rate", 0)
-            seq_rows += f"""
-        <tr>
-          <td>{_h(seq.get("sequence_name",""))}</td>
-          <td>{_h(seq.get("status",""))}</td>
-          <td style="font-variant-numeric:tabular-nums">{_h(seq.get("sent",0))}</td>
-          <td style="font-variant-numeric:tabular-nums">{_h(seq.get("opened",0))} <span style="color:var(--text-secondary)">({or_:.1f}%)</span></td>
-          <td style="font-variant-numeric:tabular-nums">{_h(seq.get("replied",0))} <span style="color:var(--text-secondary)">({rr_:.1f}%)</span></td>
-          <td style="color:var(--text-secondary);font-size:.75rem">{_h(str(seq.get("snapshot_date",""))[:10])}</td>
-        </tr>"""
-        email_section = f"""
-  <section aria-labelledby="activity-email-heading">
-    <h2 class="section-heading" id="activity-email-heading">
-      <span class="sh-icon" aria-hidden="true">✉️</span> Email Sequences
-    </h2>
-    <div class="table-wrap">
-      <table aria-label="Email sequences">
-        <thead>
-          <tr>
-            <th scope="col">Sequence</th>
-            <th scope="col">Status</th>
-            <th scope="col">Sent</th>
-            <th scope="col">Opened</th>
-            <th scope="col">Replied</th>
-            <th scope="col">Snapshot</th>
-          </tr>
-        </thead>
-        <tbody>{seq_rows}</tbody>
-      </table>
-    </div>
-  </section>"""
-    else:
-        email_section = f"""
-  <section aria-labelledby="activity-email-heading">
-    <h2 class="section-heading" id="activity-email-heading">
-      <span class="sh-icon" aria-hidden="true">✉️</span> Email Sequences
-    </h2>
-    <div class="card">
-      <div class="empty-state">
-        <div class="empty-icon" aria-hidden="true">✉️</div>
-        <p>Email tracking not connected yet. Connect Apollo to see sequence performance.</p>
-      </div>
-    </div>
-  </section>"""
-
-    # =================================================================
     # Intel highlights (from call intel)
     # =================================================================
     intel_list = data.get("call_intel", [])
@@ -1411,7 +1481,6 @@ def _tab_activity(data: dict) -> str:
   {outreach_stats_html}
   {call_log_section}
   {inmail_log_section}
-  {email_section}
   {intel_section}
 </section>"""
 
@@ -1483,6 +1552,10 @@ def _tab_companies(data: dict) -> str:
         kq = intel.get("key_quote")
         if kq:
             detail_parts.append(f'<div style="margin-bottom:.5rem;padding:.5rem .75rem;border-left:3px solid var(--accent-blue);background:rgba(59,130,246,.08);border-radius:0 .25rem .25rem 0"><em>"{_h(kq)}"</em></div>')
+        # Challenges
+        challenges = intel.get("challenges")
+        if challenges:
+            detail_parts.append(f'<div style="margin-bottom:.4rem"><strong style="color:var(--accent-orange,#f59e0b)">Challenges:</strong> {_h(challenges)}</div>')
         # Objection
         obj = intel.get("objection")
         if obj:

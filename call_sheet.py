@@ -69,6 +69,152 @@ def get_supabase():
     return create_client(url, key)
 
 
+# ── Fetch fresh HubSpot contacts (never called) ─────────────────
+
+def fetch_hubspot_contacts(token: str) -> list[dict]:
+    """Fetch all HubSpot contacts with their company associations.
+
+    Returns list of dicts with: hubspot_contact_id, name, company_name,
+    hubspot_company_id, jobtitle.
+    """
+    import requests
+
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    base = "https://api.hubapi.com"
+
+    # Search all contacts (paginated)
+    all_contacts = []
+    after = None
+    for _ in range(50):  # safety limit
+        payload = {
+            "filterGroups": [{"filters": []}],
+            "properties": ["firstname", "lastname", "company", "jobtitle",
+                           "email", "phone"],
+            "limit": 100,
+        }
+        if after:
+            payload["after"] = after
+
+        resp = requests.post(
+            f"{base}/crm/v3/objects/contacts/search",
+            json=payload, headers=headers, timeout=30,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        all_contacts.extend(data.get("results", []))
+
+        paging = data.get("paging")
+        if not paging or "next" not in paging:
+            break
+        after = paging["next"]["after"]
+
+    if not all_contacts:
+        return []
+
+    # Batch fetch contact -> company associations
+    contact_ids = [str(c["id"]) for c in all_contacts]
+    from hubspot import batch_fetch_associations, batch_fetch_objects
+
+    contact_companies = batch_fetch_associations(
+        token, "contact", "company", contact_ids,
+    )
+
+    # Collect unique company IDs and fetch their names
+    all_company_ids = set()
+    for cids in contact_companies.values():
+        all_company_ids.update(cids)
+
+    companies = {}
+    if all_company_ids:
+        companies = batch_fetch_objects(
+            token, "companies", list(all_company_ids), ["name"],
+        )
+
+    # Build result
+    result = []
+    for c in all_contacts:
+        props = c.get("properties", {})
+        first = props.get("firstname") or ""
+        last = props.get("lastname") or ""
+        name = f"{first} {last}".strip()
+        if not name:
+            continue
+
+        hs_contact_id = str(c["id"])
+        comp_ids = contact_companies.get(hs_contact_id, [])
+        hs_company_id = comp_ids[0] if comp_ids else ""
+        company_name = ""
+        if hs_company_id and hs_company_id in companies:
+            company_name = companies[hs_company_id].get("name", "")
+
+        result.append({
+            "hubspot_contact_id": hs_contact_id,
+            "name": name,
+            "company_name": company_name,
+            "hubspot_company_id": hs_company_id,
+            "jobtitle": props.get("jobtitle") or "",
+        })
+
+    return result
+
+
+def inject_fresh_contacts(
+    profiles: list[dict],
+    hubspot_contacts: list[dict],
+    companies_by_id: dict[str, dict],
+    blocked_company_ids: set,
+    dnt_company_ids: set,
+) -> list[dict]:
+    """Add HubSpot contacts that have never been called as fresh profiles."""
+    # Build lookup: existing profile keys (name|||company_id)
+    existing_keys = {p["name"].lower() + "|||" + str(p["company_id"]) for p in profiles}
+
+    # Map HubSpot company ID -> Supabase company ID
+    hs_to_sb_company = {}
+    for sb_id, co in companies_by_id.items():
+        hs_id = co.get("hubspot_id")
+        if hs_id:
+            hs_to_sb_company[str(hs_id)] = sb_id
+
+    added = 0
+    for hc in hubspot_contacts:
+        hs_company_id = hc["hubspot_company_id"]
+        sb_company_id = hs_to_sb_company.get(hs_company_id)
+        if not sb_company_id:
+            continue  # company not in Supabase
+
+        # Check if already in profiles
+        key = hc["name"].lower() + "|||" + str(sb_company_id)
+        if key in existing_keys:
+            continue
+
+        # Check blocked / DNT
+        if sb_company_id in blocked_company_ids or sb_company_id in dnt_company_ids:
+            continue
+
+        company_name = hc["company_name"] or companies_by_id.get(sb_company_id, {}).get("name", "")
+        hs_co_id = companies_by_id.get(sb_company_id, {}).get("hubspot_id", "")
+
+        profiles.append({
+            "name": hc["name"],
+            "company_name": company_name,
+            "company_id": sb_company_id,
+            "hubspot_company_id": hs_co_id,
+            "hubspot_contact_id": hc["hubspot_contact_id"],
+            "attempt_count": 0,
+            "last_called_at": None,
+            "best_outcome": None,
+            "categories": [],
+            "status": "active",
+            "retired_reason": None,
+        })
+        existing_keys.add(key)
+        added += 1
+
+    print(f"  {added} fresh contacts from HubSpot (never called)")
+    return profiles
+
+
 # ── Build contact profiles from call history ────────────────────────
 
 def fetch_call_data(sb) -> tuple[list[dict], dict[str, dict]]:
@@ -432,9 +578,35 @@ def main():
     calls, companies_by_id = fetch_call_data(sb)
     print(f"  {len(calls)} calls, {len(companies_by_id)} companies")
 
-    # Build contact profiles in memory
+    # Build contact profiles from call history
     profiles = build_contact_profiles(calls, companies_by_id)
-    print(f"  {len(profiles)} unique contacts")
+    print(f"  {len(profiles)} unique contacts from call history")
+
+    # Inject fresh HubSpot contacts (never called)
+    token = os.environ.get("HUBSPOT_TOKEN")
+    if token:
+        print("Fetching fresh contacts from HubSpot...")
+        hs_contacts = fetch_hubspot_contacts(token)
+        print(f"  {len(hs_contacts)} total HubSpot contacts")
+
+        # Compute blocked/DNT sets for filtering
+        blocked_ids = {
+            cid for cid, co in companies_by_id.items()
+            if co.get("status") in BLOCKED_COMPANY_STATUSES
+        }
+        dnt_companies = load_dnt_companies()
+        dnt_ids = {
+            cid for cid, co in companies_by_id.items()
+            if (co.get("name") or "").lower() in dnt_companies
+        }
+
+        profiles = inject_fresh_contacts(
+            profiles, hs_contacts, companies_by_id, blocked_ids, dnt_ids,
+        )
+    else:
+        print("  HUBSPOT_TOKEN not set — skipping fresh contact fetch")
+
+    print(f"  {len(profiles)} total contacts (with fresh)")
 
     if args.stats:
         show_stats(profiles)

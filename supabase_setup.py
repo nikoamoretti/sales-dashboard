@@ -110,6 +110,7 @@ CREATE TABLE IF NOT EXISTS call_intel (
     referral_name TEXT,
     referral_role TEXT,
     key_quote TEXT,
+    challenges TEXT,
     extracted_at TIMESTAMPTZ DEFAULT NOW()
 );
 

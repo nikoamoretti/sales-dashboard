@@ -251,6 +251,7 @@ def _build_call_log(
                 "referral_name": intel_row.get("referral_name"),
                 "competitor": intel_row.get("competitor"),
                 "commodities": intel_row.get("commodities"),
+                "challenges": intel_row.get("challenges"),
             }
         result.append({
             "id": call_id,
@@ -417,6 +418,7 @@ def _build_companies(
                     "commodities": intel_row.get("commodities"),
                     "referral_name": intel_row.get("referral_name"),
                     "referral_role": intel_row.get("referral_role"),
+                    "challenges": intel_row.get("challenges"),
                 }
                 break
 
