@@ -1518,39 +1518,22 @@ def _tab_companies(data: dict) -> str:
             else:
                 renewal_part = f' &middot; <span style="color:var(--accent-orange);">Renewal: {_h(renewal_date)}</span>'
 
-        # 4. Meta line (compact, demoted)
+        # 4. Meta line (compact)
         meta_parts = []
         if last_touch:
             meta_parts.append(f"Last call: {_h(last_touch)}")
-        if call_count:
-            meta_parts.append(f"{call_count} call{'s' if call_count != 1 else ''}")
-        if inmail_count:
-            meta_parts.append(f"{inmail_count} inmail{'s' if inmail_count != 1 else ''}")
         meta_text = " &middot; ".join(meta_parts) if meta_parts else ""
         meta_html = f'<div class="company-meta-line">{meta_text}{renewal_part}</div>' if (meta_text or renewal_part) else ""
 
-        # 5. Expandable detail: notes + activity history
-        activity_html = ""
-        for call in (co.get("calls") or [])[:3]:
-            cat = call.get("category", "")
-            dt = str(call.get("called_at") or "")[:10]
-            activity_html += f'<div class="company-activity-item"><span class="company-activity-date">{_h(dt)}</span><span>Call: {_h(cat)}</span></div>'
-        for im in (co.get("inmails") or [])[:2]:
-            dt = str(im.get("sent_date") or "")[:10]
-            sent_label = im.get("reply_sentiment") or ("Replied" if im.get("replied") else "Sent")
-            activity_html += f'<div class="company-activity-item"><span class="company-activity-date">{_h(dt)}</span><span>InMail: {_h(str(sent_label))}</span></div>'
-
+        # 5. Notes (expandable)
         notes_html = ""
         if notes:
-            notes_html = f'<div class="company-detail-section"><div class="company-detail-section-title">Notes</div><div class="company-notes">{_h(notes[:300])}</div></div>'
+            notes_html = f'<div class="company-notes">{_h(notes[:300])}</div>'
 
         safe_id = _h(co_id.replace(" ", "_"))
 
         cards += f"""
       <article class="{card_class}"
-               role="button"
-               tabindex="0"
-               aria-expanded="false"
                data-status="{_h(status)}"
                data-channels="{_h(ch_list_str)}"
                data-name="{_h(name.lower())}"
@@ -1560,20 +1543,12 @@ def _tab_companies(data: dict) -> str:
                data-lasttouch="{_h(last_touch)}"
                data-has-provider="{has_provider}"
                data-has-commodities="{has_commodities}"
-               data-has-contact="{has_contact}"
-               onclick="toggleCompanyCard(this)"
-               onkeydown="if(event.key==='Enter'||event.key===' '){{event.preventDefault();toggleCompanyCard(this);}}">
+               data-has-contact="{has_contact}">
         {header_html}
         {knowledge_html}
         {action_html}
         {meta_html}
-        <div class="company-detail" id="co-detail-{safe_id}">
-          {notes_html}
-          <div class="company-detail-section">
-            <div class="company-detail-section-title">Recent Activity</div>
-            {activity_html if activity_html else '<div style="color:var(--text-muted);font-size:.75rem;">No activity recorded yet.</div>'}
-          </div>
-        </div>
+        {notes_html}
       </article>"""
 
     if not cards:
@@ -1585,32 +1560,27 @@ def _tab_companies(data: dict) -> str:
         name = co.get("name", "")
         status = co.get("status", "prospect")
         channels = co.get("channels_touched") or co.get("channels") or []
-        touches = co.get("total_touches", 0)
         last_touch = str(co.get("last_touch_at") or co.get("last_touch") or "")[:10]
         provider = co.get("current_provider") or ""
         commodities = co.get("commodities") or ""
         contact_name = co.get("contact_name") or ""
         next_action = co.get("next_action") or ""
-        call_count = co.get("call_count", 0)
-        inmail_count = co.get("inmail_count", 0)
-        ch_tags = " ".join(f'<span class="badge" style="font-size:.65rem;padding:.1rem .35rem;">{_h(c)}</span>' for c in channels)
         ch_list_str = " ".join(channels)
 
         table_rows += f"""
           <tr data-status="{_h(status)}" data-channels="{_h(ch_list_str)}"
-              data-name="{_h(name.lower())}" data-touches="{touches}"
+              data-name="{_h(name.lower())}"
               data-lasttouch="{_h(last_touch)}"
               data-has-provider="{"1" if provider else "0"}"
               data-has-commodities="{"1" if commodities else "0"}"
               data-has-contact="{"1" if contact_name else "0"}">
             <td style="font-weight:600;color:var(--text-primary)">{_h(name)}</td>
             <td><span class="badge badge-{_h(status)}" style="font-size:.7rem;">{_h(status.replace('_',' ').title())}</span></td>
-            <td>{ch_tags}</td>
-            <td style="text-align:center;font-variant-numeric:tabular-nums">{touches}</td>
             <td style="color:var(--text-secondary);font-size:.8rem">{_h(last_touch)}</td>
             <td style="color:var(--text-secondary);font-size:.8rem">{_h(provider[:30])}</td>
+            <td style="color:var(--text-secondary);font-size:.8rem">{_h(commodities[:40])}</td>
             <td style="color:var(--text-secondary);font-size:.8rem">{_h(contact_name)}</td>
-            <td style="color:var(--text-secondary);font-size:.75rem">{_h(next_action[:50])}</td>
+            <td style="color:var(--text-secondary);font-size:.75rem">{_h(next_action[:60])}</td>
           </tr>"""
 
     return f"""
@@ -1673,10 +1643,9 @@ def _tab_companies(data: dict) -> str:
           <tr>
             <th>Company</th>
             <th>Status</th>
-            <th>Channels</th>
-            <th style="text-align:center">Touches</th>
             <th>Last Touch</th>
             <th>Provider</th>
+            <th>Commodities</th>
             <th>Contact</th>
             <th>Next Action</th>
           </tr>
