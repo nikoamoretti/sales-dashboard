@@ -292,6 +292,84 @@ def _build_call_categories(calls: list[dict]) -> dict:
     }
 
 
+def _build_daily_calling_stats(calls: list[dict]) -> list[dict]:
+    """Aggregate cold calling stats per day, most recent first."""
+    human_contact_cats = {
+        "Interested", "Not Interested", "Meeting Booked",
+        "Referral Given", "No Rail", "Wrong Person", "Gatekeeper",
+        "Call Back", "Pitched",
+    }
+    by_day: dict[str, list[dict]] = {}
+    for c in calls:
+        day = (c.get("called_at") or "")[:10]
+        if not day:
+            continue
+        by_day.setdefault(day, []).append(c)
+
+    rows = []
+    for day in sorted(by_day, reverse=True):
+        day_calls = by_day[day]
+        dials = len(day_calls)
+        contacts = sum(1 for c in day_calls if (c.get("category") or "") in human_contact_cats)
+        interested = sum(1 for c in day_calls if c.get("category") == "Interested")
+        meetings = sum(1 for c in day_calls if c.get("category") == "Meeting Booked")
+        vms = sum(1 for c in day_calls if c.get("category") == "Left Voicemail")
+        contact_durations = [c.get("duration_s") or 0 for c in day_calls if (c.get("category") or "") in human_contact_cats and (c.get("duration_s") or 0) > 0]
+        avg_dur = round(sum(contact_durations) / len(contact_durations)) if contact_durations else 0
+        rows.append({
+            "date": day,
+            "dials": dials,
+            "contacts": contacts,
+            "contact_pct": round(contacts / dials * 100, 1) if dials else 0,
+            "interested": interested,
+            "meetings": meetings,
+            "vms": vms,
+            "avg_duration_s": avg_dur,
+        })
+    return rows
+
+
+def _build_weekly_calling_stats(calls: list[dict]) -> list[dict]:
+    """Aggregate cold calling stats per week_num, ascending."""
+    human_contact_cats = {
+        "Interested", "Not Interested", "Meeting Booked",
+        "Referral Given", "No Rail", "Wrong Person", "Gatekeeper",
+        "Call Back", "Pitched",
+    }
+    by_week: dict[int, list[dict]] = {}
+    for c in calls:
+        wk = c.get("week_num")
+        if wk is None:
+            continue
+        by_week.setdefault(wk, []).append(c)
+
+    rows = []
+    for wk in sorted(by_week):
+        wk_calls = by_week[wk]
+        dials = len(wk_calls)
+        contacts = sum(1 for c in wk_calls if (c.get("category") or "") in human_contact_cats)
+        interested = sum(1 for c in wk_calls if c.get("category") == "Interested")
+        meetings = sum(1 for c in wk_calls if c.get("category") == "Meeting Booked")
+        vms = sum(1 for c in wk_calls if c.get("category") == "Left Voicemail")
+        referrals = sum(1 for c in wk_calls if c.get("category") == "Referral Given")
+        not_interested = sum(1 for c in wk_calls if c.get("category") == "Not Interested")
+        contact_durations = [c.get("duration_s") or 0 for c in wk_calls if (c.get("category") or "") in human_contact_cats and (c.get("duration_s") or 0) > 0]
+        avg_dur = round(sum(contact_durations) / len(contact_durations)) if contact_durations else 0
+        rows.append({
+            "week": wk,
+            "dials": dials,
+            "contacts": contacts,
+            "contact_pct": round(contacts / dials * 100, 1) if dials else 0,
+            "interested": interested,
+            "meetings": meetings,
+            "vms": vms,
+            "referrals": referrals,
+            "not_interested": not_interested,
+            "avg_duration_s": avg_dur,
+        })
+    return rows
+
+
 def _build_inmail_trends(linkedin_snapshots: list[dict]) -> list[dict]:
     """Weekly InMail metrics ordered by week_num asc."""
     rows = sorted(linkedin_snapshots, key=lambda s: s.get("week_num") or 0)
@@ -783,6 +861,8 @@ def fetch_all() -> dict:
     call_trends = _build_call_trends(call_snapshots)
     call_log = _build_call_log(calls, company_id_to_name, intel_by_call_id)
     call_categories = _build_call_categories(calls)
+    daily_calling_stats = _build_daily_calling_stats(calls)
+    weekly_calling_stats = _build_weekly_calling_stats(calls)
     inmail_trends = _build_inmail_trends(linkedin_snapshots)
     inmails = _build_inmails(raw_inmails)
     inmail_stats = _build_inmail_stats(raw_inmails)
@@ -846,6 +926,8 @@ def fetch_all() -> dict:
         "call_trends": call_trends,
         "call_log": call_log,
         "call_categories": call_categories,
+        "daily_calling_stats": daily_calling_stats,
+        "weekly_calling_stats": weekly_calling_stats,
         "inmail_trends": inmail_trends,
         "inmails": inmails,
         "inmail_stats": inmail_stats,

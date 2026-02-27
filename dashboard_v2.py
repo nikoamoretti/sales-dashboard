@@ -1075,6 +1075,160 @@ def _tab_activity(data: dict) -> str:
   </section>"""
 
     # =================================================================
+    # Section 1b: Cold Calling Stats — daily & weekly tables
+    # =================================================================
+    daily_stats = data.get("daily_calling_stats", [])
+    weekly_stats = data.get("weekly_calling_stats", [])
+
+    def _fmt_dur(s: int) -> str:
+        """Format seconds as M:SS."""
+        if not s:
+            return "—"
+        return f"{s // 60}:{s % 60:02d}"
+
+    # --- Weekly table rows ---
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    # Determine current week_num from weekly stats
+    current_week = weekly_stats[-1]["week"] if weekly_stats else 0
+
+    weekly_rows_html = ""
+    wk_totals = {"dials": 0, "contacts": 0, "interested": 0, "meetings": 0, "vms": 0, "referrals": 0, "not_interested": 0, "dur_sum": 0, "dur_count": 0}
+    for wk in weekly_stats:
+        is_current = wk["week"] == current_week
+        hl = ' style="border-left:3px solid var(--accent-blue);background:rgba(59,130,246,0.06);"' if is_current else ""
+        wk_totals["dials"] += wk["dials"]
+        wk_totals["contacts"] += wk["contacts"]
+        wk_totals["interested"] += wk["interested"]
+        wk_totals["meetings"] += wk["meetings"]
+        wk_totals["vms"] += wk["vms"]
+        wk_totals["referrals"] += wk["referrals"]
+        wk_totals["not_interested"] += wk["not_interested"]
+        if wk["avg_duration_s"]:
+            wk_totals["dur_sum"] += wk["avg_duration_s"] * wk["contacts"]
+            wk_totals["dur_count"] += wk["contacts"]
+        weekly_rows_html += f"""
+              <tr{hl}>
+                <td style="font-weight:{'600' if is_current else '400'}">Week {wk['week']}{'  ◀' if is_current else ''}</td>
+                <td>{wk['dials']}</td>
+                <td>{wk['contacts']}</td>
+                <td>{wk['contact_pct']:.1f}%</td>
+                <td style="color:var(--accent-green)">{wk['interested']}</td>
+                <td style="color:var(--accent-blue)">{wk['meetings']}</td>
+                <td>{wk['vms']}</td>
+                <td>{wk['referrals']}</td>
+                <td>{wk['not_interested']}</td>
+                <td>{_fmt_dur(wk['avg_duration_s'])}</td>
+              </tr>"""
+
+    wk_total_contact_pct = round(wk_totals["contacts"] / wk_totals["dials"] * 100, 1) if wk_totals["dials"] else 0
+    wk_total_avg_dur = round(wk_totals["dur_sum"] / wk_totals["dur_count"]) if wk_totals["dur_count"] else 0
+    weekly_rows_html += f"""
+              <tr style="font-weight:600;border-top:2px solid var(--border);">
+                <td>Total</td>
+                <td>{wk_totals['dials']}</td>
+                <td>{wk_totals['contacts']}</td>
+                <td>{wk_total_contact_pct:.1f}%</td>
+                <td style="color:var(--accent-green)">{wk_totals['interested']}</td>
+                <td style="color:var(--accent-blue)">{wk_totals['meetings']}</td>
+                <td>{wk_totals['vms']}</td>
+                <td>{wk_totals['referrals']}</td>
+                <td>{wk_totals['not_interested']}</td>
+                <td>{_fmt_dur(wk_total_avg_dur)}</td>
+              </tr>"""
+
+    # --- Daily table rows ---
+    daily_rows_html = ""
+    d_totals = {"dials": 0, "contacts": 0, "interested": 0, "meetings": 0, "vms": 0, "dur_sum": 0, "dur_count": 0}
+    for d in daily_stats:
+        is_today = d["date"] == today_str
+        hl = ' style="border-left:3px solid var(--accent-green);background:rgba(16,185,129,0.06);"' if is_today else ""
+        d_totals["dials"] += d["dials"]
+        d_totals["contacts"] += d["contacts"]
+        d_totals["interested"] += d["interested"]
+        d_totals["meetings"] += d["meetings"]
+        d_totals["vms"] += d["vms"]
+        if d["avg_duration_s"]:
+            d_totals["dur_sum"] += d["avg_duration_s"] * d["contacts"]
+            d_totals["dur_count"] += d["contacts"]
+        # Format date as Mon 2/26
+        try:
+            dt = datetime.strptime(d["date"], "%Y-%m-%d")
+            day_label = dt.strftime("%a %-m/%-d")
+        except Exception:
+            day_label = d["date"]
+        daily_rows_html += f"""
+              <tr{hl}>
+                <td style="font-weight:{'600' if is_today else '400'};white-space:nowrap">{day_label}{'  ◀' if is_today else ''}</td>
+                <td>{d['dials']}</td>
+                <td>{d['contacts']}</td>
+                <td>{d['contact_pct']:.1f}%</td>
+                <td style="color:var(--accent-green)">{d['interested']}</td>
+                <td style="color:var(--accent-blue)">{d['meetings']}</td>
+                <td>{d['vms']}</td>
+                <td>{_fmt_dur(d['avg_duration_s'])}</td>
+              </tr>"""
+
+    d_total_contact_pct = round(d_totals["contacts"] / d_totals["dials"] * 100, 1) if d_totals["dials"] else 0
+    d_total_avg_dur = round(d_totals["dur_sum"] / d_totals["dur_count"]) if d_totals["dur_count"] else 0
+    daily_rows_html += f"""
+              <tr style="font-weight:600;border-top:2px solid var(--border);">
+                <td>Total</td>
+                <td>{d_totals['dials']}</td>
+                <td>{d_totals['contacts']}</td>
+                <td>{d_total_contact_pct:.1f}%</td>
+                <td style="color:var(--accent-green)">{d_totals['interested']}</td>
+                <td style="color:var(--accent-blue)">{d_totals['meetings']}</td>
+                <td>{d_totals['vms']}</td>
+                <td>{_fmt_dur(d_total_avg_dur)}</td>
+              </tr>"""
+
+    calling_stats_section = f"""
+  <section aria-labelledby="activity-calling-stats-heading">
+    <h2 class="section-heading" id="activity-calling-stats-heading">
+      <span class="sh-icon" aria-hidden="true">📊</span> Cold Calling Stats
+    </h2>
+
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;">
+        <span style="font-weight:600;color:var(--text-primary);font-size:.875rem;">Weekly Summary</span>
+        <span style="margin-left:auto;font-size:.7rem;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);padding:.15rem .5rem;border-radius:9999px;">by week</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Week</th><th>Dials</th><th>Contacts</th><th>Contact&nbsp;%</th>
+              <th>Interested</th><th>Meetings</th><th>VMs</th>
+              <th>Referrals</th><th>Not&nbsp;Int.</th><th>Avg&nbsp;Dur</th>
+            </tr>
+          </thead>
+          <tbody>{weekly_rows_html}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;">
+        <span style="font-weight:600;color:var(--text-primary);font-size:.875rem;">Daily Breakdown</span>
+        <span style="margin-left:auto;font-size:.7rem;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);padding:.15rem .5rem;border-radius:9999px;">last {len(daily_stats)} days</span>
+      </div>
+      <div class="table-wrap" style="max-height:500px;overflow-y:auto;">
+        <table>
+          <thead style="position:sticky;top:0;background:var(--bg-card);z-index:1;">
+            <tr>
+              <th>Date</th><th>Dials</th><th>Contacts</th><th>Contact&nbsp;%</th>
+              <th>Interested</th><th>Meetings</th><th>VMs</th><th>Avg&nbsp;Dur</th>
+            </tr>
+          </thead>
+          <tbody>{daily_rows_html}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>"""
+
+    # =================================================================
     # Section 2: Email & LinkedIn — unified channel view
     # =================================================================
     inmails = data.get("inmails", [])
@@ -1478,6 +1632,7 @@ def _tab_activity(data: dict) -> str:
          aria-labelledby="tab-btn-activity"
          aria-hidden="true">
   {calling_section}
+  {calling_stats_section}
   {outreach_stats_html}
   {call_log_section}
   {inmail_log_section}
