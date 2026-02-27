@@ -1143,13 +1143,19 @@ def _tab_activity(data: dict) -> str:
     log_rows = ""
     for call in call_log:
         dur = _fmt_dur(call.get("duration_s", 0))
-        _raw_notes = (call.get("notes") or "").strip()
-        _raw_summary = (call.get("summary") or "").strip()
-        _raw_summary = _re.sub(r'^(#+\s+\S.*?\n)+', '', _raw_summary).strip()
-        # Show notes in the table column (Adam's input); fall back to AI summary
-        display_text = (_raw_notes or _raw_summary).replace("\n", " ")[:200]
-        summary_full = _raw_summary
+        _raw_notes = _re.sub(r'<[^>]+>', ' ', (call.get("notes") or ""))
+        _raw_notes = _re.sub(r'\s+', ' ', _raw_notes).strip()
+        _raw_summary = _re.sub(r'<[^>]+>', ' ', (call.get("summary") or ""))
+        # Strip markdown: headers (## Summary, ## Key notes, etc.), --- rules, ** bold **
+        _raw_summary = _re.sub(r'#{1,4}\s+[A-Za-z].*?(?:\n|$)', '', _raw_summary)
+        _raw_summary = _re.sub(r'-{3,}', '', _raw_summary)
+        _raw_summary = _re.sub(r'\*{1,2}([^*]+)\*{1,2}', r'\1', _raw_summary)
+        _raw_summary = _re.sub(r'^[\s\-\*]+', '', _raw_summary)
+        _raw_summary = _re.sub(r'\s+', ' ', _raw_summary).strip()
         notes_full = _raw_notes
+        summary_full = _raw_summary
+        # Show notes first (Adam's input); fall back to cleaned AI summary
+        display_text = (_raw_notes or _raw_summary)[:200]
         intel = call.get("intel") or {}
 
         detail_parts = []
@@ -1182,6 +1188,7 @@ def _tab_activity(data: dict) -> str:
               tabindex="0"
               aria-expanded="false"
               data-call-id="{call_id}"
+              data-category="{_h(category)}"
               role="row">
             <td>{_h(date_str)}</td>
             <td>{_h(contact)}</td>
@@ -1197,7 +1204,7 @@ def _tab_activity(data: dict) -> str:
           </tr>"""
         else:
             log_rows += f"""
-          <tr>
+          <tr data-category="{_h(category)}">
             <td>{_h(date_str)}</td>
             <td>{_h(contact)}</td>
             <td>{_h(company)}</td>
@@ -1433,139 +1440,41 @@ def _tab_companies(data: dict) -> str:
     from datetime import date as _date
     today_str = _date.today().isoformat()
 
-    cards = ""
-    for co in companies[:120]:
+    # Build date options from unique last_touch dates
+    all_dates = sorted(set(
+        str(co.get("last_touch_at") or "")[:10]
+        for co in companies if co.get("last_touch_at")
+    ), reverse=True)
+
+    date_options = '<option value="" selected>All dates</option>'
+    date_options += f'<option value="{today_str}">Today ({today_str})</option>'
+    from datetime import timedelta as _td
+    yesterday_str = (_date.today() - _td(days=1)).isoformat()
+    if yesterday_str in all_dates:
+        date_options += f'<option value="{yesterday_str}">Yesterday ({yesterday_str})</option>'
+    # Last 5 unique dates (excluding today/yesterday already shown)
+    for d in all_dates:
+        if d != today_str and d != yesterday_str:
+            date_options += f'<option value="{_h(d)}">{_h(d)}</option>'
+
+    # Table rows — unified table, no cards
+    table_rows = ""
+    for co in companies:
         name = co.get("name", "")
         status = co.get("status", "prospect")
         channels = co.get("channels_touched") or co.get("channels") or []
-        touches = co.get("total_touches", 0) or co.get("total_touches", 0)
         last_touch = str(co.get("last_touch_at") or co.get("last_touch") or "")[:10]
-        intel = co.get("latest_intel")
-        call_count = co.get("call_count", 0)
-        inmail_count = co.get("inmail_count", 0)
-        co_id = str(co.get("id", name))
-
-        # CRM fields
-        industry = co.get("industry") or ""
         provider = co.get("current_provider") or ""
         commodities = co.get("commodities") or ""
-        renewal_date = str(co.get("contract_renewal_date") or "")[:10]
-        next_action = co.get("next_action") or ""
-        next_action_date = str(co.get("next_action_date") or "")[:10]
         contact_name = co.get("contact_name") or ""
         contact_role = co.get("contact_role") or ""
-        notes = co.get("notes") or ""
-
-        # Card accent class based on urgency
-        card_class = "company-card"
-        if renewal_date and renewal_date <= today_str:
-            card_class += " has-renewal"
-        elif next_action:
-            card_class += " has-action"
-
-        # Data attributes for sorting and filtering
-        sort_renewal = renewal_date or "9999-12-31"
-        sort_action = next_action_date or "9999-12-31"
-        ch_list_str = " ".join(channels)
-
-        # Data attributes for knowledge filter
-        has_provider = "1" if provider else "0"
-        has_commodities = "1" if commodities else "0"
-        has_contact = "1" if contact_name else "0"
-
-        # ----------------------------------------------------------
-        # Card layout: Header -> Knowledge -> Next Action -> Meta line -> Expandable detail
-        # ----------------------------------------------------------
-
-        # 1. Header: name + status badge
-        header_html = f"""
-        <div class="company-card-header">
-          <span class="company-name">{_h(name)}</span>
-          <span class="badge badge-{_h(status)}">{_h(status.replace('_',' ').title())}</span>
-        </div>"""
-
-        # 2. Knowledge section
-        knowledge_rows = []
-        if industry:
-            knowledge_rows.append(f'<div class="ck-row"><span class="ck-label">Industry</span><span class="ck-value">{_h(industry)}</span></div>')
-        if provider:
-            knowledge_rows.append(f'<div class="ck-row"><span class="ck-label">Provider</span><span class="ck-value">&rarr; {_h(provider)}</span></div>')
-        if commodities:
-            knowledge_rows.append(f'<div class="ck-row"><span class="ck-label">Ships</span><span class="ck-value">{_h(commodities[:100])}</span></div>')
-        if contact_name:
-            role_part = f" ({_h(contact_role)})" if contact_role else ""
-            knowledge_rows.append(f'<div class="ck-row"><span class="ck-label">Contact</span><span class="ck-value">{_h(contact_name)}{role_part}</span></div>')
-
-        knowledge_html = ""
-        if knowledge_rows:
-            knowledge_html = f'<div class="company-knowledge">{"".join(knowledge_rows)}</div>'
-
-        # 3. Next action (blue box)
-        action_html = ""
-        if next_action:
-            date_part = f'<span class="action-date">{_h(next_action_date)}</span>' if next_action_date else ""
-            action_html = f'<div class="company-next-action">{_h(next_action[:100])}{date_part}</div>'
-        elif intel and intel.get("next_action"):
-            na = intel["next_action"]
-            action_html = f'<div class="company-next-action">{_h(na[:100])}</div>'
-
-        # Contract renewal badge (inline in meta)
-        renewal_part = ""
-        if renewal_date and renewal_date != "":
-            overdue = renewal_date <= today_str
-            if overdue:
-                renewal_part = f' &middot; <span style="color:var(--accent-red);">Renewal overdue: {_h(renewal_date)}</span>'
-            else:
-                renewal_part = f' &middot; <span style="color:var(--accent-orange);">Renewal: {_h(renewal_date)}</span>'
-
-        # 4. Meta line (compact)
-        meta_parts = []
-        if last_touch:
-            meta_parts.append(f"Last call: {_h(last_touch)}")
-        meta_text = " &middot; ".join(meta_parts) if meta_parts else ""
-        meta_html = f'<div class="company-meta-line">{meta_text}{renewal_part}</div>' if (meta_text or renewal_part) else ""
-
-        # 5. Notes (expandable)
-        notes_html = ""
-        if notes:
-            notes_html = f'<div class="company-notes">{_h(notes[:300])}</div>'
-
-        safe_id = _h(co_id.replace(" ", "_"))
-
-        cards += f"""
-      <article class="{card_class}"
-               data-status="{_h(status)}"
-               data-channels="{_h(ch_list_str)}"
-               data-name="{_h(name.lower())}"
-               data-renewal="{_h(sort_renewal)}"
-               data-actiondate="{_h(sort_action)}"
-               data-touches="{touches}"
-               data-lasttouch="{_h(last_touch)}"
-               data-has-provider="{has_provider}"
-               data-has-commodities="{has_commodities}"
-               data-has-contact="{has_contact}">
-        {header_html}
-        {knowledge_html}
-        {action_html}
-        {meta_html}
-        {notes_html}
-      </article>"""
-
-    if not cards:
-        cards = '<div class="empty-state"><div class="empty-icon" aria-hidden="true">🏢</div><p>No companies found. They will appear once call or LinkedIn data is synced.</p></div>'
-
-    # Table view rows
-    table_rows = ""
-    for co in companies[:120]:
-        name = co.get("name", "")
-        status = co.get("status", "prospect")
-        channels = co.get("channels_touched") or co.get("channels") or []
-        last_touch = str(co.get("last_touch_at") or co.get("last_touch") or "")[:10]
-        provider = co.get("current_provider") or ""
-        commodities = co.get("commodities") or ""
-        contact_name = co.get("contact_name") or ""
         next_action = co.get("next_action") or ""
+        notes = co.get("notes") or ""
         ch_list_str = " ".join(channels)
+
+        contact_display = _h(contact_name)
+        if contact_role:
+            contact_display += f'<br><span style="font-size:.7rem;color:var(--text-muted)">{_h(contact_role)}</span>'
 
         table_rows += f"""
           <tr data-status="{_h(status)}" data-channels="{_h(ch_list_str)}"
@@ -1574,13 +1483,14 @@ def _tab_companies(data: dict) -> str:
               data-has-provider="{"1" if provider else "0"}"
               data-has-commodities="{"1" if commodities else "0"}"
               data-has-contact="{"1" if contact_name else "0"}">
-            <td style="font-weight:600;color:var(--text-primary)">{_h(name)}</td>
-            <td><span class="badge badge-{_h(status)}" style="font-size:.7rem;">{_h(status.replace('_',' ').title())}</span></td>
-            <td style="color:var(--text-secondary);font-size:.8rem">{_h(last_touch)}</td>
-            <td style="color:var(--text-secondary);font-size:.8rem">{_h(provider[:30])}</td>
-            <td style="color:var(--text-secondary);font-size:.8rem">{_h(commodities[:40])}</td>
-            <td style="color:var(--text-secondary);font-size:.8rem">{_h(contact_name)}</td>
-            <td style="color:var(--text-secondary);font-size:.75rem">{_h(next_action[:60])}</td>
+            <td style="font-weight:600;color:var(--text-primary);white-space:nowrap">{_h(name)}</td>
+            <td><span class="badge badge-{_h(status)}" style="font-size:.65rem">{_h(status.replace('_',' ').title())}</span></td>
+            <td style="color:var(--text-secondary);font-size:.8rem;white-space:nowrap">{_h(last_touch)}</td>
+            <td style="color:var(--text-secondary);font-size:.8rem">{_h(provider)}</td>
+            <td style="color:var(--text-secondary);font-size:.8rem">{_h(commodities[:50])}</td>
+            <td style="font-size:.8rem">{contact_display}</td>
+            <td style="color:var(--accent-blue);font-size:.75rem;max-width:250px">{_h(next_action[:80])}</td>
+            <td style="color:var(--text-muted);font-size:.75rem;max-width:200px">{_h(notes[:80])}</td>
           </tr>"""
 
     return f"""
@@ -1593,20 +1503,8 @@ def _tab_companies(data: dict) -> str:
   <section aria-labelledby="companies-heading">
     <h2 class="section-heading" id="companies-heading">
       <span class="sh-icon" aria-hidden="true">🏢</span> Companies
-      <span style="margin-left:auto;display:flex;align-items:center;gap:.75rem;">
-        <span style="font-size:.75rem;color:var(--text-muted);font-weight:400"
-              id="companies-count">{len(companies)} total</span>
-        <span class="view-toggle" role="group" aria-label="View mode">
-          <button class="view-toggle-btn active" id="view-cards-btn"
-                  onclick="setCompanyView('cards')" aria-label="Card view" title="Cards">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
-          </button>
-          <button class="view-toggle-btn" id="view-table-btn"
-                  onclick="setCompanyView('table')" aria-label="Table view" title="Table">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="2" width="14" height="2" rx=".5"/><rect x="1" y="7" width="14" height="2" rx=".5"/><rect x="1" y="12" width="14" height="2" rx=".5"/></svg>
-          </button>
-        </span>
-      </span>
+      <span style="margin-left:auto;font-size:.75rem;color:var(--text-muted);font-weight:400"
+            id="companies-count">{len(companies)} total</span>
     </h2>
 
     <div class="filter-bar">
@@ -1622,22 +1520,16 @@ def _tab_companies(data: dict) -> str:
       <select id="company-knowledge-filter" aria-label="Filter by knowledge" onchange="filterCompanies()">
         {knowledge_options}
       </select>
-      <input type="date" id="company-date-filter" value="{today_str}" aria-label="Filter by date"
-             onchange="filterCompanies()" style="background:var(--surface-card);color:var(--text-primary);border:1px solid var(--border);border-radius:6px;padding:.35rem .5rem;font-size:.8rem;">
+      <select id="company-date-filter" aria-label="Filter by date" onchange="filterCompanies()">
+        {date_options}
+      </select>
       <select id="company-sort" aria-label="Sort companies" onchange="filterCompanies()">
         <option value="recent" selected>Most recent</option>
-        <option value="touches">Most touches</option>
-        <option value="renewal">Renewal date</option>
-        <option value="action">Next action date</option>
         <option value="name">Name A-Z</option>
       </select>
     </div>
 
-    <div class="company-grid" id="company-grid" aria-live="polite">
-      {cards}
-    </div>
-
-    <div class="table-wrap" id="company-table-wrap" style="display:none;">
+    <div class="table-wrap" id="company-table-wrap">
       <table class="data-table" id="company-table">
         <thead>
           <tr>
@@ -1648,6 +1540,7 @@ def _tab_companies(data: dict) -> str:
             <th>Commodities</th>
             <th>Contact</th>
             <th>Next Action</th>
+            <th>Notes</th>
           </tr>
         </thead>
         <tbody>{table_rows}</tbody>
@@ -2541,7 +2434,7 @@ function buildCallLogRows() {{
   callLogRows = allRows.filter(function(tr) {{
     var text = tr.textContent.toLowerCase();
     var matchSearch = !search || text.indexOf(search) !== -1;
-    var matchCat    = !cat    || text.indexOf(cat.toLowerCase()) !== -1;
+    var matchCat    = !cat    || (tr.dataset.category || '') === cat;
     return matchSearch && matchCat;
   }});
   callLogPage_ = 0;
@@ -2660,177 +2553,87 @@ function renderImPage() {{
 
 
 // ============================================================
-// Companies: filter + pagination
+// Companies: filter + sort + pagination
 // ============================================================
-var coVisible = [];
-var coPage_   = 0;
-var coPageSize = 30;
+var coRows = [];
+var coPage_ = 0;
+var coPageSize = 50;
 
-function buildCompanyCards() {{
+function filterCompanies() {{
   var search  = (document.getElementById('company-search').value || '').toLowerCase();
-  var status  = (document.getElementById('company-status-filter').value || '').toLowerCase();
-  var channel = (document.getElementById('company-channel-filter').value || '').toLowerCase();
-  var knowledge = (document.getElementById('company-knowledge-filter') || {{}}).value || '';
-  var dateVal = (document.getElementById('company-date-filter') || {{}}).value || '';
-  var sortBy  = (document.getElementById('company-sort') || {{}}).value || 'recent';
-  var grid    = document.getElementById('company-grid');
-  if (!grid) return;
+  var status  = document.getElementById('company-status-filter').value;
+  var channel = document.getElementById('company-channel-filter').value;
+  var know    = document.getElementById('company-knowledge-filter').value;
+  var dateVal = document.getElementById('company-date-filter').value;
+  var sortBy  = document.getElementById('company-sort').value;
+  var tbody   = document.querySelector('#company-table tbody');
+  if (!tbody) return;
+  var allRows = Array.from(tbody.querySelectorAll('tr'));
 
-  var allCards = Array.from(grid.querySelectorAll('.company-card'));
-  coVisible = allCards.filter(function(card) {{
-    var name     = (card.dataset.name     || '').toLowerCase();
-    var cstatus  = (card.dataset.status   || '').toLowerCase();
-    var cchannels= (card.dataset.channels || '').toLowerCase();
-    var lasttouch = card.dataset.lasttouch || '';
-    var mSearch  = !search  || name.indexOf(search) !== -1;
-    var mStatus  = !status  || cstatus === status;
-    var mChannel = !channel || cchannels.indexOf(channel) !== -1;
-    var mDate    = !dateVal || lasttouch === dateVal;
-    var mKnow    = true;
-    if (knowledge === 'has_provider')    mKnow = card.dataset.hasProvider === '1';
-    if (knowledge === 'has_commodities') mKnow = card.dataset.hasCommodities === '1';
-    if (knowledge === 'has_contact')     mKnow = card.dataset.hasContact === '1';
-    return mSearch && mStatus && mChannel && mDate && mKnow;
+  coRows = allRows.filter(function(r) {{
+    var name = r.getAttribute('data-name') || '';
+    var st   = r.getAttribute('data-status') || '';
+    var ch   = r.getAttribute('data-channels') || '';
+    var lt   = r.getAttribute('data-lasttouch') || '';
+    if (search && name.indexOf(search) < 0) return false;
+    if (status && st !== status) return false;
+    if (channel && ch.indexOf(channel) < 0) return false;
+    if (dateVal && lt !== dateVal) return false;
+    if (know === 'has_provider' && r.getAttribute('data-has-provider') !== '1') return false;
+    if (know === 'has_commodities' && r.getAttribute('data-has-commodities') !== '1') return false;
+    if (know === 'has_contact' && r.getAttribute('data-has-contact') !== '1') return false;
+    return true;
   }});
 
   // Sort
-  coVisible.sort(function(a, b) {{
-    if (sortBy === 'renewal') {{
-      return (a.dataset.renewal || '9999') < (b.dataset.renewal || '9999') ? -1 : 1;
-    }} else if (sortBy === 'action') {{
-      return (a.dataset.actiondate || '9999') < (b.dataset.actiondate || '9999') ? -1 : 1;
-    }} else if (sortBy === 'name') {{
-      return (a.dataset.name || '') < (b.dataset.name || '') ? -1 : 1;
-    }} else if (sortBy === 'recent') {{
-      // Sort by last touch date descending
-      var aTouch = a.dataset.lasttouch || '';
-      var bTouch = b.dataset.lasttouch || '';
-      if (bTouch > aTouch) return 1;
-      if (bTouch < aTouch) return -1;
-      return 0;
-    }} else {{
-      // touches desc
-      return (parseInt(b.dataset.touches)||0) - (parseInt(a.dataset.touches)||0);
-    }}
-  }});
+  if (sortBy === 'name') {{
+    coRows.sort(function(a, b) {{
+      return (a.getAttribute('data-name') || '').localeCompare(b.getAttribute('data-name') || '');
+    }});
+  }} else {{
+    coRows.sort(function(a, b) {{
+      return (b.getAttribute('data-lasttouch') || '').localeCompare(a.getAttribute('data-lasttouch') || '');
+    }});
+  }}
 
+  var countEl = document.getElementById('companies-count');
+  if (countEl) countEl.textContent = coRows.length + ' total';
   coPage_ = 0;
-  renderCompanyPage();
+  renderCompanyTablePage();
 }}
 
-function renderCompanyPage() {{
-  var total = coVisible.length;
+function renderCompanyTablePage() {{
+  var total = coRows.length;
   var pages = Math.max(1, Math.ceil(total / coPageSize));
   var start = coPage_ * coPageSize;
   var end   = Math.min(start + coPageSize, total);
-
-  var grid = document.getElementById('company-grid');
-  if (!grid) return;
-  var allCards = Array.from(grid.querySelectorAll('.company-card'));
-  allCards.forEach(function(c) {{ c.style.display = 'none'; }});
-  coVisible.slice(start, end).forEach(function(c) {{ c.style.display = ''; }});
-
+  var tbody = document.querySelector('#company-table tbody');
+  if (!tbody) return;
+  Array.from(tbody.querySelectorAll('tr')).forEach(function(r) {{ r.style.display = 'none'; }});
+  coRows.slice(start, end).forEach(function(r) {{ r.style.display = ''; }});
   var info = document.getElementById('company-page-info');
-  if (info) info.textContent = total ? (start+1) + '–' + end + ' of ' + total : '0 results';
-
-  var btnsEl = document.getElementById('co-page-btns');
-  if (btnsEl) {{
-    btnsEl.innerHTML = '';
-    var maxBtns = 5;
-    var startPage = Math.max(0, coPage_ - Math.floor(maxBtns/2));
-    var endPage   = Math.min(pages, startPage + maxBtns);
-    for (var p = startPage; p < endPage; p++) {{
-      var btn = document.createElement('button');
-      btn.className = 'page-btn' + (p === coPage_ ? ' active' : '');
-      btn.textContent = p + 1;
-      btn.setAttribute('aria-label', 'Page ' + (p+1));
-      if (p === coPage_) btn.setAttribute('aria-current', 'page');
-      (function(page) {{ btn.onclick = function() {{ coPage_ = page; renderCompanyPage(); }}; }})(p);
-      btnsEl.appendChild(btn);
+  if (info) info.textContent = total ? ((start+1) + '–' + end + ' of ' + total) : '0 companies';
+  var btns = document.getElementById('co-page-btns');
+  if (btns) {{
+    btns.innerHTML = '';
+    for (var i = 0; i < pages && i < 10; i++) {{
+      var b = document.createElement('button');
+      b.className = 'page-btn' + (i === coPage_ ? ' active' : '');
+      b.textContent = i + 1;
+      b.onclick = (function(p) {{ return function() {{ coPage_ = p; renderCompanyTablePage(); }}; }})(i);
+      btns.appendChild(b);
     }}
   }}
-
   var prev = document.getElementById('co-prev-btn');
   var next = document.getElementById('co-next-btn');
   if (prev) prev.disabled = coPage_ === 0;
   if (next) next.disabled = coPage_ >= pages - 1;
 }}
 
-function filterCompanies() {{
-  if (companyViewMode === 'table') {{ filterCompanyTable(); }}
-  else {{ buildCompanyCards(); }}
-}}
 function companyPage(dir) {{
-  var total = coVisible.length;
-  var pages = Math.max(1, Math.ceil(total / coPageSize));
+  var pages = Math.max(1, Math.ceil(coRows.length / coPageSize));
   coPage_ = Math.max(0, Math.min(pages - 1, coPage_ + dir));
-  renderCompanyPage();
-}}
-
-function toggleCompanyCard(card) {{
-  var expanded = card.getAttribute('aria-expanded') === 'true';
-  card.setAttribute('aria-expanded', !expanded);
-  var detailEl = card.querySelector('.company-detail');
-  if (detailEl) detailEl.classList.toggle('visible', !expanded);
-}}
-
-// ============================================================
-// Company view toggle (Cards / Table)
-// ============================================================
-var companyViewMode = 'cards';
-
-function setCompanyView(mode) {{
-  companyViewMode = mode;
-  var grid  = document.getElementById('company-grid');
-  var table = document.getElementById('company-table-wrap');
-  var pagination = document.getElementById('company-pagination');
-  var cardsBtn = document.getElementById('view-cards-btn');
-  var tableBtn = document.getElementById('view-table-btn');
-
-  if (mode === 'table') {{
-    if (grid)  grid.style.display = 'none';
-    if (table) table.style.display = '';
-    if (pagination) pagination.style.display = 'none';
-    cardsBtn.classList.remove('active');
-    tableBtn.classList.add('active');
-    filterCompanyTable();
-  }} else {{
-    if (grid)  grid.style.display = '';
-    if (table) table.style.display = 'none';
-    if (pagination) pagination.style.display = '';
-    cardsBtn.classList.add('active');
-    tableBtn.classList.remove('active');
-  }}
-}}
-
-function filterCompanyTable() {{
-  var search  = (document.getElementById('company-search').value || '').toLowerCase();
-  var status  = document.getElementById('company-status-filter').value;
-  var channel = document.getElementById('company-channel-filter').value;
-  var know    = document.getElementById('company-knowledge-filter').value;
-  var dateVal = (document.getElementById('company-date-filter') || {{}}).value || '';
-  var tbody   = document.querySelector('#company-table tbody');
-  if (!tbody) return;
-  var rows = Array.from(tbody.querySelectorAll('tr'));
-  var visible = 0;
-  rows.forEach(function(r) {{
-    var name = r.getAttribute('data-name') || '';
-    var st   = r.getAttribute('data-status') || '';
-    var ch   = r.getAttribute('data-channels') || '';
-    var lt   = r.getAttribute('data-lasttouch') || '';
-    var show = true;
-    if (search && name.indexOf(search) < 0) show = false;
-    if (status && st !== status) show = false;
-    if (channel && ch.indexOf(channel) < 0) show = false;
-    if (dateVal && lt !== dateVal) show = false;
-    if (know === 'has_provider' && r.getAttribute('data-has-provider') !== '1') show = false;
-    if (know === 'has_commodities' && r.getAttribute('data-has-commodities') !== '1') show = false;
-    if (know === 'has_contact' && r.getAttribute('data-has-contact') !== '1') show = false;
-    r.style.display = show ? '' : 'none';
-    if (show) visible++;
-  }});
-  var countEl = document.getElementById('companies-count');
-  if (countEl) countEl.textContent = visible + ' total';
+  renderCompanyTablePage();
 }}
 
 
@@ -2844,8 +2647,8 @@ window.addEventListener('DOMContentLoaded', function() {{
     callLogRows = Array.from(tbody.querySelectorAll('tr:not(.detail-row)'));
     renderCallLogPage();
   }}
-  // Init company pagination
-  buildCompanyCards();
+  // Init company table
+  filterCompanies();
 }});
 </script>"""
 
