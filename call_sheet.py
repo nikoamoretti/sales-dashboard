@@ -256,12 +256,17 @@ def build_contact_profiles(
     # DNT list (from rail-dashboard file)
     dnt_companies = load_dnt_companies()
 
-    # DNT company IDs — match by name (case-insensitive)
+    # DNT company IDs — fuzzy match by name (case-insensitive substring)
+    # "CEMEX" in DNT matches "Cemex US" in Supabase (and vice versa)
     dnt_company_ids = set()
     for cid, co in companies_by_id.items():
         co_name = (co.get("name") or "").lower()
-        if co_name and co_name in dnt_companies:
-            dnt_company_ids.add(cid)
+        if not co_name:
+            continue
+        for dnt_name in dnt_companies:
+            if dnt_name in co_name or co_name in dnt_name:
+                dnt_company_ids.add(cid)
+                break
 
     # Group calls by contact (name + company_id)
     profiles: dict[str, dict] = {}
@@ -595,10 +600,15 @@ def main():
             if co.get("status") in BLOCKED_COMPANY_STATUSES
         }
         dnt_companies = load_dnt_companies()
-        dnt_ids = {
-            cid for cid, co in companies_by_id.items()
-            if (co.get("name") or "").lower() in dnt_companies
-        }
+        dnt_ids = set()
+        for cid, co in companies_by_id.items():
+            co_name = (co.get("name") or "").lower()
+            if not co_name:
+                continue
+            for dnt_name in dnt_companies:
+                if dnt_name in co_name or co_name in dnt_name:
+                    dnt_ids.add(cid)
+                    break
 
         profiles = inject_fresh_contacts(
             profiles, hs_contacts, companies_by_id, blocked_ids, dnt_ids,

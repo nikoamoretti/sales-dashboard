@@ -2045,6 +2045,8 @@ def _tab_pipeline(data: dict) -> str:
         "Proposal": "var(--accent-orange)",
         "Nurture": "var(--accent-yellow)",
         "Backlog": "var(--text-muted)",
+        "Blocked / Stale": "var(--accent-red, #ef4444)",
+        "Closed Won": "#22c55e",
     }
     stage_bg = {
         "Demo": "rgba(66,133,244,.12)",
@@ -2054,6 +2056,8 @@ def _tab_pipeline(data: dict) -> str:
         "Proposal": "rgba(249,115,22,.12)",
         "Nurture": "rgba(251,188,4,.12)",
         "Backlog": "rgba(90,96,120,.12)",
+        "Blocked / Stale": "rgba(239,68,68,.12)",
+        "Closed Won": "rgba(34,197,94,.12)",
     }
 
     # Sort deals: amount desc (no-deal entries last)
@@ -2104,6 +2108,16 @@ def _tab_pipeline(data: dict) -> str:
     </div>
   </section>"""
 
+    chart_html = """
+  <section aria-labelledby="pipeline-chart-heading" style="margin-bottom:1.5rem;">
+    <h2 class="section-heading" id="pipeline-chart-heading">
+      <span class="sh-icon" aria-hidden="true">📊</span> Pipeline by Stage
+    </h2>
+    <div style="max-width:600px;margin:0 auto;">
+      <canvas id="pipeline-stage-chart" height="260"></canvas>
+    </div>
+  </section>"""
+
     return f"""
 <section id="tab-pipeline"
          class="tab-panel app-wrapper"
@@ -2112,6 +2126,7 @@ def _tab_pipeline(data: dict) -> str:
          aria-hidden="true">
   {kpi_html}
   {funnel_html}
+  {chart_html}
   {pipeline_html}
 </section>"""
 
@@ -2562,6 +2577,8 @@ function initPipelineChart() {{
     'Proposal': '#f97316',
     'Nurture': '#fbbc04',
     'Backlog': '#5a6078',
+    'Blocked / Stale': '#ef4444',
+    'Closed Won': '#22c55e',
   }};
 
   var labels = [];

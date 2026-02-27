@@ -121,9 +121,19 @@ def fetch_existing_companies(sb) -> dict[str, dict]:
 
 
 def fetch_existing_call_ids(sb) -> set[str]:
-    """Fetch all hubspot_call_ids already in the calls table."""
-    result = sb.table("calls").select("hubspot_call_id").execute()
-    return {r["hubspot_call_id"] for r in result.data if r.get("hubspot_call_id")}
+    """Fetch all hubspot_call_ids already in the calls table (paginated)."""
+    all_ids: set[str] = set()
+    page_size = 1000
+    offset = 0
+    while True:
+        result = sb.table("calls").select("hubspot_call_id").range(offset, offset + page_size - 1).execute()
+        for r in result.data:
+            if r.get("hubspot_call_id"):
+                all_ids.add(r["hubspot_call_id"])
+        if len(result.data) < page_size:
+            break
+        offset += page_size
+    return all_ids
 
 
 def backup_calls(sb) -> Optional[Path]:
@@ -151,9 +161,19 @@ def backup_calls(sb) -> Optional[Path]:
 
 
 def fetch_intel_call_ids(sb) -> set[int]:
-    """Fetch call.id values that already have a call_intel record."""
-    result = sb.table("call_intel").select("call_id").execute()
-    return {r["call_id"] for r in result.data if r.get("call_id")}
+    """Fetch call.id values that already have a call_intel record (paginated)."""
+    all_ids: set[int] = set()
+    page_size = 1000
+    offset = 0
+    while True:
+        result = sb.table("call_intel").select("call_id").range(offset, offset + page_size - 1).execute()
+        for r in result.data:
+            if r.get("call_id"):
+                all_ids.add(r["call_id"])
+        if len(result.data) < page_size:
+            break
+        offset += page_size
+    return all_ids
 
 
 # ---------------------------------------------------------------------------
@@ -323,8 +343,9 @@ def upsert_companies(
     # Execute updates (row by row — Supabase client doesn't support bulk update)
     if to_update:
         for upd in to_update:
-            row_id = upd.pop("id")
-            sb.table("companies").update(upd).eq("id", row_id).execute()
+            row_id = upd["id"]
+            payload = {k: v for k, v in upd.items() if k != "id"}
+            sb.table("companies").update(payload).eq("id", row_id).execute()
         print(f"  Updated {len(to_update)} existing companies")
 
     # Rebuild lookup after mutations

@@ -12,7 +12,20 @@ set -u
 
 cd "$(dirname "$0")"
 
+# ── Lockfile guard (prevent concurrent runs) ───────────────────────────────
+LOCKFILE="/tmp/telegraph_sync.lock"
+if [ -f "$LOCKFILE" ]; then
+    LOCK_PID=$(cat "$LOCKFILE" 2>/dev/null || echo "")
+    if [ -n "$LOCK_PID" ] && kill -0 "$LOCK_PID" 2>/dev/null; then
+        exit 0  # previous run still active
+    fi
+    rm -f "$LOCKFILE"  # stale lock
+fi
+echo $$ > "$LOCKFILE"
+trap 'rm -f "$LOCKFILE"' EXIT
+
 # ── Business-hours guard (Mon-Fri 5 AM – 5 PM PT) ─────────────────────────
+export TZ="America/Los_Angeles"
 DOW=$(date +%u)   # 1=Mon … 7=Sun
 NOW_H=$(date +%H) # 00-23
 # Allow override for testing: FORCE=1 ./telegraph_sync.sh

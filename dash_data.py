@@ -582,7 +582,7 @@ def _build_deals(raw_deals: list[dict], raw_companies: list[dict]) -> dict:
     """
     STAGE_ORDER = [
         "Demo", "Introductory Call", "Qualified", "Pilot",
-        "Proposal", "Nurture", "Backlog",
+        "Proposal", "Nurture", "Backlog", "Blocked / Stale", "Closed Won",
     ]
     STAGE_WEIGHT = {
         "Demo": 0.40,
@@ -592,6 +592,8 @@ def _build_deals(raw_deals: list[dict], raw_companies: list[dict]) -> dict:
         "Proposal": 0.80,
         "Nurture": 0.10,
         "Backlog": 0.05,
+        "Blocked / Stale": 0.0,
+        "Closed Won": 1.0,
     }
 
     stage_rank = {s: i for i, s in enumerate(STAGE_ORDER)}
@@ -876,9 +878,38 @@ def fetch_all() -> dict:
     # HubSpot deal pipeline (filtered to outbound-sourced companies)
     deal_pipeline = _build_deals(raw_deals, raw_companies)
 
-    # Channel efficiency comparison
-    total_email_sent = sum(s.get("sent") or 0 for s in raw_sequences)
-    total_email_replied = sum(s.get("replied") or 0 for s in raw_sequences)
+    # Call intel highlights: recent calls with extracted intel, for the Calling tab
+    call_intel_highlights: list[dict] = []
+    for call in sorted(calls, key=lambda c: c.get("called_at") or "", reverse=True):
+        intel_row = intel_by_call_id.get(call["id"])
+        if not intel_row:
+            continue
+        il = intel_row.get("interest_level") or "none"
+        if il == "none":
+            continue
+        call_intel_highlights.append({
+            "company": company_id_to_name.get(call.get("company_id"), ""),
+            "contact": call.get("contact_name") or "",
+            "interest_level": il,
+            "key_quote": intel_row.get("key_quote") or "",
+            "next_action": intel_row.get("next_action") or "",
+            "referral_name": intel_row.get("referral_name") or "",
+            "competitor": intel_row.get("competitor") or "",
+            "commodities": intel_row.get("commodities") or "",
+        })
+        if len(call_intel_highlights) >= 20:
+            break
+
+    # Channel efficiency comparison — deduplicate email sequences (keep latest snapshot per name)
+    _latest_email: dict[str, dict] = {}
+    for s in raw_sequences:
+        name = s.get("sequence_name") or ""
+        existing = _latest_email.get(name)
+        if existing is None or (s.get("snapshot_date") or "") > (existing.get("snapshot_date") or ""):
+            _latest_email[name] = s
+    deduped_email = list(_latest_email.values())
+    total_email_sent = sum(s.get("sent") or 0 for s in deduped_email)
+    total_email_replied = sum(s.get("replied") or 0 for s in deduped_email)
     total_inmail_sent = inmail_stats.get("total_sent", 0)
     total_inmail_replied = inmail_stats.get("total_replied", 0)
     interested_from_calls = sum(1 for c in calls if (c.get("category") or "") in ("Interested", "Meeting Booked"))
@@ -925,6 +956,7 @@ def fetch_all() -> dict:
         "insights": insights,
         "call_trends": call_trends,
         "call_log": call_log,
+        "call_intel": call_intel_highlights,
         "call_categories": call_categories,
         "daily_calling_stats": daily_calling_stats,
         "weekly_calling_stats": weekly_calling_stats,
@@ -960,7 +992,7 @@ if __name__ == "__main__":
     tw = ov["this_week"]
     print(f"\n  This week (#{tw['week_num']}, {tw['monday']}):")
     print(f"    Dials          : {tw['dials']}")
-    print(f"    Human contacts : {tw['human_contacts']} ({tw['contact_rate']:.1%})")
+    print(f"    Human contacts : {tw['human_contacts']} ({tw['contact_rate']:.1f}%)")
     print(f"    Meetings       : {tw['meetings_booked']}")
     print(f"    InMails sent   : {tw['inmails_sent']} / replied: {tw['inmails_replied']}")
 
