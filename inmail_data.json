@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-26T16:19:29.372777-08:00",
+  "generated_at": "2026-02-27T16:19:40.607746-08:00",
   "campaign_start": "2026-01-19",
   "inmails": [
     {
@@ -520,6 +520,28 @@
       "week_num": 4
     },
     {
+      "id": "5e3124db8512",
+      "recipient_name": "Mauricio Mart\u00ednez",
+      "recipient_title": "Director of Supply Chain at Grupo Industrial LM",
+      "company": "Grupo Industrial LM",
+      "date_sent": "2026-02-10",
+      "replied": false,
+      "reply_text": "",
+      "sentiment": null,
+      "week_num": 4
+    },
+    {
+      "id": "0db6a77d814b",
+      "recipient_name": "Emmanuel L\u00f3pez",
+      "recipient_title": "Continuous Improvement Lead / Supply Chain Management / Warehouse & log\u00edstics Head",
+      "company": "",
+      "date_sent": "2026-02-10",
+      "replied": false,
+      "reply_text": "",
+      "sentiment": null,
+      "week_num": 4
+    },
+    {
       "id": "5b94c7b38dea",
       "recipient_name": "Rachel Mendiola Cruz",
       "recipient_title": "Gerente de Cadena de Suministro",
@@ -597,6 +619,17 @@
       "week_num": 4
     },
     {
+      "id": "595e5c20bc5b",
+      "recipient_name": "Daniel L\u00f3pez P\u00e9rez",
+      "recipient_title": "Gerente Log\u00edstica PET y Fibra Corta",
+      "company": "",
+      "date_sent": "2026-02-12",
+      "replied": true,
+      "reply_text": "Hola\n\nSi claro. Si te da tiempo me puedes llamar ma\u00f1ana y platicamos, +52 8186542066",
+      "sentiment": "Neutral",
+      "week_num": 4
+    },
+    {
       "id": "510f545a00ed",
       "recipient_name": "Arturo Hern\u00e1ndez",
       "recipient_title": "Supply - Scheduler Fuel Ops",
@@ -666,17 +699,6 @@
       "id": "6183db80bfb3",
       "recipient_name": "Andrea I",
       "recipient_title": "MA Conflict Resolution| Operations Executive | Pricing Executive | Analista de log\u00edstica",
-      "company": "",
-      "date_sent": "2026-02-12",
-      "replied": false,
-      "reply_text": "",
-      "sentiment": null,
-      "week_num": 4
-    },
-    {
-      "id": "595e5c20bc5b",
-      "recipient_name": "Daniel L\u00f3pez P\u00e9rez",
-      "recipient_title": "Gerente Log\u00edstica PET y Fibra Corta",
       "company": "",
       "date_sent": "2026-02-12",
       "replied": false,
@@ -894,9 +916,31 @@
       "week_num": 4
     },
     {
+      "id": "c24cf4f135c9",
+      "recipient_name": "Marlenne Monserrat Martinez Garcia",
+      "recipient_title": "Analista de log\u00edstica con experiencia en administraci\u00f3n y flujo de efectivo",
+      "company": "administraci\u00f3n y flujo de efectivo",
+      "date_sent": "2026-02-12",
+      "replied": false,
+      "reply_text": "",
+      "sentiment": null,
+      "week_num": 4
+    },
+    {
       "id": "67549cd77f90",
       "recipient_name": "Raul Del Pozo",
       "recipient_title": "SUPPLY CHAIN COUNTRY MANAGER, at GRUMA",
+      "company": "GRUMA",
+      "date_sent": "2026-02-12",
+      "replied": false,
+      "reply_text": "",
+      "sentiment": null,
+      "week_num": 4
+    },
+    {
+      "id": "2e22d3c765f4",
+      "recipient_name": "Miranda Leal Alanis",
+      "recipient_title": "Logistics Coordinator at GRUMA",
       "company": "GRUMA",
       "date_sent": "2026-02-12",
       "replied": false,
@@ -1030,6 +1074,17 @@
       "recipient_name": "Mario Zamudio Guadarrama",
       "recipient_title": "Transport M\u00e1nager",
       "company": "",
+      "date_sent": "2026-02-12",
+      "replied": false,
+      "reply_text": "",
+      "sentiment": null,
+      "week_num": 4
+    },
+    {
+      "id": "6c38e1483da2",
+      "recipient_name": "EUNJU INNA S.",
+      "recipient_title": "Settlement Manager-Logistics Area at SAMSUNG SDS",
+      "company": "Samsung SDS",
       "date_sent": "2026-02-12",
       "replied": false,
       "reply_text": "",
@@ -1175,30 +1230,31 @@
     {
       "week_num": 4,
       "monday": "2026-02-09",
-      "sent": 61,
-      "replied": 6,
-      "reply_rate": 9.8,
+      "sent": 66,
+      "replied": 7,
+      "reply_rate": 10.6,
       "interested": 3,
-      "interest_rate": 50.0,
+      "interest_rate": 42.9,
       "not_interested": 3,
-      "neutral": 0,
+      "neutral": 1,
       "ooo": 0
     }
   ],
   "totals": {
-    "sent": 104,
-    "replied": 14,
-    "reply_rate": 13.5,
+    "sent": 109,
+    "replied": 15,
+    "reply_rate": 13.8,
     "interested": 3,
-    "interest_rate": 21.4,
+    "interest_rate": 20.0,
     "not_interested": 8,
-    "neutral": 3,
+    "neutral": 4,
     "ooo": 0,
     "companies_contacted": [
       "Alpek",
       "Empresa de Alimentos",
       "GRUMA",
       "Grupo Cuprum",
+      "Grupo Industrial LM",
       "Grupo La Moderna",
       "Grupo M\u00e9xico",
       "Grupo Trimex",
@@ -1210,7 +1266,8 @@
       "Solistica",
       "TUBACERO",
       "Truper",
-      "Valero"
+      "Valero",
+      "administraci\u00f3n y flujo de efectivo"
     ]
   }
 }
